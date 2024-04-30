@@ -1,5 +1,3 @@
-SHELL := $(shell which zsh)
-
 install:
 	pip install -e ".[dev]"
 
