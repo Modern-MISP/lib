@@ -1,39 +1,25 @@
 from pydantic import BaseModel
 
-from mmisp.db.models.attribute import Attribute, AttributeCategories
+from mmisp.lib.attributes import AttributeCategories, default_category, inverted_categories, to_ids
 
 
 class GetDescribeTypesAttributes(BaseModel):
-    __attribute_types__: list[type[Attribute]] = Attribute.__subclasses__()
     sane_defaults: dict = {}
-    for cls in Attribute.__subclasses__():
+    for k, v in to_ids.items():
         sane_defaults.update(
             {
-                cls.__mapper_args__["polymorphic_identity"]: {
-                    "default_category": cls.default_category,
-                    "to_ids": cls.to_ids,
+                k: {
+                    "default_category": default_category[k],
+                    "to_ids": v,
                 }
             }
         )
 
-    types: list[str] = []
-    for cls in __attribute_types__:
-        types.append(cls.__mapper_args__["polymorphic_identity"])
+    types: list[str] = list(default_category.keys())
 
     categories: list[str] = [member.value for member in AttributeCategories]
 
-    category_type_mappings: dict = {}
-    # iterate over all elements of the list "categories"
-    for __category__ in categories:
-        __types_mapped_to_category__: list[str] = []
-        # iterate over all AttributeTypes
-        for cls in __attribute_types__:
-            # iterate over all elements of the list "categories" in the current subclass
-            for __attribute_category__ in cls.categories:
-                # check if element in "categories" (subclass) equals to current category
-                if __attribute_category__ == __category__:
-                    __types_mapped_to_category__.append(cls.__mapper_args__["polymorphic_identity"])
-                    category_type_mappings.update({__attribute_category__: __types_mapped_to_category__})
+    category_type_mappings: dict = inverted_categories
 
 
 class GetDescribeTypesResponse(BaseModel):
