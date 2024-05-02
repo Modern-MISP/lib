@@ -23,7 +23,7 @@ class SearchAttributesModelOverrides(BaseModel):
 
 
 class SearchAttributesBody(BaseModel):
-    returnFormat: str
+    returnFormat: str = "json"
     page: int | None = None
     limit: int | None = None
     value: str | None = None
