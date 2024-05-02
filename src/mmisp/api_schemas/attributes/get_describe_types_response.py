@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 
-from mmisp.lib.attributes import AttributeCategories, default_category, inverted_categories, to_ids
+from mmisp.lib.attributes import (
+    AttributeCategories,
+    default_category,
+    inverted_categories,
+    mapper_val_safe_clsname,
+    to_ids,
+)
 
 
 class GetDescribeTypesAttributes(BaseModel):
@@ -15,7 +21,7 @@ class GetDescribeTypesAttributes(BaseModel):
             }
         )
 
-    types: list[str] = list(default_category.keys())
+    types: list[str] = list(mapper_val_safe_clsname.keys())
 
     categories: list[str] = [member.value for member in AttributeCategories]
 

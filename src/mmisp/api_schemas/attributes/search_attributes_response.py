@@ -42,11 +42,8 @@ class SearchAttributesAttributesDetails(BaseModel):
 
 
 class SearchAttributesAttributes(BaseModel):
-    Attribute: SearchAttributesAttributesDetails
+    Attribute: list[SearchAttributesAttributesDetails]
 
 
 class SearchAttributesResponse(BaseModel):
-    response: list[SearchAttributesAttributes]
-
-    class Config:
-        orm_mode = True
+    response: SearchAttributesAttributes
