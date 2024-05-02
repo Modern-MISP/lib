@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt, conint
 
 
 class IndexEventsBody(BaseModel):
-    page: int | None = None
-    limit: int | None = None
+    page: PositiveInt | None = None
+    limit: conint(gt=0, lt=500) | None = None  # type: ignore
     sort: int | None = None
     direction: int | None = None
     minimal: bool | None = None
