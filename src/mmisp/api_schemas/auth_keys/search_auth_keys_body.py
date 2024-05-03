@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt, conint
 
 
 class SearchAuthKeyBody(BaseModel):
-    page: int | None = 0
-    limit: int | None = 25
+    page: PositiveInt | None = 1
+    limit: conint(gt=0, lt=500) | None = 25  # type: ignore
     id: str | None = None
     uuid: str | None = None
     authkey_start: str | None = None
