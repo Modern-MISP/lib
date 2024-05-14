@@ -1,5 +1,6 @@
 from collections import defaultdict
 from enum import Enum
+from typing import Literal, Union
 
 
 class AttributeCategories(Enum):
@@ -213,7 +214,7 @@ mapper_val_safe_clsname = {
 }
 
 mapper_safe_clsname_val = dict((v, k) for k, v in mapper_val_safe_clsname.items())
-
+literal_valid_attribute_types = Union[*[Literal[k] for k in mapper_val_safe_clsname.keys()]]
 
 default_category = {
     "md5": AttributeCategories.PAYLOAD_DELIVERY,

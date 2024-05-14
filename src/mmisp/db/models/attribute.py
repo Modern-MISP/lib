@@ -50,6 +50,15 @@ class Attribute(Base, DictMixin):
 
     event = relationship("Event", back_populates="attributes", lazy="joined")
 
+    def __init__(self: Self, *arg, **kwargs) -> None:
+        if kwargs["value1"] is None:
+            split_val = kwargs["value"].split("|", 1)
+            kwargs["value1"] = split_val[0]
+            if len(split_val) == 2:
+                kwargs["value2"] = split_val[1]
+
+        super().__init__(*arg, **kwargs)
+
     @property
     def event_uuid(self: "Attribute") -> str:
         return self.event.uuid

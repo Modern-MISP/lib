@@ -2,11 +2,13 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, root_validator
 
+from mmisp.lib.attributes import literal_valid_attribute_types
+
 
 class AddAttributeBody(BaseModel):
-    type: str
-    value: Optional[str]
-    value1: Optional[str]
+    type: literal_valid_attribute_types
+    value: str | None = None
+    value1: str | None = None
     value2: str | None = None
     event_id: str | None = None
     object_id: str | None = None
@@ -29,6 +31,3 @@ class AddAttributeBody(BaseModel):
         if all(item is None for item in required_values):
             raise ValueError("value or value1 has to be set")
         return data
-
-    class Config:
-        orm_mode = True

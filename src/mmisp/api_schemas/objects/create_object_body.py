@@ -14,6 +14,3 @@ class ObjectCreateBody(BaseModel):
     first_seen: str | None = None
     last_seen: str | None = None
     Attribute: list[AddAttributeBody] | None = None
-
-    class Config:
-        orm_mode = True
