@@ -2,12 +2,13 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 
+from mmisp.db.mixins import DictMixin
 from mmisp.util.uuid import uuid
 
 from ..database import Base
 
 
-class Organisation(Base):
+class Organisation(Base, DictMixin):
     __tablename__ = "organisations"
 
     id = Column(Integer, primary_key=True, nullable=False)

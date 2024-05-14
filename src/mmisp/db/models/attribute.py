@@ -1,29 +1,17 @@
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Integer, String, Text, inspect
+from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
+from mmisp.db.mixins import DictMixin
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.util.uuid import uuid
 
 from ..database import Base
 from .event import Event
 from .tag import Tag
-
-
-class DictMixin:
-    def asdict(self: Self) -> dict:
-        d = {}
-        for key in self.__mapper__.c.keys():
-            if not key.startswith("_"):
-                d[key] = getattr(self, key)
-
-        for key, prop in inspect(self.__class__).all_orm_descriptors.items():
-            if isinstance(prop, hybrid_property):
-                d[key] = getattr(self, key)
-        return d
 
 
 class Attribute(Base, DictMixin):
