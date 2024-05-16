@@ -2,12 +2,13 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 
+from mmisp.db.mixins import DictMixin
 from mmisp.util.uuid import uuid
 
 from ..database import Base
 
 
-class SharingGroup(Base):
+class SharingGroup(Base, DictMixin):
     __tablename__ = "sharing_groups"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -25,7 +26,7 @@ class SharingGroup(Base):
     roaming = Column(Boolean, default=False, nullable=False)
 
 
-class SharingGroupOrg(Base):
+class SharingGroupOrg(Base, DictMixin):
     __tablename__ = "sharing_group_orgs"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -34,7 +35,7 @@ class SharingGroupOrg(Base):
     extend = Column(Boolean, default=False, nullable=False)
 
 
-class SharingGroupServer(Base):
+class SharingGroupServer(Base, DictMixin):
     __tablename__ = "sharing_group_servers"
 
     id = Column(Integer, primary_key=True, nullable=False)

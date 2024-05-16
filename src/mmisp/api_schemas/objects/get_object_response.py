@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
 
 from mmisp.api_schemas.attributes.get_all_attributes_response import GetAllAttributesResponse
 from mmisp.api_schemas.events.get_event_response import ObjectEventResponse
@@ -22,7 +22,7 @@ class ObjectWithAttributesResponse(BaseModel):
     deleted: bool | None = None
     first_seen: str | None = None
     last_seen: str | None = None
-    Attribute: list[GetAllAttributesResponse] | None = None
+    attributes: list[GetAllAttributesResponse] | None = Field(alias="Attribute", default=None)
     Event: ObjectEventResponse | None = None
 
     @validator("sharing_group_id", always=True)
@@ -35,16 +35,13 @@ class ObjectWithAttributesResponse(BaseModel):
             return value
         return None
 
+    class Config:
+        allow_population_by_field_name = True
+
 
 class ObjectResponse(BaseModel):
     Object: ObjectWithAttributesResponse
 
-    class Config:
-        orm_mode = True
-
 
 class ObjectSearchResponse(BaseModel):
     response: list[ObjectResponse]
-
-    class Config:
-        orm_mode = True
