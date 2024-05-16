@@ -38,6 +38,8 @@ class Attribute(Base, DictMixin):
 
     event = relationship("Event", back_populates="attributes", lazy="joined")
 
+    __mapper_args__ = {"polymorphic_on": "type"}
+
     def __init__(self: Self, *arg, **kwargs) -> None:
         if kwargs["value1"] is None:
             split_val = kwargs["value"].split("|", 1)
@@ -80,7 +82,7 @@ class AttributeMeta(DeclarativeMeta):
         key = clsname[len("Attribute") :]
         dct["default_category"] = default_category[mapper_safe_clsname_val[key]]
         dct["categories"] = categories[mapper_safe_clsname_val[key]]
-        dct["to_ids"] = to_ids[mapper_safe_clsname_val[key]]
+        dct["default_to_ids"] = to_ids[mapper_safe_clsname_val[key]]
         dct["__mapper_args__"] = {"polymorphic_identity": mapper_safe_clsname_val[key]}
         return super().__new__(cls, clsname, bases, dct)
 

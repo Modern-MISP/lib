@@ -1,9 +1,9 @@
 from collections import defaultdict
-from enum import Enum
+from enum import StrEnum
 from typing import Literal, Union
 
 
-class AttributeCategories(Enum):
+class AttributeCategories(StrEnum):
     PAYLOAD_DELIVERY = "Payload delivery"
     ARTIFACTS_DROPPED = "Artifacts dropped"
     PAYLOAD_INSTALLATION = "Payload installation"

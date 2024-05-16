@@ -18,12 +18,12 @@ class AddAttributeAttributes(BaseModel):
     timestamp: str
     distribution: str
     sharing_group_id: str
-    comment: str
+    comment: str | None = None
     deleted: bool
     disable_correlation: bool
-    first_seen: Optional[str] = Field(..., nullable=True)
-    last_seen: Optional[str] = Field(..., nullable=True)
-    attribute_tag: list[str] = Field([], alias="AttributeTag")
+    first_seen: str | None = None
+    last_seen: str | None = None
+    attribute_tag: list[str] | None = Field(default_factory=list, alias="AttributeTag")
 
 
 class AddAttributeResponse(BaseModel):
