@@ -1,10 +1,11 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 from mmisp.db.database import Base
+from mmisp.db.mixins import DictMixin
 from mmisp.util.uuid import uuid
 
 
-class Object(Base):
+class Object(Base, DictMixin):
     __tablename__ = "objects"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -24,7 +25,7 @@ class Object(Base):
     last_seen = Column(Integer, index=True, default=None)
 
 
-class ObjectTemplate(Base):
+class ObjectTemplate(Base, DictMixin):
     __tablename__ = "object_templates"
 
     id = Column(Integer, primary_key=True, nullable=False)
