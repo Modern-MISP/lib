@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any
 
 from pydantic import BaseModel
@@ -28,7 +29,7 @@ class NoticelistAttributes(BaseModel):
 
 
 class NoticelistAttributesResponse(NoticelistAttributes):
-    NoticelistEntry: list[NoticelistEntryResponse]
+    NoticelistEntry: Sequence[NoticelistEntryResponse]
 
 
 class NoticelistResponse(BaseModel):
