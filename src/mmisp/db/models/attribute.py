@@ -1,11 +1,12 @@
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from mmisp.db.mixins import DictMixin
+from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.util.uuid import uuid
 
@@ -17,24 +18,26 @@ from .tag import Tag
 class Attribute(Base, DictMixin):
     __tablename__ = "attributes"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    uuid = Column(String(40), unique=True, default=uuid, index=True)
-    event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True)
-    object_id = Column(Integer, nullable=False, default=0, index=True)
-    object_relation = Column(String(255), index=True)
-    category = Column(String(255), nullable=False, index=True)
-    type = Column(String(100), nullable=False, index=True)
-    value1 = Column(Text, nullable=False)
-    value2 = Column(Text, nullable=False, default="")
-    to_ids = Column(Boolean, default=True, nullable=False)
-    timestamp = Column(Integer, nullable=False, default=0)
-    distribution = Column(Integer, nullable=False, default=0)
-    sharing_group_id = Column(Integer, index=True, default=0)
-    comment = Column(Text)
-    deleted = Column(Boolean, nullable=False, default=False)
-    disable_correlation = Column(Boolean, nullable=False, default=False)
-    first_seen = Column(BigInteger, index=True)
-    last_seen = Column(BigInteger, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid, index=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    object_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    object_relation: Mapped[str] = mapped_column(String(255), index=True)
+    category: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    value1: Mapped[str] = mapped_column(Text, nullable=False)
+    value2: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    to_ids: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
+    comment: Mapped[str] = mapped_column(Text)
+    deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    first_seen: Mapped[int] = mapped_column(BigInteger, index=True)
+    last_seen: Mapped[int] = mapped_column(BigInteger, index=True)
 
     event = relationship("Event", back_populates="attributes", lazy="joined")
 
@@ -70,11 +73,13 @@ class Attribute(Base, DictMixin):
 class AttributeTag(Base):
     __tablename__ = "attribute_tags"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    attribute_id = Column(Integer, ForeignKey(Attribute.id, ondelete="CASCADE"), nullable=False, index=True)
-    event_id = Column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
-    tag_id = Column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
-    local = Column(Boolean, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    attribute_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(Attribute.id, ondelete="CASCADE"), nullable=False, index=True
+    )
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
+    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
+    local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 class AttributeMeta(DeclarativeMeta):

@@ -1,5 +1,6 @@
-from sqlalchemy import Boolean, Column, Integer, String, Text
+from sqlalchemy import Boolean, Integer, String, Text
 
+from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.util.uuid import uuid
 
 from ..database import Base
@@ -8,15 +9,15 @@ from ..database import Base
 class Galaxy(Base):
     __tablename__ = "galaxies"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    uuid = Column(String(255), nullable=False, unique=True, default=uuid)
-    name = Column(String(255), nullable=False, default="", index=True)
-    type = Column(String(255), nullable=False, index=True)
-    description = Column(Text, nullable=False)
-    version = Column(String(255), nullable=False)
-    icon = Column(String(255), nullable=False, default="")
-    namespace = Column(String(255), nullable=False, default="misp", index=True)
-    kill_chain_order = Column(String(255))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    uuid: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, default=uuid)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
+    type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[str] = mapped_column(String(255), nullable=False)
+    icon: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    namespace: Mapped[str] = mapped_column(String(255), nullable=False, default="misp", index=True)
+    kill_chain_order: Mapped[str] = mapped_column(String(255))
     """must be serialized"""
-    enabled = Column(Boolean, nullable=False, default=True)
-    local_only = Column(Boolean, default=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    local_only: Mapped[bool] = mapped_column(Boolean, default=False)

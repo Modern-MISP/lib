@@ -1,9 +1,10 @@
 from enum import Enum
 from time import time
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 
 from mmisp.db.database import Base
+from mmisp.db.mypy import Mapped, mapped_column
 
 from .user import User
 
@@ -22,8 +23,8 @@ class SettingName(Enum):
 class UserSetting(Base):
     __tablename__ = "user_settings"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    setting = Column(String(255), nullable=False, index=True)
-    value = Column(Text, nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False, index=True)
-    timestamp = Column(Integer, default=time, onupdate=time, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    setting: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    value: Mapped[str] = mapped_column(Text, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False, index=True)
+    timestamp: Mapped[int] = mapped_column(Integer, default=time, onupdate=time, nullable=False, index=True)

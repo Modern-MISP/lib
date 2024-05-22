@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class WarninglistListType(str, Enum):
+class WarninglistListType(StrEnum):
     CIDR = "cidr"
     HOSTNAME = "hostname"
     STRING = "string"
@@ -11,12 +11,13 @@ class WarninglistListType(str, Enum):
     REGEX = "regex"
 
 
-class WarninglistCategory(str, Enum):
+class WarninglistCategory(StrEnum):
     FALSE_POSITIVE = "False positive"
     KNOWN_IDENTIFIER = "Known identifier"
 
 
-class ValidAttribute(str, Enum):
+# todo: use something from the mmisp.lib.attributes
+class ValidAttribute(StrEnum):
     MD5 = "md5"
     SHA12SHA256 = "sha12sha256"
     FILENAME = "filename"
