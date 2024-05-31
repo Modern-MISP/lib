@@ -128,14 +128,14 @@ class AddEditGetEventTag(BaseModel):
     id: str
     name: str
     colour: str
-    exportable: str
+    exportable: bool
     user_id: str
     hide_tag: bool
     numerical_value: int | None = None
     is_galaxy: bool
     is_custom_galaxy: bool
     local_only: bool
-    local: int
+    local: bool
     relationship_type: str | None = None
 
 
