@@ -6,6 +6,7 @@ default:
 
 stages:
   - test
+  - docs
 
 test_job:
   stage: test
@@ -16,3 +17,16 @@ test_job:
   script:
     - pip install -e ".[dev]"
     - ENV_FILE=.env.test.lite pytest tests
+
+generate_mkdocs:
+  before_script: []
+  stage: docs
+  image: hub.cert.kit.edu:5000/mkdocs
+  script:
+    - source /root/.venv/bin/activate; PYTHONPATH=src mkdocs build
+  artifacts:
+    paths:
+      - site
+  services:
+    - name: plantuml/plantuml-server
+      alias: plantuml
