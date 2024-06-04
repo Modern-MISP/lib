@@ -51,6 +51,7 @@ class UsersViewMeResponse(BaseModel):
     UserSetting: list = []
     Organisation: Organisation
 
+
 class UserAttributesResponse(BaseModel):
     id: str
     org_id: str | None = None
