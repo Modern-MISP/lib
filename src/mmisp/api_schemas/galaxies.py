@@ -191,3 +191,4 @@ class AttachClusterGalaxyBody(BaseModel):
 
     class Config:
         orm_mode = True
+
