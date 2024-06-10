@@ -10,7 +10,7 @@ class ObjectSearchBody(BaseModel):
     object_name: str | None = None
     object_template_uuid: str | None = None
     object_template_version: str | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     category: str | None = None
     comment: str | None = None
     first_seen: str | None = None
@@ -23,7 +23,7 @@ class ObjectSearchBody(BaseModel):
     date: str | None = None
     last: str | None = None
     event_timestamp: str | None = None
-    org_id: str | None = None
+    org_id: int | None = None
     uuid: str | None = None
     value1: str | None = None
     value2: str | None = None
@@ -53,17 +53,17 @@ class ObjectSearchBody(BaseModel):
 
 
 class ObjectWithAttributesResponse(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     meta_category: str | None = None
     description: str | None = None
     template_uuid: str | None = None
     template_version: str | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     first_seen: str | None = None
@@ -98,7 +98,7 @@ class ObjectCreateBody(BaseModel):
     meta_category: str | None = None
     description: str | None = None
     distribution: str | None = None
-    sharing_group_id: str = Field(min_length=1)
+    sharing_group_id: int = Field(min_length=1)
     comment: str = Field(min_length=1)
     deleted: bool | None = None
     first_seen: str | None = None

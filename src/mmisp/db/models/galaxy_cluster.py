@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 

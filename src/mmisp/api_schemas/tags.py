@@ -8,8 +8,8 @@ class TagUpdateBody(BaseModel):
     name: str | None = None
     colour: str | None = None
     exportable: bool | None = None
-    org_id: str | None = None
-    user_id: str | None = None
+    org_id: int | None = None
+    user_id: int | None = None
     hide_tag: bool | None = None
     numerical_value: str | None = None
     local_only: bool | None = None
@@ -19,8 +19,8 @@ class TagUpdateBody(BaseModel):
 
 
 class TaxonomyPredicateResponse(mmisp.api_schemas.taxonomies.TaxonomyPredicateSchema):
-    id: str
-    taxonomy_id: str
+    id: int
+    taxonomy_id: int
     colour: str
     exclusive: bool
     numerical_value: int
@@ -68,8 +68,8 @@ class TagCreateBody(BaseModel):
     name: str = Field(min_length=1)
     colour: str = Field(min_length=7, max_length=7)
     exportable: bool
-    org_id: str | None = None
-    user_id: str | None = None
+    org_id: int | None = None
+    user_id: int | None = None
     hide_tag: bool | None = None
     numerical_value: str | None = None
     local_only: bool | None = None

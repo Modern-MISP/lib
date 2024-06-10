@@ -14,10 +14,10 @@ class Value(BaseModel):
 
 
 class ViewUserSettingResponseUserSetting(BaseModel):
-    id: str
+    id: int
     setting: str
     value: dict | list
-    user_id: str
+    user_id: int
     timestamp: str
 
 
@@ -26,10 +26,10 @@ class ViewUserSettingResponse(BaseModel):
 
 
 class SetUserSettingResponseUserSetting(BaseModel):
-    id: str
+    id: int
     setting: str
     value: dict | list
-    user_id: str
+    user_id: int
     timestamp: str
 
 
@@ -42,24 +42,24 @@ class SetUserSettingBody(BaseModel):
 
 
 class SearchUserSettingResponse(BaseModel):
-    id: str
+    id: int
     setting: str
     value: Value
-    user_id: str
+    user_id: int
     timestamp: str
 
 
 class SearchUserSettingBody(BaseModel):
-    id: str | None = None
+    id: int | None = None
     setting: str | None = None
-    user_id: str | None = None
+    user_id: int | None = None
 
 
 class UserSettingSchema(BaseModel):
-    id: str
+    id: int
     setting: str
     value: dict | list
-    user_id: str
+    user_id: int
     timestamp: str
 
 
@@ -68,8 +68,8 @@ class UserSettingResponse(BaseModel):
 
 
 class GetUserSettingResponse(BaseModel):
-    id: str
+    id: int
     setting: str
     value: str
-    user_id: str
+    user_id: int
     timestamp: str

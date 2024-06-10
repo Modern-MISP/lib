@@ -7,14 +7,14 @@ from mmisp.api_schemas.responses.standard_status_response import StandardStatusR
 
 
 class SharingGroup(BaseModel):
-    id: str
+    id: int
     name: str
     releasability: str
     description: str
     uuid: str
     organisation_uuid: str
-    org_id: str
-    sync_user_id: str
+    org_id: int
+    sync_user_id: int
     active: bool
     created: datetime
     modified: datetime
@@ -23,21 +23,21 @@ class SharingGroup(BaseModel):
 
 
 class SharingGroupServer(BaseModel):
-    id: str
-    sharing_group_id: str
-    server_id: str
+    id: int
+    sharing_group_id: int
+    server_id: int
     all_orgs: bool
 
 
 class SharingGroupOrg(BaseModel):
-    id: str
-    sharing_group_id: str
-    org_id: str
+    id: int
+    sharing_group_id: int
+    org_id: int
     extend: bool
 
 
 class GetAllSharingGroupsResponseResponseItemSharingGroup(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     description: str
@@ -49,34 +49,34 @@ class GetAllSharingGroupsResponseResponseItemSharingGroup(BaseModel):
 
 
 class DeleteSharingGroupLegacyResponse(StandardStatusResponse):
-    id: str
+    id: int
 
 
 class ViewUpdateSharingGroupLegacyResponseServerInfo(BaseModel):
-    id: str
+    id: int
     name: str
     url: str
 
 
 class ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem(BaseModel):
-    id: str
-    sharing_group_id: str
-    server_id: str
+    id: int
+    sharing_group_id: int
+    server_id: int
     all_orgs: bool
     Server: ViewUpdateSharingGroupLegacyResponseServerInfo
 
 
 class ViewUpdateSharingGroupLegacyResponseOrganisationInfo(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     local: bool
 
 
 class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
-    id: str
-    sharing_group_id: str
-    org_id: str
+    id: int
+    sharing_group_id: int
+    org_id: int
     extend: bool
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
@@ -89,7 +89,7 @@ class ViewUpdateSharingGroupLegacyResponse(BaseModel):
 
 
 class UpdateSharingGroupLegacyBody(BaseModel):
-    id: str | None = None
+    id: int | None = None
     """attribute will be ignored"""
     uuid: str | None = Field(default=None, max_length=36)
     """attribute will be ignored"""
@@ -102,9 +102,9 @@ class UpdateSharingGroupLegacyBody(BaseModel):
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
     """attribute will be ignored"""
-    org_id: str | None = Field(default=None, max_length=10)
+    org_id: int | None = Field(default=None, max_length=10)
     """attribute will be ignored"""
-    sync_user_id: str | None = Field(default=None, max_length=10)
+    sync_user_id: int | None = Field(default=None, max_length=10)
     """attribute will be ignored"""
     created: datetime | None = None
     """attribute will be ignored"""
@@ -123,30 +123,30 @@ class UpdateSharingGroupBody(BaseModel):
 
 
 class GetSharingGroupInfoResponseServerInfo(BaseModel):
-    id: str
+    id: int
     name: str
     url: str
 
 
 class GetSharingGroupInfoResponseSharingGroupServerItem(BaseModel):
-    id: str
-    sharing_group_id: str
-    server_id: str
+    id: int
+    sharing_group_id: int
+    server_id: int
     all_orgs: bool
     Server: GetSharingGroupInfoResponseServerInfo
 
 
 class GetSharingGroupInfoResponseOrganisationInfo(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     local: bool
 
 
 class GetSharingGroupInfoResponseSharingGroupOrgItem(BaseModel):
-    id: str
-    sharing_group_id: str
-    org_id: str
+    id: int
+    sharing_group_id: int
+    org_id: int
     extend: bool
     Organisation: GetSharingGroupInfoResponseOrganisationInfo
 
@@ -156,7 +156,7 @@ class GetSharingGroupInfoResponseSharingGroupInfo(SharingGroup):
 
 
 class GetAllSharingGroupsResponseOrganisationInfo(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
 
@@ -169,22 +169,22 @@ class GetSharingGroupInfoResponse(BaseModel):
 
 
 class GetAllSharingGroupsResponseResponseItemSharingGroupOrgItem(BaseModel):
-    id: str
-    sharing_group_id: str
-    org_id: str
+    id: int
+    sharing_group_id: int
+    org_id: int
     extend: bool
     Organisation: GetAllSharingGroupsResponseOrganisationInfo
 
 
 class GetAllSharingGroupsResponseResponseItemSharingGroupServerItemServer(BaseModel):
-    id: str
+    id: int
     name: str
     url: str
 
 
 class GetAllSharingGroupsResponseResponseItemSharingGroupServerItem(BaseModel):
-    server_id: str
-    sharing_group_id: str
+    server_id: int
+    sharing_group_id: int
     all_orgs: bool
     Server: GetAllSharingGroupsResponseResponseItemSharingGroupServerItemServer
 
@@ -203,7 +203,7 @@ class GetAllSharingGroupsResponse(BaseModel):
 
 
 class CreateSharingGroupLegacyResponseOrganisationInfo(BaseModel):
-    id: str
+    id: int
     name: str
     uuid: str
 
@@ -225,8 +225,8 @@ class CreateSharingGroupLegacyBody(BaseModel):
     org_count: str | None = None
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
-    org_id: str | None = Field(default=None, max_length=10)
-    sync_user_id: str | None = Field(default=None, max_length=10)
+    org_id: int | None = Field(default=None, max_length=10)
+    sync_user_id: int | None = Field(default=None, max_length=10)
     """attribute will be ignored"""
     created: datetime | None = None
     """attribute will be ignored"""
@@ -251,7 +251,7 @@ class AddServerToSharingGroupLegacyBody(BaseModel):
 
 
 class AddServerToSharingGroupBody(BaseModel):
-    serverId: str
+    serverId: int
     all_orgs: bool | None = None
 
 
@@ -260,5 +260,5 @@ class AddOrgToSharingGroupLegacyBody(BaseModel):
 
 
 class AddOrgToSharingGroupBody(BaseModel):
-    organisationId: str
+    organisationId: int
     extend: bool | None = None

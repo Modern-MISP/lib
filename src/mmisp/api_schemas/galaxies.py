@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 from pydantic import BaseModel
@@ -7,7 +8,7 @@ from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
 
 
 class SearchGalaxiesBody(BaseModel):
-    id: str | None = None
+    id: int | None = None
     uuid: str | None = None
     name: str | None = None
     type: str | None = None
@@ -32,10 +33,35 @@ class ImportGalaxyGalaxy(BaseModel):
 
 
 class ExportGalaxyGalaxyElement(BaseModel):
-    id: str | None = None
-    galaxy_cluster_id: str | None = None
+    id: int | None = None
+    galaxy_cluster_id: int | None = None
     key: str
     value: str
+
+
+class GetGalaxyClusterResponse(BaseModel):
+    id: int | None = None
+    uuid: str | None = None
+    collection_uuid: str
+    type: str
+    value: str
+    tag_name: str
+    description: str
+    galaxy_id: int
+    source: str
+    authors: list[str]
+    version: str
+    distribution: str
+    sharing_group_id: int
+    org_id: int
+    orgc_id: int
+    default: bool
+    locked: bool
+    extends_uuid: str
+    extends_version: str
+    published: bool
+    deleted: bool
+    GalaxyElement: list[ExportGalaxyGalaxyElement]
 
 
 class ImportGalaxyBody(BaseModel):
@@ -44,6 +70,20 @@ class ImportGalaxyBody(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class GetAllSearchGalaxiesAttributes(BaseModel):
+    id: int
+    uuid: str
+    name: str
+    type: str
+    description: str
+    version: str
+    icon: str
+    namespace: str
+    kill_chain_order: str | None = None
+    enabled: bool
+    local_only: bool
 
 
 class GetAllSearchGalaxiesResponse(BaseModel):
@@ -62,7 +102,7 @@ class GetGalaxyResponse(BaseModel):
 
 
 class GalaxySchema(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     type: str
@@ -74,6 +114,82 @@ class GalaxySchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ExportGalaxyClusterResponse(BaseModel):
+    id: int
+    uuid: str
+    collection_uuid: str
+    type: str
+    value: str
+    tag_name: str
+    description: str
+    galaxy_id: int
+    source: str
+    authors: list[str]
+    version: str
+    distribution: str
+    sharing_group_id: int
+    org_id: int
+    orgc_id: int
+    default: bool
+    locked: bool
+    extends_uuid: str
+    extends_version: str
+    published: bool
+    deleted: bool
+    GalaxyElement: list[ExportGalaxyGalaxyElement]
+    Galaxy: GetAllEventsGalaxyClusterGalaxy
+    GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
+    Org: mmisp.api_schemas.organisations.Organisation
+    Orgc: mmisp.api_schemas.organisations.Organisation
+
+    class Config:
+        orm_mode = True
+
+
+class GalaxyClustersViewResponse(BaseModel):
+    id: int
+    uuid: str
+    collection_uuid: str
+    type: str
+    value: str
+    tag_name: str
+    description: str
+    galaxy_id: int
+    source: str
+    authors: list[str]
+    version: str
+    distribution: str
+    sharing_group_id: int
+    org_id: int
+    orgc_id: int
+    default: bool
+    locked: bool
+    extends_uuid: str
+    extends_version: str
+    published: bool
+    deleted: bool
+    GalaxyElement: list[ExportGalaxyGalaxyElement]
+    Galaxy: GetAllEventsGalaxyClusterGalaxy
+    GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
+    Org: mmisp.api_schemas.organisations.Organisation
+    Orgc: mmisp.api_schemas.organisations.Organisation
+    TargetingClusterRelation: list[TargetingClusterRelation] | None = None
+    RelationshipInbound: list[any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
+
+
+class TargetingClusterRelation(BaseModel):
+    id: int
+    galaxy_cluster_id: int
+    referenced_galaxy_cluster_id: int
+    referenced_galaxy_cluster_uuid: uuid
+    referenced_galaxy_cluster_type: str
+    galaxy_cluster_uuid: uuid
+    distribution: int
+    sharing_group_id: int | None = None
+    default: bool
+    Tag: list[TagAttributesResponse]
 
 
 class ExportGalaxyAttributes(BaseModel):

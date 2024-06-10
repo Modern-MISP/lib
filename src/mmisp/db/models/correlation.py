@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
 
@@ -9,9 +10,10 @@ class OverCorrelatingValue(Base):
     """
     __tablename__ = "over_correlating_values"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    value = Column(String, nullable=False, index=True)
-    occurrence = Column(Integer, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    value: Mapped[str] = mapped_column(String(191), nullable=False, index=True, unique=True)
+    occurrence: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+
 
 class CorrelationValue(Base):
     """
@@ -19,45 +21,41 @@ class CorrelationValue(Base):
     """
     __tablename__ = "correlation_values"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    value = Column(String, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    value: Mapped[str] = mapped_column(String, nullable=False, index=True, unique=True)
 
 
 class CorrelationExclusions(Base):
     __tablename__ = 'correlation_exclusions'
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    value = Column(String, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    value: Mapped[str] = mapped_column(String, nullable=False, index=True, unique=True)
+    from_json: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    comment: Mapped[str] = mapped_column(Text, nullable=False)
 
 
-class Correlation(Base):
-    """
-    Dataclass to encapsulate an entry from the "default_correlations"
-    table in the misp database.
-    """
+class DefaultCorrelation(Base):
     __tablename__ = 'default_correlations'
 
-    id = Column(INTEGER(10), primary_key=True)
-    attribute_id = Column(INTEGER(10), nullable=False, index=True)
-    object_id = Column(INTEGER(10), nullable=False, index=True)
-    event_id = Column(INTEGER(10), nullable=False, index=True)
-    org_id = Column(INTEGER(10), nullable=False)
-    distribution = Column(TINYINT(4), nullable=False)
-    object_distribution = Column(TINYINT(4), nullable=False)
-    event_distribution = Column(TINYINT(4), nullable=False)
-    sharing_group_id = Column(INTEGER(10), nullable=False, server_default=text("0"))
-    object_sharing_group_id = Column(INTEGER(10), nullable=False, server_default=text("0"))
-    event_sharing_group_id = Column(INTEGER(10), nullable=False, server_default=text("0"))
-    attribute_id_1 = Column(INTEGER(10), '1_attribute_id', nullable=False, index=True)
-    object_id_1 = Column(INTEGER(10), '1_object_id', nullable=False, index=True)
-    event_id_1 = Column(INTEGER(10), '1_event_id', nullable=False, index=True)
-    org_id_1 = Column(INTEGER(10), '1_org_id', nullable=False)
-    distribution_1 = Column(TINYINT(4), '1_distribution', nullable=False)
-    object_distribution_1 = Column(TINYINT(4), '1_object_distribution', nullable=False)
-    event_distribution_1 = Column(TINYINT(4), '1_event_distribution', nullable=False)
-    sharing_group_id_1 = Column(INTEGER(10), '1_sharing_group_id', nullable=False, server_default=text("0"))
-    object_sharing_group_id_1 = Column(INTEGER(10), '1_object_sharing_group_id', nullable=False,
-                                            server_default=text("0"))
-    event_sharing_group_id_1= Column(INTEGER(10), '1_event_sharing_group_id', nullable=False,
-                                           server_default=text("0"))
-    value_id= Column(INTEGER(10), nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    attribute_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    object_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    org_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    distribution: Mapped[int] = mapped_column(Integer, nullable=False)
+    object_distribution: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_distribution: Mapped[int] = mapped_column(Integer, nullable=False)
+    sharing_group_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    object_sharing_group_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_sharing_group_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    attribute_id_1: Mapped[int] = mapped_column("1_attribute_id", Integer, nullable=False, index=True)
+    object_id_1: Mapped[int] = mapped_column("1_object_id", Integer, nullable=False, index=True)
+    event_id_1: Mapped[int] = mapped_column("1_event_id", Integer, nullable=False, index=True)
+    org_id_1: Mapped[int] = mapped_column("1_org_id", Integer, nullable=False)
+    distribution_1: Mapped[int] = mapped_column("1_distribution", Integer, nullable=False)
+    object_distribution_1: Mapped[int] = mapped_column("1_object_distribution", Integer, nullable=False)
+    event_distribution_1: Mapped[int] = mapped_column("1_event_distribution", Integer, nullable=False)
+    sharing_group_id_1: Mapped[int] = mapped_column("1_sharing_group_id", Integer, nullable=False)
+    object_sharing_group_id_1: Mapped[int] = mapped_column("1_object_sharing_group_id", Integer, nullable=False)
+    event_sharing_group_id_1: Mapped[int] = mapped_column("1_event_sharing_group_id", Integer, nullable=False)
+    value_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)

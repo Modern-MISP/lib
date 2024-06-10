@@ -12,7 +12,7 @@ class SightingFiltersBody(BaseModel):
     to: str | None = None
     last: str | None = None
     timestamp: str | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     uuid: str | None = None
     attribute_timestamp: str | None = None
     to_ids: bool | None = None
@@ -40,18 +40,18 @@ class SightingFiltersBody(BaseModel):
 
 
 class SightingOrganisationResponse(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
 
 
 class SightingAttributesResponse(BaseModel):
-    id: str
+    id: int
     uuid: str
-    attribute_id: str
+    attribute_id: int
     attribute_uuid: str
-    event_id: str | None = None
-    org_id: str | None = None
+    event_id: int | None = None
+    org_id: int | None = None
     date_sighting: str | None = None
     source: str | None = None
     type: str | None = None

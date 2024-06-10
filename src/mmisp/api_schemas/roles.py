@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class Role(BaseModel):
-    id: str
+    id: int
     name: str
     created: datetime
     modified: datetime

@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from mmisp.lib.serialisation_helper import timestamp_or_empty_string
 
-
 class BaseOrganisation(BaseModel):
     id: str | None = None
     name: str | None = None
@@ -59,21 +58,6 @@ class GetOrganisationResponse(BaseModel):
 
 class GetAllOrganisationsOrganisation(BaseModel):
     id: str
-    name: str
-    date_created: datetime
-    date_modified: datetime
-    description: str | None = None
-    type: str | None = None
-    nationality: str | None = None
-    sector: str | None = None
-    created_by: str
-    uuid: str | None = None
-    contacts: str | None = None
-    local: bool
-    restricted_to_domain: str | None = None
-    landingpage: str | None = None
-    user_count: int
-    created_by_email: str
 
 
 class GetAllOrganisationResponse(BaseModel):
@@ -140,3 +124,18 @@ class EditOrganisation(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ShadowAttributeOrganisation(BaseModel):
+    name: str
+    uuid: str
+    id: int
+
+
+class ServerOrganisation(BaseModel):
+    id: int
+    name: str
+    uuid: str
+    nationality: str
+    sector: str
+    type: str

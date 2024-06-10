@@ -7,15 +7,15 @@ from mmisp.api_schemas.roles import RoleUsersResponse
 
 
 class User(BaseModel):
-    id: str
-    org_id: str
+    id: int
+    org_id: int
     email: str
     autoalert: bool
     invited_by: str
     gpgkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool
-    role_id: str
+    role_id: int
     change_pw: bool
     contactalert: bool
     disabled: bool
@@ -180,3 +180,16 @@ class GetAllUsersResponse(BaseModel):
 class UserWithName(BaseModel):
     user: User
     name: str
+
+class UsersViewMeResponse(BaseModel):
+    User: User
+    Role: Role
+    UserSetting: list = []
+    Organisation: Organisation
+
+
+class ServerUser(BaseModel):
+    id: int
+    org_id: int
+    email: str
+    server_id: int

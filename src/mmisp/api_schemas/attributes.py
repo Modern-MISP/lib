@@ -13,7 +13,7 @@ from mmisp.lib.attributes import (
 
 
 class GetAttributeTag(BaseModel):
-    id: str
+    id: int
     name: str
     colour: str
     numerical_value: int | None = None
@@ -22,25 +22,25 @@ class GetAttributeTag(BaseModel):
 
 
 class SearchAttributesObject(BaseModel):
-    id: str
+    id: int
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
 
 
 class SearchAttributesEvent(BaseModel):
-    id: str
-    org_id: str
+    id: int
+    org_id: int
     distribution: str
     info: str
-    orgc_id: str
+    orgc_id: int
     uuid: str
     publish_timestamp: int
 
 
 class SearchAttributesAttributesDetails(BaseModel):
-    id: str
-    event_id: str | None = None
-    object_id: str | None = None
+    id: int
+    event_id: int | None = None
+    object_id: int | None = None
     object_relation: str | None = None
     category: str
     type: str
@@ -49,12 +49,14 @@ class SearchAttributesAttributesDetails(BaseModel):
     uuid: str
     timestamp: str
     distribution: str
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
     first_seen: str | None = None
     last_seen: str | None = None
+    event_uuid: str | None = None
+    data: str | None = None
     Event: SearchAttributesEvent | None = None
     Object: SearchAttributesObject | None = None
     Tag: list[GetAttributeTag] | None = None
@@ -115,7 +117,7 @@ class SearchAttributesBody(RestSearchFilter):
     attribute_timestamp: str | None = None
     enforce_warninglist: Annotated[bool | None, Field(alias="enforceWarninglist")]
     event_timestamp: str | None = None
-    threat_level_id: str | None = None
+    threat_level_id: int | None = None
     eventinfo: str | None = None
     sharinggroup: list[str] | None = None
     decaying_model: Annotated[str | None, Field(alias="decayingModel")] = None
@@ -140,9 +142,9 @@ class SearchAttributesBody(RestSearchFilter):
 
 
 class RestoreAttributeResponse(BaseModel):
-    id: str
-    event_id: str
-    object_id: str
+    id: int
+    event_id: int
+    object_id: int
     object_relation: str
     category: str
     type: str
@@ -151,7 +153,7 @@ class RestoreAttributeResponse(BaseModel):
     uuid: str
     timestamp: str
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
     comment: str
     deleted: bool
     disable_correlation: bool
@@ -185,9 +187,9 @@ class GetDescribeTypesResponse(BaseModel):
 
 
 class GetAttributeAttributes(BaseModel):
-    id: str
-    event_id: str
-    object_id: str
+    id: int
+    event_id: int
+    object_id: int
     object_relation: Optional[str] = Field(..., nullable=True)
     category: str
     type: str
@@ -196,14 +198,15 @@ class GetAttributeAttributes(BaseModel):
     uuid: str
     timestamp: str
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
     first_seen: Optional[str] = Field(..., nullable=True)
     last_seen: Optional[str] = Field(..., nullable=True)
     event_uuid: str
-    tag: list[GetAttributeTag] | None = None
+    data: str | None = None
+    Tag: list[GetAttributeTag] | None = None
 
 
 class GetAttributeResponse(BaseModel):
@@ -214,9 +217,9 @@ class GetAttributeResponse(BaseModel):
 
 
 class GetAllAttributesResponse(BaseModel):
-    id: str
-    event_id: str | None = None
-    object_id: str | None = None
+    id: int
+    event_id: int | None = None
+    object_id: int | None = None
     object_relation: str | None = None
     category: str | None = None
     type: str
@@ -226,7 +229,7 @@ class GetAllAttributesResponse(BaseModel):
     uuid: str | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     disable_correlation: bool | None = None
@@ -249,11 +252,11 @@ class GetAllAttributesResponse(BaseModel):
 
 
 class EditAttributeTag(BaseModel):
-    id: str
+    id: int
     name: str
     colour: str
     exportable: str
-    user_id: str
+    user_id: int
     hide_tag: bool
     numerical_value: int
     is_galaxy: bool
@@ -262,9 +265,9 @@ class EditAttributeTag(BaseModel):
 
 
 class EditAttributeAttributes(BaseModel):
-    id: str
-    event_id: str
-    object_id: str
+    id: int
+    event_id: int
+    object_id: int
     object_relation: str | None = None
     category: str
     type: str
@@ -273,7 +276,7 @@ class EditAttributeAttributes(BaseModel):
     uuid: str
     timestamp: str
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
@@ -294,14 +297,14 @@ class EditAttributeBody(BaseModel):
     value: str | None = None
     value1: str | None = None
     value2: str | None = None
-    object_id: str | None = None
+    object_id: int | None = None
     object_relation: str | None = None
     category: str | None = None
     to_ids: bool | None = None
     uuid: str | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     disable_correlation: bool | None = None
@@ -318,14 +321,14 @@ class DeleteSelectedAttributeResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: str
+    id: int
 
     class Config:
         orm_mode = True
 
 
 class DeleteSelectedAttributeBody(BaseModel):
-    id: str  # id = "all" deletes all attributes in the event
+    id: int  # id = "all" deletes all attributes in the event
     allow_hard_delete: bool | None = None
 
     class Config:
@@ -350,9 +353,9 @@ class AddRemoveTagAttributeResponse(BaseModel):
 
 
 class AddAttributeAttributes(BaseModel):
-    id: str
-    event_id: str
-    object_id: str
+    id: int
+    event_id: int
+    object_id: int
     object_relation: Optional[str] = Field(..., nullable=True)
     category: str
     type: str
@@ -363,7 +366,7 @@ class AddAttributeAttributes(BaseModel):
     uuid: str
     timestamp: str
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
@@ -384,15 +387,15 @@ class AddAttributeBody(BaseModel):
     value: str | None = None
     value1: str | None = None
     value2: str | None = None
-    event_id: str | None = None
-    object_id: str | None = None
+    event_id: int | None = None
+    object_id: int | None = None
     object_relation: str | None = None
     category: str | None = None
     to_ids: bool | None = None
     uuid: str | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     disable_correlation: bool | None = None

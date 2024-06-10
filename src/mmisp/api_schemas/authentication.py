@@ -48,7 +48,7 @@ class GetIdentityProviderResponse(BaseModel):
 
 
 class IdentityProviderInfo(BaseModel):
-    id: str
+    id: int
     name: str
     url: str | None = None
 
