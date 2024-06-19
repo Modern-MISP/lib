@@ -21,11 +21,11 @@ plugins:
             separate_signature: true
             show_signature_annotations: true
   - plantuml:
-      puml_url: http://plantuml:8080/
+      puml_url: http://localhost:8080/
       num_workers: 4
   - build_plantuml:
       render: 'server'
-      server: http://plantuml:8080/
+      server: http://localhost:8080/
       output_format: svg
       diagram_root: docs/plantuml
   - with-pdf
