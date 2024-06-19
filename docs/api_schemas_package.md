@@ -6,7 +6,8 @@
 ## ::: mmisp.api_schemas.authentication
 ## ::: mmisp.api_schemas.galaxies
 ## ::: mmisp.api_schemas.user_settings
-## ::: mmisp.api_schemas.standard_status_response
+## ::: mmisp.api_schemas.responses.check_graph_response
+## ::: mmisp.api_schemas.responses.standard_status_response
 ## ::: mmisp.api_schemas.warninglists
 ## ::: mmisp.api_schemas.taxonomies
 ## ::: mmisp.api_schemas.attributes
