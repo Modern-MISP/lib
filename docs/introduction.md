@@ -20,7 +20,7 @@ The API also depends on the library because synchronous triggers are executed di
 
 ## Execution of blocking and non-blocking workflows
 
-![activity-diagram-for-non-blocking-workflows](diagrams/activityNonBlockingV1.svg)
+![activity-diagram-for-non-blocking-workflows](diagrams/activityNonBlockingV2.svg)
 
 This diagram describes the execution of non blocking workflows.
 
