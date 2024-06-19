@@ -9,8 +9,7 @@ from mmisp.db.config import config
 
 Session: TypeAlias = AsyncSession
 
-# , poolclass=NullPool)
-# async_session = sessionmaker(autoflush=False, expire_on_commit=False, class_=AsyncSession, bind=engine)
+#url = make_url('mysql+aiomysql://root:misp@localhost:3306/misp')
 
 Base = declarative_base()
 
@@ -20,7 +19,7 @@ class DatabaseSessionManager:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: sessionmaker | None = None
 
-        self._url = make_url(config.DATABASE_URL)
+        self._url = make_url('mysql+aiomysql://root:misp@localhost:3306/misp')
 
     def init(self: Self) -> None:
         if config.DEBUG:

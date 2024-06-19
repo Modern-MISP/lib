@@ -28,18 +28,47 @@ INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
 
 class GraphValidation:
+
+    """
+    This class checks whether a graph is valid or not.
+    """
+
     @classmethod
     def report(cls, result: GraphValidationResult) -> Dict[str, Any]:
+        """
+        Reports the results of the graph validation.
+        Returns a dictionary with the results.
+
+        :param result: GraphValidationResult object containing the results of the graph validation.
+        """
         assert False
 
 
 class GraphFactory:
+
+    """
+    This class is responsible for creating a MMSIP graph object from the legacy MISP JSON format.
+    The class can also convert a graph in the legacy MISP JSON format from the DB to a modern graph
+    object.
+    """
+
     @classmethod
     def graph2jsondict(cls, graph: Graph) -> Dict[str, Any]:
+        """
+        Converts a modern MISP graph object to a graph in the legacy MISP JSON format used in the DB.
+
+        :param graph: Graph object to convert to JSON.
+        """
         assert False
 
     @classmethod
     def jsondict2graph(cls, input: Dict[str, Any]) -> Graph:
+        """
+        Converts a graph in the legacy MIPS JSON format to a graph object.
+        Returns the input graph as a modern MISP graph object.
+
+        :param input: JSON dictionary containing the graph information.
+        """
         raw_nodes = {
             int(id_str): data
             for id_str, data in input.items()
@@ -150,13 +179,36 @@ class GraphFactory:
 
 
 class JSONGraphType(UserDefinedType):
+    """
+    SQLAlchemy type used to store and retrieve graph objects in the database.
+    This type handles the conversion between a modern MISP graph object and its JSON
+    representation for the compatibility with legacy MISP.
+    """
     def get_col_spec(self, **kw):
+        """
+        Returns the colum specification for the custom SQLAlchemy type in LONGTEXT.
+
+        :param kw: keyword arguments
+        """
         return "LONGTEXT"
 
     def bind_processor(self, dialect):
+        """
+        Method for processing data before storing it in the database.
+
+        :param dialect: SQLAlchemy dialect being used.
+        """
         pass
 
     def result_processor(self, dialect, coltype):
+        """
+        Defines how to process data retrieved from the database.
+        Converts the JSON string stored in the database back into a graph object
+        using the GraphFactory's jsondict2graph method.
+
+        :param dialect: SQLAlchemy dialect being used.
+        :param coltype: Type of the column being processed.
+        """
         return lambda value: GraphFactory.jsondict2graph(json.loads(value))
 
     def __to_list(self, x):

@@ -1,20 +1,31 @@
-site_name: Modern MISP API Documentation
+site_name: Modern MISP LIB Documentation
 
 theme:
   name: "material"
 
 nav:
-  - index.md
+  - introduction.md
+  - db_package.md
+  - db_models_package.md
+  - api_schemas_package.md
+  - lib_package.md
+  - workflows_package.md
 
 plugins:
   - search
-  - mkdocstrings
+  - mkdocstrings:
+      handlers: 
+        python: 
+          options: 
+            show_source: false
+            separate_signature: true
+            show_signature_annotations: true
   - plantuml:
       puml_url: http://plantuml:8080/
       num_workers: 4
   - build_plantuml:
       render: 'server'
-      server: http://plantuml:8080
+      server: http://plantuml:8080/
       output_format: svg
       diagram_root: docs/plantuml
   - with-pdf
