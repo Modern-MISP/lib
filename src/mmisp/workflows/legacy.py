@@ -13,7 +13,7 @@ from uuid import UUID
 from typing import Dict, Any
 
 from sqlalchemy.types import UserDefinedType
-from ..workflows import (
+from .graph import (
     Graph,
     Node,
     Apperance,
@@ -22,7 +22,7 @@ from ..workflows import (
     GraphValidationResult,
 )
 from .modules import Trigger, ModuleRegistry, ModuleConfiguration, Overhead
-from .execution import Filter, Operator
+from .input import Filter, Operator
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 

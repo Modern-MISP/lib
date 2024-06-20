@@ -9,8 +9,8 @@ from enum import Enum
 from typing import Dict, Type, Any, Self, List
 
 from ..db.database import Session
-from ..workflows import Node, ConfigurationError
-from .execution import Filter, WorkflowInput
+from .graph import Node, ConfigurationError
+from .input import Filter, WorkflowInput
 
 
 class ModuleParamType(Enum):
