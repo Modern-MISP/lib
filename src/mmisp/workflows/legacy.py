@@ -39,7 +39,8 @@ class GraphValidation:
         Reports the results of the graph validation.
         Returns a dictionary with the results.
 
-        :param result: GraphValidationResult object containing the results of the graph validation.
+        Arguments:
+            result:     GraphValidationResult object containing the results of the graph validation.
         """
         assert False
 
@@ -57,7 +58,8 @@ class GraphFactory:
         """
         Converts a modern MISP graph object to a graph in the legacy MISP JSON format used in the DB.
 
-        :param graph: Graph object to convert to JSON.
+        Arguments:
+            graph:  Graph object to convert to JSON.
         """
         assert False
 
@@ -67,7 +69,8 @@ class GraphFactory:
         Converts a graph in the legacy MIPS JSON format to a graph object.
         Returns the input graph as a modern MISP graph object.
 
-        :param input: JSON dictionary containing the graph information.
+        Arguments:
+            input: JSON dictionary containing the graph information.
         """
         raw_nodes = {
             int(id_str): data
@@ -187,8 +190,6 @@ class JSONGraphType(UserDefinedType):
     def get_col_spec(self, **kw):
         """
         Returns the colum specification for the custom SQLAlchemy type in LONGTEXT.
-
-        :param kw: keyword arguments
         """
         return "LONGTEXT"
 
@@ -196,7 +197,8 @@ class JSONGraphType(UserDefinedType):
         """
         Method for processing data before storing it in the database.
 
-        :param dialect: SQLAlchemy dialect being used.
+        Arguments:
+            dialect:    SQLAlchemy dialect being used.
         """
         pass
 
@@ -206,8 +208,9 @@ class JSONGraphType(UserDefinedType):
         Converts the JSON string stored in the database back into a graph object
         using the GraphFactory's jsondict2graph method.
 
-        :param dialect: SQLAlchemy dialect being used.
-        :param coltype: Type of the column being processed.
+        Arguments:
+            dialect:    SQLAlchemy dialect being used.
+            coltype:    Type of the column being processed.
         """
         return lambda value: GraphFactory.jsondict2graph(json.loads(value))
 
