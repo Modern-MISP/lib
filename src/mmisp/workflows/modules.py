@@ -509,6 +509,10 @@ class ModuleGenericFilterData(Module):
 @workflow_module
 @dataclass(kw_only=True)
 class ModuleGenericFilterReset(Module):
+    """
+    Resets all filters declared for the workflow payload.
+    """
+
     id: str = "generic-filter-reset"
     name: str = "Filter :: Remove filter"
     description: str = "Reset filtering"

@@ -74,7 +74,7 @@ class CyclicGraphError(GraphError):
 @dataclass
 class MultipleEdgesPerOutput(GraphError):
     """
-    A [`Node`][mmisp.workflows.Node] has multiple inputs and outputs. Unless
+    A [`Node`][mmisp.workflows.graph.Node] has multiple inputs and outputs. Unless
     explicitly allowed, each output may only have a single connection to another node.
     An example for that is [`ModuleConcurrentTask`][mmisp.workflows.modules.ModuleConcurrentTask].
 
@@ -177,7 +177,7 @@ class GraphValidationResult:
     """
     Accumulator for all validation results. The idea is to run graph-level checks such
     as cycle-detection in [`Graph.check`][mmisp.workflows.graph.Graph.check] and then run node-level
-    checks in [`Node.check`][mmisp.workflows.Node.check]. Whenever an error is encountered, it's
+    checks in [`Node.check`][mmisp.workflows.graph.Node.check]. Whenever an error is encountered, it's
     added into this class.
     """
 
@@ -238,13 +238,13 @@ class Node(ABC):
 
     inputs: Dict[int, List[NodeConnection]]
     """
-    References to [`Node`][mmisp.workflows.Node] objects connecting to this
+    References to [`Node`][mmisp.workflows.graph.Node] objects connecting to this
     node. Grouped by the ID of the input.
     """
 
     outputs: Dict[int, List[NodeConnection]]
     """
-    References to [`Node`][mmisp.workflows.Node] objects that are connected to
+    References to [`Node`][mmisp.workflows.graph.Node] objects that are connected to
     this node. Grouped by the ID of the output.
 
     The data-structure is recursive here (basically a doubly-linked list)
@@ -259,13 +259,13 @@ class Node(ABC):
     n_inputs: int = 1
     """
     Number of _allowed_ inputs. If `inputs` exceeds this, the
-    [`Node.check`][mmisp.workflows.Node.check] method will return an error for this.
+    [`Node.check`][mmisp.workflows.graph.Node.check] method will return an error for this.
     """
 
     n_outputs: int = 1
     """
     Number of _allowed_ outputs. If `outputs` exceeds this, the
-    [`Node.check`][mmisp.workflows.Node.check] method will return an error for this.
+    [`Node.check`][mmisp.workflows.graph.Node.check] method will return an error for this.
     """
 
     def check(self, with_warnings: bool = False) -> GraphValidationResult:
@@ -361,4 +361,7 @@ class BlueprintGraph(Graph):
     """
 
     def check(self, with_warnings: bool = False) -> GraphValidationResult:
+        """
+        Custom check method for blueprint graph.
+        """
         assert False
