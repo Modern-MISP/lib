@@ -17,4 +17,6 @@
 ## ::: mmisp.db.models.object
 ## ::: mmisp.db.models.role
 ## ::: mmisp.db.models.user_setting
-## ::: mmisp.db.models.workflows
+## ::: mmisp.db.models.workflow
+## ::: mmisp.db.models.workflow_blueprint
+## ::: mmisp.db.models.log

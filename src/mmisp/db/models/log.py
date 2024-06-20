@@ -6,7 +6,7 @@ from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
 
-class Logs(Base):
+class Log(Base):
     """
     A python class representation of the database model for logs in MISP.
 
