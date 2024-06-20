@@ -176,7 +176,7 @@ class PathWarning:
 class GraphValidationResult:
     """
     Accumulator for all validation results. The idea is to run graph-level checks such
-    as cycle-detection in [`Graph.check`][mmisp.workflows.Graph.check] and then run node-level
+    as cycle-detection in [`Graph.check`][mmisp.workflows.graph.Graph.check] and then run node-level
     checks in [`Node.check`][mmisp.workflows.Node.check]. Whenever an error is encountered, it's
     added into this class.
     """
@@ -334,7 +334,7 @@ class Graph(ABC):
     def check(self) -> GraphValidationResult:
         """
         Checks if the graph's structure is valid. Works as described in
-        [`GraphValidationResult`][mmisp.workflows.GraphValidationResult].
+        [`GraphValidationResult`][mmisp.workflows.graph.GraphValidationResult].
         """
         pass
 
@@ -357,7 +357,7 @@ class BlueprintGraph(Graph):
     workflow graph and MUST NOT have a trigger.
 
     Whether that's the case can be enforced with the
-    [`BlueprintGraph.check`][mmisp.workflows.BlueprintGraph.check] method.
+    [`BlueprintGraph.check`][mmisp.workflows.graph.BlueprintGraph.check] method.
     """
 
     def check(self, with_warnings: bool = False) -> GraphValidationResult:

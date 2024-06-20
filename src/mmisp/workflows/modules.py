@@ -92,7 +92,7 @@ class ModuleParam:
     """
     If `True`, the input from the visual editor for this parameter
     is a jinja2 template. A template gets the
-    [`WorkflowInput`][mmisp.workflows.execution.WorkflowInput] data
+    [`WorkflowInput`][mmisp.workflows.input.WorkflowInput] data
     as input.
     """
 
@@ -143,7 +143,7 @@ class Module(Node):
     * a logic module, i.e. forwards to a different module based on
       a condition
     * a filter, i.e. manipulates the
-      [`WorkflowInput`][mmisp.workflows.execution.WorkflowInput].
+      [`WorkflowInput`][mmisp.workflows.input.WorkflowInput].
 
     A module implementation can be provided by writing a subclass that
     assigns values to at least `id`, `version`, `name`.
@@ -157,7 +157,7 @@ class Module(Node):
     on_demand_filter: Filter | None
     """
     Some modules allow filtering of data internally without modifying
-    [`WorkflowInput`][mmisp.workflows.execution.WorkflowInput]. The filter
+    [`WorkflowInput`][mmisp.workflows.input.WorkflowInput]. The filter
     used for that is defined by this attribute.
     """
 
@@ -250,7 +250,7 @@ class Module(Node):
 async def initialize_graph_modules(self, db: Session):
     """
     This method is declared in `mmisp.workflows.modules`, but
-    is a method of is part of [`Graph`][mmisp.workflows.Graph].
+    is a method of is part of [`Graph`][mmisp.workflows.graph.Graph].
     It injects `db` into each module. This is done to avoid
     circular import situations.
 
@@ -264,7 +264,7 @@ async def initialize_graph_modules(self, db: Session):
 
         * Implement a more sophisticated SQLAlchemy type that
           allows to query other entities while placing the JSON
-          into the [`Graph`][mmisp.workflows.Graph] structure.
+          into the [`Graph`][mmisp.workflows.graph.Graph] structure.
 
         * Factor the :attribute:`mmisp.workflows.modules.Module.params`
           structure out and inject it into the workflow editor on its own.
@@ -329,7 +329,7 @@ class Trigger(Node):
     overhead: Overhead
     """
     Indicates the expensiveness/overhead of the trigger
-    as indicated by the [`Overhead`][misp.workflows.modules.Overhead] enum.
+    as indicated by the [`Overhead`][mmisp.workflows.modules.Overhead] enum.
     """
 
     raw_data: Dict[str, Any]

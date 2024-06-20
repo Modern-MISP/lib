@@ -66,7 +66,7 @@ class Filter:
     selector: str
     """
     Attribute path pointing to a list inside the
-    [`WorkflowInput`][mmisp.workflows.execution.WorkflowInput].
+    [`WorkflowInput`][mmisp.workflows.input.WorkflowInput].
     In this list, each element below attribute-path `path`
     will be checked against `value` using operation
     `operator`.
@@ -159,7 +159,7 @@ class WorkflowInput:
         """
         Returns either all of the data given to the workflow input
         OR a list with filter results if a filter was added
-        using [`WorkflowInput.add_filter`][mmisp.workflows.execution.WorkflowInput.add_filter].
+        using [`WorkflowInput.add_filter`][mmisp.workflows.input.WorkflowInput.add_filter].
         """
 
     def add_filter(self, filter: Filter):
@@ -174,7 +174,7 @@ class WorkflowInput:
     def reset_filters(self):
         """
         Removes all filters from the workflow input.
-        [`WorkflowInput.data`][mmisp.workflows.execution.WorkflowInput.data]
+        [`WorkflowInput.data`][mmisp.workflows.input.WorkflowInput.data]
         will contain all of the data it has instead of a
         filtered portion now.
         """
