@@ -7,10 +7,11 @@ class IsAcyclicInfo():
     
 class IsAcyclic():
     """
-    Represents the acyclic status of a graph and details of detected cycles.
+    Represents the whether graph is acyclic and details of the first detected cycle.
 
     - **is_acyclic**: False if the graph contains at least one cycle.
     - **cycles**: A list of entries, each containing two node IDs and a "Cycle" string.
+    Conbined they result in the cycle.
 
     Example:
     ```json
@@ -37,27 +38,23 @@ class IsAcyclic():
 
 class MultibleOutputConnection():
     """
-    Represents the acyclic status of a graph and details of detected cycles.
+    Represents the status and details of nodes with illegal multiple output connections in a graph.
 
-    - **is_acyclic**: False if the graph contains at least one cycle.
-    - **cycles**: A list of entries, each containing two node IDs and a "Cycle" string.
+    - **has_multiple_output_connection**: True if at least one node has multiple output connections that are not allowed.
+      For example, the 'Concurrent Task' node can have multiple output connections while the value here is `False`.
+    - **edges**: A dictionary where the key is the ID of a node with multiple illegal connections,
+      and the value is a list of node IDs to which these illegal connections are made.
 
     Example:
     ```json
-    "is_acyclic": {
-        "is_acyclic": false,
-        "cycles": [
-            [
-                4,
-                3,
-                "Cycle"
-            ],
-            [
-                3,
-                4,
-                "Cycle"
+    "multiple_output_connection": {
+        "has_multiple_output_connection": true,
+        "edges": {
+            "1": [
+                5,
+                3
             ]
-        ]
+        }
     }
     ```
     """
@@ -105,7 +102,6 @@ class CheckGraphResponse():
     """
     Response schema from the API for checking a graph.
 
-    Attributes:
     - **is_acyclic**: Indicates whether the graph is acyclic and provides information about the first detected cycle, if any.
     - **multiple_output_connection**: Indicates whether the graph has illegal multiple output connections, 
     detailing the nodes involved.
