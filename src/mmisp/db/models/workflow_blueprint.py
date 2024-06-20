@@ -4,7 +4,7 @@ from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
 
-class WorkflowBlueprints(Base):
+class WorkflowBlueprint(Base):
     """
     A python class representation of the database model for blueprints of workflows in MISP.
 

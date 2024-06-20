@@ -11,7 +11,7 @@ def uuid() -> str:
     return str(_uuid4())
 
 
-class Workflows(Base):
+class Workflow(Base):
     """
     A python class representation of the database model for workflows in MISP.
 
