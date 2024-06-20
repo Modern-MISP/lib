@@ -30,4 +30,4 @@ This diagram describes the execution of blocking workflows.
 
 ## Class diagram for the workflow core structure
 
-![class-diagram-for-workflow-structure](diagrams/classes.svg)
+![class-diagram-for-workflow-structure](diagrams/classDiagramV2.svg)
