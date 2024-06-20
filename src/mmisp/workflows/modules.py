@@ -17,7 +17,7 @@ class ModuleParamType(Enum):
     """
     This enum provides supported form fields in the visual editor to
     configure a parameter represented by
-    [`ModuleParam`][misp.workflows.modules.ModuleParam] for a
+    [`ModuleParam`][mmisp.workflows.modules.ModuleParam] for a
     module.
     """
 
@@ -77,7 +77,7 @@ class ModuleParam:
     kind: ModuleParamType
     """
     Which type of input is expected. Denoted by
-    [`ModuleParamType`][misp.workflows.modules.ModuleParamType].
+    [`ModuleParamType`][mmisp.workflows.modules.ModuleParamType].
     """
 
     options: Dict[str, Any]
@@ -370,7 +370,7 @@ class ModuleRegistry:
 def workflow_module(cls):
     """
     Annotation that registers the annotated class in the
-    [`ModuleRegistry`][misp.workflows.modules.ModuleRegistry].
+    [`ModuleRegistry`][mmisp.workflows.modules.ModuleRegistry].
     That way modules are registered
     in the workflow application.
     """
