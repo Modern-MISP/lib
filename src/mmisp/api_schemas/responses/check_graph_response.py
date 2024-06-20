@@ -7,7 +7,11 @@ class IsAcyclicInfo():
     
 class IsAcyclic():
     """
+    - **is_acyclic** False if the graph contains at least one cycle.
+    - **cycles** A list with entries containing 2 node id's and a "Cycle" string.
+     
     It should look like this:
+    '''
     "is_acyclic": {
         "is_acyclic": false,
         "cycles": [
@@ -23,6 +27,7 @@ class IsAcyclic():
             ]
         ]
     }
+    '''
     """
     is_acyclic: bool
     cycles: List[IsAcyclicInfo]
@@ -30,23 +35,38 @@ class IsAcyclic():
 
 class MultibleOutputConnection():
     """
-    It should look like this:
-    "multiple_output_connection": {
-        "has_multiple_output_connection": true,
-        "edges": {
-            "1": [
-                5,
-                3
+    Represents the acyclic status of a graph and details of detected cycles.
+
+    Attributes:
+    - **is_acyclic (bool)**: False if the graph contains at least one cycle.
+    - **cycles (List[IsAcyclicInfo])**: A list of entries, each containing two node IDs and a "Cycle" string.
+
+    Example:
+    ```json
+    "is_acyclic": {
+        "is_acyclic": false,
+        "cycles": [
+            [
+                4,
+                3,
+                "Cycle"
+            ],
+            [
+                3,
+                4,
+                "Cycle"
             ]
-        }
+        ]
     }
+    ```
     """
     has_multiple_output_connection: bool
     edges: Dict[int, List[int]]
     
 class PathWarningsInfo():
-    source_id: str
-    next_node_id: str
+    
+    source_id: int # is a string in legacy misp
+    next_node_id: int # is a string in legacy misp
     warning: str
     blocking: bool
     module_name: str
@@ -55,7 +75,14 @@ class PathWarningsInfo():
 
 class PathWarnings():
     """
-    It should look like this:
+    Represents warnings for paths in a graph.
+
+    Attributes:
+    - **has_path_warnings**: True if the graph contains at least one warning.
+    - **edges**: A list containing all connections which are flagged as warnings.
+
+    Example:
+    ```json
     "path_warnings": {
         "has_path_warnings": true,
         "edges": [
@@ -69,6 +96,7 @@ class PathWarnings():
             ]
         ]
     }
+    ```
     """
     has_path_warnings: bool
     edges: List[PathWarningsInfo]
