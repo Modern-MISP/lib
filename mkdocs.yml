@@ -29,3 +29,8 @@ plugins:
       output_format: svg
       diagram_root: docs/plantuml
   - with-pdf
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
