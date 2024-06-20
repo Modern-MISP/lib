@@ -33,4 +33,4 @@ class Workflow(Base):
     counter: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     trigger_id: Mapped[str] = mapped_column(String(191), nullable=False, index=True)
     debug_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=0)
-    data: Mapped[str] = mapped_column(String, nullable=False, default=0)
+    data: Mapped[str] = mapped_column(JSONGraphType, nullable=False, default=0)
