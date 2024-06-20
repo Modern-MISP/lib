@@ -198,7 +198,7 @@ class Module(Node):
     enable_multiple_edges_per_output: bool = False
     """
     Whether it's OK to have multiple edges going from a single output.
-    See [`Node`][misp.workflows.modules.Node] for more context. Used by e.g. the concurrent
+    See [`Node`][mmisp.workflows.graph.Node] for more context. Used by e.g. the concurrent
     tasks module.
     """
 
@@ -458,6 +458,11 @@ class ModuleAttachWarninglist(Module):
 @workflow_module
 @dataclass(kw_only=True)
 class ModuleConcurrentTask(Module):
+    """
+    Accepts multiple connecting nodes and executes all of them
+    concurrently.
+    """
+
     id: str = "concurrent-task"
     name: str = "Concurrent Task"
     description: str = (
@@ -497,6 +502,13 @@ class ModuleDistributionIf(Module):
 @workflow_module
 @dataclass(kw_only=True)
 class ModuleGenericFilterData(Module):
+    """
+    Configure a filter on the workflow payload. Every
+    subsequent module will only see the filtered version
+    unless the effect gets reversed with
+    [ModuleGenericFilterReset][mmisp.workflows.modules.ModuleGenericFilterReset].
+    """
+
     id: str = "generic-filter-data"
     name: str = "Filter :: Generic"
     version: str = "0.2"
@@ -522,6 +534,11 @@ class ModuleGenericFilterReset(Module):
 @workflow_module
 @dataclass(kw_only=True)
 class ModuleOrganisationIf(Module):
+    """
+    Module allowing to check if the organistaion property
+    of the payload matches a condition.
+    """
+
     id: str = "organisation-if"
     name: str = "IF :: Organisation"
     description: str = (

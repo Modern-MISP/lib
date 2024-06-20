@@ -118,7 +118,7 @@ class Filter:
 
     operator: Operator
     """
-    [`Operator`][mmisp.workflows.execution.Operator] to compare
+    [`Operator`][mmisp.workflows.input.Operator] to compare
     the item below `path` against `value`.
     """
 
@@ -133,7 +133,7 @@ class WorkflowInput:
     subsequent modules will only see a filtered subset
     of the workflow data. This operation can be undone.
 
-    Filters are expressed using [`Filter`][mmisp.workflows.execution.Filter]
+    Filters are expressed using [`Filter`][mmisp.workflows.input.Filter]
     class.
     """
 
@@ -164,7 +164,7 @@ class WorkflowInput:
 
     def add_filter(self, filter: Filter):
         """
-        Adds another [`Filter`][mmisp.workflows.execution.Filter]
+        Adds another [`Filter`][mmisp.workflows.input.Filter]
         to the workflow input.
 
         Arguments:
