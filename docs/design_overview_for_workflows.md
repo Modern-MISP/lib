@@ -18,7 +18,7 @@ The API also depends on the library because synchronous triggers are executed di
 
 ![workflow-component-diagram](diagrams/firstTryComponentProperLightTheme.svg)
 
-This diagram shows the components that workflows use and their interfaces.
+The diagram above shows the general structure of the Modern MISP project, divided into six components, with four main code repositories: Frontend, API, Worker, and Lib. These four repositories are modified to integrate workflows into the Modern MISP Project. The core workflow structure and behavior will be implemented in the Lib repository, along with most of the workflow utilities that need to be reused by the two components that can execute workflows: API and Worker. In the API repository, endpoints that allow users to modify and review workflows will be implemented in a dedicated Workflow Python module. Additionally, all previously implemented API endpoints that can trigger workflows will be edited to enable this functionality. The Worker repository will be updated to handle jobs for executing non-blocking workflows. The Frontend will also require minor changes to handle workflows effectively.
 
 ## Execution of non-blocking and blocking workflows
 
