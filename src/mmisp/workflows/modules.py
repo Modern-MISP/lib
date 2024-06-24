@@ -234,16 +234,17 @@ class Module(Node):
         """
         return hasattr(self, "params")
 
-    def exec(self, payload: WorkflowInput) -> bool:
+    def exec(self, payload: WorkflowInput) -> (bool, Self):
         """
         Executes the module using the specific payload given by the workflow that calls
         the execution of the module.
         Execution strongly depends on the type of the module that is executed.
 
-        :param:
+        The first component of the tuple indicates whether execution was successful.
+        The second component of the tuple is the next node to be executed.
+
+        Arguments:
             payload: The workflows input for the specific module execution.
-        :return:
-            A boolean indicating if the execution was successful.
         """
 
 
