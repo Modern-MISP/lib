@@ -243,6 +243,10 @@ class Module(Node):
         The first component of the tuple indicates whether execution was successful.
         The second component of the tuple is the next node to be executed.
 
+        Since this library allows arbitrarily many inputs & outputs, we cannot infer
+        the next module from the success of the execution of this module (relevant for
+        e.g. if/else).
+
         Arguments:
             payload: The workflows input for the specific module execution.
         """
