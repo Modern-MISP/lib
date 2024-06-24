@@ -267,7 +267,7 @@ class AddEditGetEventDetails(BaseModel):
     attribute_count: str
     analysis: str
     timestamp: str
-    distribution: str
+    distribution: int
     proposal_email_lock: bool
     locked: bool
     publish_timestamp: str
