@@ -115,7 +115,7 @@ class CreateWarninglistBody(BaseModel):
     enabled: bool
     default: bool
     category: WarninglistCategory
-    valid_attributes: list[literal_valid_attribute_types]
+    valid_attributes: list[literal_valid_attribute_types]  # type:ignore[valid-type]
     values: str = Field(min_length=1, max_length=65535)
 
     class Config:

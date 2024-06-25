@@ -1,8 +1,9 @@
-from sqlalchemy import Boolean,Integer, String, Text
+from sqlalchemy import Boolean, Integer, String, Text
 
 from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
+
 
 class WorkflowBlueprint(Base):
     """
@@ -15,12 +16,13 @@ class WorkflowBlueprint(Base):
     Also, the attribute "default" is added, which is a boolean clarifying whether the blueprint
     is a default MISP blueprint.
     """
+
     __tablename__ = "workflow_blueprints"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False) #primary_key ??
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)  # primary_key ??
     uuid: Mapped[str] = mapped_column(String(40), nullable=False)
     name: Mapped[str] = mapped_column(String(191), nullable=False)
     description: Mapped[str] = mapped_column(String(191), nullable=False)
     timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) #TODO: technically tinyint(1)
+    default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # TODO: technically tinyint(1)
     data: Mapped[str] = mapped_column(Text, nullable=True)

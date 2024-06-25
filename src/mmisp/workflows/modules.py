@@ -6,10 +6,10 @@ that were bundled with legacy MISP.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Type, Any, Self, List
+from typing import Any, Dict, List, Self, Tuple, Type
 
 from ..db.database import Session
-from .graph import Node, ConfigurationError
+from .graph import ConfigurationError, Node
 from .input import Filter, WorkflowInput
 
 
@@ -41,7 +41,7 @@ class Overhead(Enum):
     HIGH = 3
 
     @classmethod
-    def from_int(cls, input: int) -> Self:
+    def from_int(cls: Type[Self], input: int) -> Self:
         """
         Returns a member of this enum given the int
         representation of the overhead.
@@ -122,7 +122,7 @@ class ModuleConfiguration:
     needs.
     """
 
-    def validate(self, structure: ModuleParams) -> List[ConfigurationError]:
+    def validate(self: Self, structure: ModuleParams) -> List[ConfigurationError]:
         """
         Check if the parameters specified here are correct. For e.g. a
         `select`-param with id "foobar", it will be checked if
@@ -132,6 +132,7 @@ class ModuleConfiguration:
             structure: The module param definitions to validate the
             configuration against.
         """
+        assert False
 
 
 @dataclass(kw_only=True)
@@ -216,7 +217,7 @@ class Module(Node):
     execution continues.
     """
 
-    async def initialize(self, db: Session):
+    async def initialize(self: Self, db: Session) -> None:
         """
         Initializes the parameters for a module. Done in a method
         since that may involve further DB operations.
@@ -225,7 +226,7 @@ class Module(Node):
             db: SQLAlchemy session
         """
 
-    def is_initialized(self) -> bool:
+    def is_initialized(self: Self) -> bool:
         """
         Checks if the module was initialized which happens by calling
         [`Module.initialize`][mmisp.workflows.modules.Module.initialize].
@@ -234,7 +235,7 @@ class Module(Node):
         """
         return hasattr(self, "params")
 
-    def exec(self, payload: WorkflowInput) -> (bool, Self):
+    def exec(self: Self, payload: WorkflowInput) -> Tuple[bool, Self]:
         """
         Executes the module using the specific payload given by the workflow that calls
         the execution of the module.
@@ -250,9 +251,10 @@ class Module(Node):
         Arguments:
             payload: The workflows input for the specific module execution.
         """
+        assert False
 
 
-async def initialize_graph_modules(self, db: Session):
+async def initialize_graph_modules(self: Self, db: Session) -> None:  # type:ignore[misc]
     """
     This method is declared in `mmisp.workflows.modules`, but
     is a method of is part of [`Graph`][mmisp.workflows.graph.Graph].
@@ -361,7 +363,7 @@ class ModuleRegistry:
     """
 
     @classmethod
-    def lookup(cls, name: str) -> Type[Module]:
+    def lookup(cls: Type[Self], name: str) -> Type[Module]:
         """
         Returns a reference to a module class implementation by
         the ID of the module.
@@ -372,7 +374,7 @@ class ModuleRegistry:
         return cls.modules[name]
 
 
-def workflow_module(cls):
+def workflow_module(cls: Type[Module]) -> None:
     """
     Annotation that registers the annotated class in the
     [`ModuleRegistry`][mmisp.workflows.modules.ModuleRegistry].
@@ -381,9 +383,7 @@ def workflow_module(cls):
     """
 
     if not issubclass(cls, Module):
-        raise ValueError(
-            f"Class reference {cls} is not a subclass of mmisp.workflows.modules.Module!"
-        )
+        raise ValueError(f"Class reference {cls} is not a subclass of mmisp.workflows.modules.Module!")
     ModuleRegistry.modules[cls.id] = cls
 
 
@@ -395,7 +395,8 @@ class ModuleIfGeneric(Module):
     name: str = "IF :: Generic"
     version: str = "0.2"
     description: str = (
-        "Generic IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Generic IF / ELSE condition block. The `then` output will be used "
+        "if the encoded conditions is satisfied, otherwise the `else` output will be used."
     )
     icon: str = "code-branch"
     html_template: str = "if"
@@ -407,9 +408,7 @@ class ModuleEnrichEvent(Module):
     id: str = "enrich-event"
     name: str = "Enrich Event"
     version: str = "0.2"
-    description: str = (
-        "Enrich all Attributes contained in the Event with the provided module."
-    )
+    description: str = "Enrich all Attributes contained in the Event with the provided module."
     expect_misp_core_format: bool = True
 
 
@@ -432,7 +431,8 @@ class ModuleTagIf(Module):
     name: str = "IF :: Tag"
     version: str = "0.4"
     description: str = (
-        "Tag IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Tag IF / ELSE condition block. The `then` output will be used if "
+        "the encoded conditions is satisfied, otherwise the `else` output will be used."
     )
     icon: str = "code-branch"
     html_template: str = "if"
@@ -444,9 +444,7 @@ class ModuleStopWorkflow(Module):
     id: str = "stop-execution"
     name: str = "Stop execution"
     version: str = "0.2"
-    description: str = (
-        "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
-    )
+    description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
 
 
@@ -471,7 +469,8 @@ class ModuleConcurrentTask(Module):
     id: str = "concurrent-task"
     name: str = "Concurrent Task"
     description: str = (
-        "Allow breaking the execution process and running concurrent tasks. You can connect multiple nodes the `concurrent` output."
+        "Allow breaking the execution process and running concurrent tasks."
+        "You can connect multiple nodes the `concurrent` output."
     )
     icon: str = "random"
     enable_multiple_edges_per_output: bool = True
@@ -484,7 +483,10 @@ class ModuleCountIf(Module):
     id: str = "count-if"
     name: str = "IF :: Count"
     description: str = (
-        "Count IF / ELSE condition block. It counts the amount of entry selected by the provided hashpath. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Count IF / ELSE condition block. It counts the amount of entry "
+        "selected by the provided hashpath. The `then` output will be used "
+        "if the encoded conditions is satisfied, otherwise the `else` "
+        "output will be used."
     )
     icon: str = "code-branch"
     html_template: str = "if"
@@ -497,7 +499,9 @@ class ModuleDistributionIf(Module):
     name: str = "IF :: Distribution"
     version: str = "0.3"
     description: str = (
-        "Distribution IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Distribution IF / ELSE condition block. The `then` output will "
+        "be used if the encoded conditions is satisfied, otherwise the `else` "
+        "output will be used."
     )
     icon: str = "code-branch"
     n_outputs: int = 2
@@ -547,7 +551,9 @@ class ModuleOrganisationIf(Module):
     id: str = "organisation-if"
     name: str = "IF :: Organisation"
     description: str = (
-        "Organisation IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Organisation IF / ELSE condition block. The `then` output "
+        "will be used if the encoded conditions is satisfied, otherwise "
+        "the `else` output will be used."
     )
     icon: str = "code-branch"
     n_outputs: int = 2
@@ -560,7 +566,9 @@ class ModulePublishedIf(Module):
     id: str = "published-if"
     name: str = "IF :: Published"
     description: str = (
-        "Published IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Published IF / ELSE condition block. The `then` output "
+        "will be used if the encoded conditions is satisfied, otherwise "
+        "the `else` output will be used."
     )
     icon: str = "code-branch"
     n_outputs: int = 2
@@ -576,7 +584,9 @@ class ModuleThreatLevelIf(Module):
     name: str = "IF :: Threat Level"
     version: str = "0.1"
     description: str = (
-        "Threat Level IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Threat Level IF / ELSE condition block. The `then` output "
+        "will be used if the encoded conditions is satisfied, otherwise "
+        "the`else` output will be used."
     )
     icon: str = "code-branch"
 
@@ -598,7 +608,8 @@ class ModuleAssignCountryFromEnrichment(Module):
     name: str = "IF :: Threat Level"
     version: str = "0.1"
     description: str = (
-        "Threat Level IF / ELSE condition block. The `then` output will be used if the encoded conditions is satisfied, otherwise the `else` output will be used."
+        "Threat Level IF / ELSE condition block. The `then` output will be used if the "
+        "encoded conditions is satisfied, otherwise the `else` output will be used."
     )
     icon: str = "code-branch"
     n_outputs: int = 2
@@ -650,9 +661,7 @@ class ModuleMsTeamsWebhook(Module):
     id: str = "ms-teams-webhook"
     name: str = "MS Teams Webhook"
     version: str = "0.5"
-    description: str = (
-        'Perform callbacks to the MS Teams webhook provided by the "Incoming Webhook" connector'
-    )
+    description: str = 'Perform callbacks to the MS Teams webhook provided by the "Incoming Webhook" connector'
 
 
 @workflow_module
@@ -680,7 +689,8 @@ class ModuleSendLogMail(Module):
     id: str = "send-log-mail"
     name: str = "Send Log Mail"
     description: str = (
-        "Allow to send a Mail to a list or recipients, based on a Log trigger. Requires functional misp-modules to be functional."
+        "Allow to send a Mail to a list or recipients, based on a Log trigger."
+        " Requires functional misp-modules to be functional."
     )
     icon: str = "envelope"
 
@@ -703,7 +713,8 @@ class ModuleSplunkHecExport(Module):
     name: str = "Splunk HEC export"
     version: str = "0.2"
     description: str = (
-        "Export Event Data to Splunk HTTP Event Collector. Due to the potential high amount of requests, it's recommanded to put this module after a `concurrent_task` logic module."
+        "Export Event Data to Splunk HTTP Event Collector. Due to the potential high amount "
+        "of requests, it's recommanded to put this module after a `concurrent_task` logic module."
     )
 
 
@@ -713,9 +724,7 @@ class ModuleStopExecution(Module):
     id: str = "stop-execution"
     name: str = "Stop execution"
     version: str = "0.2"
-    description: str = (
-        "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
-    )
+    description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
     n_outputs: int = 0
 
@@ -747,9 +756,7 @@ class ModuleTagReplacementGeneric(Module):
 class ModuleTagReplacementPap(Module):
     id: str = "tag_replacement_pap"
     name: str = "Tag Replacement - PAP"
-    description: str = (
-        "Attach a tag (or substitue) a tag by another for the PAP taxonomy"
-    )
+    description: str = "Attach a tag (or substitue) a tag by another for the PAP taxonomy"
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
     version: str = "0.1"
@@ -761,9 +768,7 @@ class ModuleTagReplacementTlp(Module):
     id: str = "tag_replacement_tlp"
     name: str = "Tag Replacement - TLP"
     version: str = "0.1"
-    description: str = (
-        "Attach a tag (or substitue) a tag by another for the TLP taxonomy"
-    )
+    description: str = "Attach a tag (or substitue) a tag by another for the TLP taxonomy"
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
 

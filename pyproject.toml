@@ -51,6 +51,7 @@ fix = true
 line-length = 120
 required-version = ">=0.3.7"
 src = ["src"]
+unsafe-fixes = true
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "ICN", "ANN"]

@@ -68,16 +68,18 @@ class DatabaseSessionManager:
     async def create_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
             engine = self._engine
+        assert engine is not None
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(Base.metadata.create_all)  # type:ignore[attr-defined]
 
     async def drop_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
             engine = self._engine
-        await engine.run_sync(Base.metadata.drop_all)
+        assert engine is not None
+        await engine.run_sync(Base.metadata.drop_all)  # type:ignore[attr-defined]
 
 
-async def get_db() -> Session:
+async def get_db() -> AsyncIterator[Session]:
     async with sessionmanager.session() as session:
         yield session
 

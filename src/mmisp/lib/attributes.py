@@ -214,7 +214,7 @@ mapper_val_safe_clsname = {
 }
 
 mapper_safe_clsname_val = dict((v, k) for k, v in mapper_val_safe_clsname.items())
-literal_valid_attribute_types = Literal[tuple([k for k in mapper_val_safe_clsname.keys()])]
+literal_valid_attribute_types = Literal[tuple([k for k in mapper_val_safe_clsname.keys()])]  # type:ignore[valid-type]
 
 default_category = {
     "md5": AttributeCategories.PAYLOAD_DELIVERY,

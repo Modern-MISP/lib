@@ -5,13 +5,12 @@ filtering mechanism associated with it.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
 
 if TYPE_CHECKING:
-    from ..db.models.workflows import Workflows
+    from ..db.models.workflow import Workflow
 
 from ..db.models.user import User
-
 
 RoamingData = Dict[str, Any]
 
@@ -29,7 +28,7 @@ class Operator(Enum):
     IN_OR = "in_or"
 
     @classmethod
-    def from_str(cls, input: str) -> Self:
+    def from_str(cls: Type[Self], input: str) -> Self:
         """
         Returns a member of this enum given the string
         representation of the operator.
@@ -144,25 +143,26 @@ class WorkflowInput:
     purposes.
     """
 
-    workflow: "Workflows"
+    workflow: "Workflow"
     """
     Reference to the workflow object being executed.
     """
 
-    def __init__(self, data: RoamingData, user: User, workflow: "Workflows"):
+    def __init__(self: Self, data: RoamingData, user: User, workflow: "Workflow") -> None:
         self.__unfiltered_data = data
         self.user = user
         self.workflow = workflow
 
     @property
-    def data(self) -> RoamingData | List[RoamingData]:
+    def data(self: Self) -> RoamingData | List[RoamingData]:
         """
         Returns either all of the data given to the workflow input
         OR a list with filter results if a filter was added
         using [`WorkflowInput.add_filter`][mmisp.workflows.input.WorkflowInput.add_filter].
         """
+        assert False
 
-    def add_filter(self, filter: Filter):
+    def add_filter(self: Self, filter: Filter) -> None:
         """
         Adds another [`Filter`][mmisp.workflows.input.Filter]
         to the workflow input.
@@ -171,7 +171,7 @@ class WorkflowInput:
             filter: Filter to be added.
         """
 
-    def reset_filters(self):
+    def reset_filters(self: Self) -> None:
         """
         Removes all filters from the workflow input.
         [`WorkflowInput.data`][mmisp.workflows.input.WorkflowInput.data]

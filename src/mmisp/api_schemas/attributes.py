@@ -384,7 +384,7 @@ class AddAttributeResponse(BaseModel):
 
 
 class AddAttributeBody(BaseModel):
-    type: literal_valid_attribute_types
+    type: literal_valid_attribute_types  # type:ignore[valid-type]
     value: str | None = None
     value1: str | None = None
     value2: str | None = None

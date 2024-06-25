@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String
 
 from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
+
 
 class Log(Base):
     """
@@ -15,6 +16,7 @@ class Log(Base):
     - Change: A string-representation of the changes made to the logged object or of
               central information about the logged object.
     """
+
     __tablename__ = "logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

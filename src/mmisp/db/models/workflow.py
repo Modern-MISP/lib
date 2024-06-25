@@ -1,10 +1,11 @@
+from uuid import uuid4 as _uuid4
+
 from sqlalchemy import Boolean, Integer, String
 
-from ..database import Base
-from ...workflows.legacy import JSONGraphType
 from mmisp.db.mypy import Mapped, mapped_column
 
-from uuid import uuid4 as _uuid4
+from ...workflows.legacy import JSONGraphType
+from ..database import Base
 
 
 def uuid() -> str:

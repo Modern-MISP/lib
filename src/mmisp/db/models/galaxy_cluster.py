@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.util.uuid import uuid
+from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .galaxy import Galaxy

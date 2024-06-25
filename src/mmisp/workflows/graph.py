@@ -8,9 +8,8 @@ is implemented.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Dict, Tuple, Self
+from typing import Dict, Iterable, List, Self, Tuple
 from uuid import UUID
-
 
 NodeConnection = Tuple[int, "Node"]
 
@@ -191,7 +190,7 @@ class GraphValidationResult:
     Warnings about the workflow graph. Non-fatal.
     """
 
-    def add_result(self, other: Self):
+    def add_result(self: Self, other: Self) -> None:
         """
         Merges another validation result into this accumulator object.
 
@@ -199,7 +198,7 @@ class GraphValidationResult:
             other: Another validation result added in here.
         """
 
-    def is_valid(self) -> bool:
+    def is_valid(self: Self) -> bool:
         """
         If neither errors nor warnings are added, the graph is valid.
         """
@@ -268,7 +267,7 @@ class Node(ABC):
     [`Node.check`][mmisp.workflows.graph.Node.check] method will return an error for this.
     """
 
-    def check(self, with_warnings: bool = False) -> GraphValidationResult:
+    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
         """
         Checks if the module is correctly configured.
 
@@ -325,20 +324,20 @@ class Graph(ABC):
     Reference to the root of the graph.
     """
 
-    frames: List[Frame]
+    frames: Iterable[Frame]
     """
     List of frame objects in the visual editor.
     """
 
     @abstractmethod
-    def check(self) -> GraphValidationResult:
+    def check(self: Self) -> GraphValidationResult:
         """
         Checks if the graph's structure is valid. Works as described in
         [`GraphValidationResult`][mmisp.workflows.graph.GraphValidationResult].
         """
         pass
 
-    from .modules import initialize_graph_modules
+    from .modules import initialize_graph_modules  # type:ignore[misc]
 
 
 class WorkflowGraph(Graph):
@@ -347,7 +346,7 @@ class WorkflowGraph(Graph):
     node and no trigger anywhere else.
     """
 
-    def check(self, with_warnings: bool = False) -> GraphValidationResult:
+    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
         assert False
 
 
@@ -360,7 +359,7 @@ class BlueprintGraph(Graph):
     [`BlueprintGraph.check`][mmisp.workflows.graph.BlueprintGraph.check] method.
     """
 
-    def check(self, with_warnings: bool = False) -> GraphValidationResult:
+    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
         """
         Custom check method for blueprint graph.
         """

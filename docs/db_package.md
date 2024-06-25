@@ -11,4 +11,3 @@
 ## ::: mmisp.db.database
 ## ::: mmisp.db.mixins
 ## ::: mmisp.db.config
-

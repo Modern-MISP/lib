@@ -16,9 +16,9 @@ nav:
 plugins:
   - search
   - mkdocstrings:
-      handlers: 
-        python: 
-          options: 
+      handlers:
+        python:
+          options:
             show_source: false
             separate_signature: true
             show_signature_annotations: true

@@ -3,7 +3,7 @@ from time import time
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.util.uuid import uuid
+from mmisp.lib.uuid import uuid
 
 from ..database import Base
 

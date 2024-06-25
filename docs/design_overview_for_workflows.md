@@ -4,14 +4,14 @@ This sequence is further explained and visualized in two activity diagrams furth
 MISP and input lies in the `src/mmisp/workflows` package. Workflows are stored in the "model" part of the modern MISP project. This means the workflows are saved in the MISP database in string representation.
 
 ## Workflows
-The concept of workflows arises from the simple necessity for users to manipulate the default behavior of MISP. 
+The concept of workflows arises from the simple necessity for users to manipulate the default behavior of MISP.
 Therefore, the MISP Platform must provide the following abilities to users:
 
 * Ability to prevent the execution of default MISP behavior in certain scenarios.
 * Ability to hook specific actions to trigger user-defined behavior.
 
-The worker needs access to the workflow classes because non-blocking workflows can be executed asynchronously. 
-This approach speeds up execution and enhances responsiveness. 
+The worker needs access to the workflow classes because non-blocking workflows can be executed asynchronously.
+This approach speeds up execution and enhances responsiveness.
 The API also depends on the library because synchronous triggers are executed directly within the API, potentially blocking subsequent actions.
 
 ## Components
