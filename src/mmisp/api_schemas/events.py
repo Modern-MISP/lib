@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Type
 
-from pydantic import BaseModel, PositiveInt, conint, field_validator
+from pydantic import BaseModel, PositiveInt, conint, validator
 
 from mmisp.api_schemas.organisations import Organisation
 
@@ -286,7 +286,7 @@ class AddEditGetEventDetails(BaseModel):
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
-    @field_validator('uuid', 'extends_uuid', mode='before')
+    @validator('uuid', 'extends_uuid', pre=True)
     @classmethod
     def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
@@ -303,7 +303,7 @@ class AddEditGetEventDetails(BaseModel):
 
         return value
 
-    @field_validator('event_creator_email', mode='before')
+    @validator('event_creator_email', pre=True)
     @classmethod
     def empty_str_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
@@ -318,7 +318,7 @@ class AddEditGetEventDetails(BaseModel):
 
         return str(value)
 
-    @field_validator('sharing_group_id', mode='after')
+    @validator('sharing_group_id', pre=True)
     @classmethod
     def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         if value is not None and value == 0:

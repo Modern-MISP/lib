@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Type
 
 from pydantic import BaseModel, validator
 
@@ -27,7 +27,8 @@ class SightingFiltersBody(BaseModel):
     limit: str | None = "25"
 
     @validator("limit")
-    def check_limit(self, value: Any) -> str:  # noqa: ANN101
+    @classmethod
+    def check_limit(cls: Type["SightingFiltersBody"], value: Any) -> str:  # noqa: ANN101
         if value is not None:
             try:
                 limit_int = int(value)

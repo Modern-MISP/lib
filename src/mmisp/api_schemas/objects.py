@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Field, validator
 
@@ -37,7 +37,8 @@ class ObjectSearchBody(BaseModel):
     limit: str | None = "25"
 
     @validator("limit")
-    def check_limit(self, value: Any) -> str:  # noqa: ANN101
+    @classmethod
+    def check_limit(cls: Type["ObjectSearchBody"], value: Any) -> str:  # noqa: ANN101
         if value:
             try:
                 limit_int = int(value)
@@ -72,7 +73,8 @@ class ObjectWithAttributesResponse(BaseModel):
     Event: ObjectEventResponse | None = None
 
     @validator("sharing_group_id", always=True)
-    def check_sharing_group_id(self, value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    @classmethod
+    def check_sharing_group_id(cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """

@@ -404,8 +404,9 @@ class AddAttributeBody(BaseModel):
     first_seen: str | None = None
     last_seen: str | None = None
 
-    @root_validator
-    def ensure_value_or_value1_is_set(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN101
+    @root_validator(allow_reuse=True)
+    @classmethod
+    def ensure_value_or_value1_is_set(cls: Type["AddAttributeBody"], data: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN101
         required_values: list[str] = [str(data.get("value")), str(data.get("value1"))]
         if all(item is None for item in required_values):
             raise ValueError("value or value1 has to be set")
