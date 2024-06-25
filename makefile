@@ -14,7 +14,7 @@ setup:
 setup/ci:
 	pip install virtualenv; \
 	virtualenv venv; \
-	source venv/bin/activate; \
+	. venv/bin/activate; \
 	pip install -e ".[dev]"
 
 up:

@@ -27,7 +27,7 @@ class DatabaseSessionManager:
             self._engine = create_async_engine(self._url, echo=True)
         else:
             self._engine = create_async_engine(self._url)
-        self._sessionmaker = sessionmaker(
+        self._sessionmaker = sessionmaker(  # type:ignore[call-overload]
             autocommit=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
 
