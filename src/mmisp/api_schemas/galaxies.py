@@ -148,6 +148,19 @@ class ExportGalaxyClusterResponse(BaseModel):
         orm_mode = True
 
 
+class TargetingClusterRelation(BaseModel):
+    id: int
+    galaxy_cluster_id: int
+    referenced_galaxy_cluster_id: int
+    referenced_galaxy_cluster_uuid: uuid
+    referenced_galaxy_cluster_type: str
+    galaxy_cluster_uuid: uuid
+    distribution: int
+    sharing_group_id: int | None = None
+    default: bool
+    Tag: list[TagAttributesResponse]
+
+
 class GalaxyClustersViewResponse(BaseModel):
     id: int
     uuid: str
@@ -177,7 +190,6 @@ class GalaxyClustersViewResponse(BaseModel):
     Orgc: mmisp.api_schemas.organisations.Organisation
     TargetingClusterRelation: list[TargetingClusterRelation] | None = None
     RelationshipInbound: list[any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
-
 
 class TargetingClusterRelation(BaseModel):
     id: int
