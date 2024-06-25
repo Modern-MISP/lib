@@ -27,7 +27,7 @@ class SightingFiltersBody(BaseModel):
     limit: str | None = "25"
 
     @validator("limit")
-    def check_limit(cls, value: Any) -> str:  # noqa: ANN101
+    def check_limit(self, value: Any) -> str:  # noqa: ANN101
         if value is not None:
             try:
                 limit_int = int(value)

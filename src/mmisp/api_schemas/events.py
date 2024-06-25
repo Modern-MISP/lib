@@ -1,6 +1,5 @@
 from datetime import datetime
-
-from typing import Any
+from typing import Any, Type
 
 from pydantic import BaseModel, PositiveInt, conint, field_validator
 
@@ -289,7 +288,7 @@ class AddEditGetEventDetails(BaseModel):
 
     @field_validator('uuid', 'extends_uuid', mode='before')
     @classmethod
-    def uuid_empty_str(cls, value: Any) -> Any:  # noqa: ANN102
+    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
         Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
 
@@ -306,7 +305,7 @@ class AddEditGetEventDetails(BaseModel):
 
     @field_validator('event_creator_email', mode='before')
     @classmethod
-    def empty_str_to_none(cls, value: Any) -> Any:  # noqa: ANN102
+    def empty_str_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
         Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
 
@@ -321,7 +320,7 @@ class AddEditGetEventDetails(BaseModel):
 
     @field_validator('sharing_group_id', mode='after')
     @classmethod
-    def zero_sharing_group_id_to_none(cls, value: Any) -> Any:  # noqa: ANN102
+    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         if value is not None and value == 0:
             return None
         return value

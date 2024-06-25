@@ -17,6 +17,8 @@ Session: TypeAlias = AsyncSession
 
 Base = declarative_base()
 
+_no_database: str = "DatabaseSessionManager is not initialized"
+
 
 class DatabaseSessionManager:
     def __init__(self: Self, db_url: str = config.DATABASE_URL) -> None:
@@ -41,7 +43,7 @@ class DatabaseSessionManager:
 
     async def close(self: Self) -> None:
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
         await self._engine.dispose()
         self._engine = None
         self._sessionmaker = None
@@ -49,7 +51,7 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def connect(self: Self) -> AsyncIterator[AsyncConnection]:
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
 
         async with self._engine.begin() as connection:
             try:
@@ -61,7 +63,7 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def session(self: Self) -> AsyncIterator[AsyncSession]:
         if self._sessionmaker is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
 
         session = self._sessionmaker()
         try:

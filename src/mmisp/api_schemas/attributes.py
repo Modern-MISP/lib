@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Dict, Optional
+from typing import Annotated, Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -238,7 +238,8 @@ class GetAllAttributesResponse(BaseModel):
     value: str | None = None
 
     @validator("sharing_group_id", always=True)
-    def check_sharing_group_id(cls, value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    def check_sharing_group_id(self, value: Any, values: Dict[str, Any]) -> Optional[
+        int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
@@ -403,7 +404,7 @@ class AddAttributeBody(BaseModel):
     last_seen: str | None = None
 
     @root_validator
-    def ensure_value_or_value1_is_set(cls, data: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN101
+    def ensure_value_or_value1_is_set(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN101
         required_values: list[str] = [str(data.get("value")), str(data.get("value1"))]
         if all(item is None for item in required_values):
             raise ValueError("value or value1 has to be set")
