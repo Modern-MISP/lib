@@ -152,9 +152,9 @@ class TargetingClusterRelation(BaseModel):
     id: int
     galaxy_cluster_id: int
     referenced_galaxy_cluster_id: int
-    referenced_galaxy_cluster_uuid: uuid
+    referenced_galaxy_cluster_uuid: str
     referenced_galaxy_cluster_type: str
-    galaxy_cluster_uuid: uuid
+    galaxy_cluster_uuid: str
     distribution: int
     sharing_group_id: int | None = None
     default: bool

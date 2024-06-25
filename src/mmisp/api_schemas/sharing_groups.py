@@ -225,8 +225,8 @@ class CreateSharingGroupLegacyBody(BaseModel):
     org_count: str | None = None
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
-    org_id: int | None = Field(default=None, max_length=10)
-    sync_user_id: int | None = Field(default=None, max_length=10)
+    org_id: int | None = Field(default=None)
+    sync_user_id: int | None = Field(default=None)
     """attribute will be ignored"""
     created: datetime | None = None
     """attribute will be ignored"""
