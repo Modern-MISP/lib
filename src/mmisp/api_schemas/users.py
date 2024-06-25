@@ -80,3 +80,21 @@ class UserAttributesResponse(BaseModel):
     totp: str | None = None
     hotp_counter: str | None = None
     last_pw_change: str | None = None
+
+
+class AddUserBody(BaseModel):
+    org_id: str
+    email: str
+    gpgkey: str
+    termsaccepted: bool
+    role_id: str
+    disabled: bool
+    notification_daily: bool
+    notification_weekly: bool
+    notification_monthly: bool
+    totp: str | None = None
+    password: str
+
+
+class AddUserResponse(BaseModel):
+    id: str
