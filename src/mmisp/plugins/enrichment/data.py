@@ -2,43 +2,49 @@ from pydantic import BaseModel
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagCreateBody
-from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
-from mmisp.plugins.models.event_tag_relationship import EventTagRelationship
 
 
 class NewEventTag(BaseModel):
     """
-    Encapsulates a MISP Tag assigned to an event.
+    Encapsulates a new MISP Event Tag that has been created using enrichment.
     """
 
     tag_id: int | None = None
     """The ID of the tag if it already exists in the database."""
     tag: TagCreateBody | None = None
     """The tag if it doesn't exist yet in the Database."""
-    relationship: EventTagRelationship
-    """The assignment and relationship to the event."""
+    local: bool | None = None
+    """Whether the relationship to the event is only local or not."""
+    relationship_type: str
+    """The relationship type between the event and tag."""
+
+    # TODO: Add validator that ensures that either tag_id or tag is set.
 
 
 class NewAttributeTag(BaseModel):
     """
-    Encapsulates a MISP Tag and its assignment to an attribute.
+    Encapsulates a new MISP Attribute Tag created by enrichment.
     """
 
     tag_id: int | None = None
     """The ID of the tag if it already exists in the database."""
     tag: TagCreateBody | None = None
     """The tag if it doesn't exist yet in the Database."""
-    relationship: AttributeTagRelationship
-    """The assignment and relationship to the attribute."""
+    local: bool | None = None
+    """Whether the relationship to the attribute is only local or not."""
+    relationship_type: str
+    """The relationship type between the attribute and tag."""
+
+    # TODO: Add validator that ensures that either tag_id or tag is set.
 
 
 class NewAttribute(BaseModel):
     """
-    Encapsulates a newly created attribute from the enrichment process.
+    Encapsulates a newly created attribute from the enrichment process that doesn't exist yet in the database.
     """
 
     attribute: AddAttributeBody
-    """The attribute"""
+    """The attribute to create."""
     tags: list[NewAttributeTag] = []
     """Tags attached to the attribute"""
 

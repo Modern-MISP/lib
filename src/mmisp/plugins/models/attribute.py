@@ -1,5 +1,15 @@
 from mmisp.api_schemas.attributes import GetAttributeAttributes, GetAttributeTag
-from mmisp.plugins.models.attribute_tag_relationship import AttributeTagRelationship
+
+
+class AttributeTagWithRelationshipType(GetAttributeTag):
+    """
+    Encapsulates a MISP Attribute Tag with the relationship type to its attribute.
+    """
+
+    relationship_local: bool
+    """Whether the relationship is only local or not."""
+    relationship_type: str
+    """The relationship type between the attribute and tag."""
 
 
 class AttributeWithTagRelationship(GetAttributeAttributes):
@@ -7,5 +17,4 @@ class AttributeWithTagRelationship(GetAttributeAttributes):
     Encapsulates a full MISP Attribute with all it's tags and tag relationships.
     """
 
-    attribute_tags: list[tuple[GetAttributeTag, AttributeTagRelationship]] = []
-    """A list of tags with it's relationships attached to the attribute."""
+    Tag: list[AttributeTagWithRelationshipType]
