@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from typing import Self
+
+from pydantic import BaseModel, root_validator
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagCreateBody
@@ -15,10 +17,14 @@ class NewEventTag(BaseModel):
     """The tag if it doesn't exist yet in the Database."""
     local: bool | None = None
     """Whether the relationship to the event is only local or not."""
-    relationship_type: str
+    relationship_type: str = ""
     """The relationship type between the event and tag."""
 
-    # TODO: Add validator that ensures that either tag_id or tag is set.
+    @root_validator
+    @classmethod
+    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> None:
+        if not values["tag_id"] or values["tag"]:
+            raise ValueError("At least one of the values tag_id or tag is required.")
 
 
 class NewAttributeTag(BaseModel):
@@ -32,10 +38,14 @@ class NewAttributeTag(BaseModel):
     """The tag if it doesn't exist yet in the Database."""
     local: bool | None = None
     """Whether the relationship to the attribute is only local or not."""
-    relationship_type: str
+    relationship_type: str = ""
     """The relationship type between the attribute and tag."""
 
-    # TODO: Add validator that ensures that either tag_id or tag is set.
+    @root_validator
+    @classmethod
+    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> None:
+        if not values["tag_id"] or values["tag"]:
+            raise ValueError("At least one of the values tag_id or tag is required.")
 
 
 class NewAttribute(BaseModel):
@@ -61,7 +71,7 @@ class EnrichAttributeResult(BaseModel):
     event_tags: list[NewEventTag] = []
     """The created event tags. Can also be the IDs of already existing tags."""
 
-    def append(self, result_to_merge: "EnrichAttributeResult"):
+    def append(self: Self, result_to_merge: "EnrichAttributeResult") -> None:
         """
         Merges two EnrichAttributeResult objects together.
 

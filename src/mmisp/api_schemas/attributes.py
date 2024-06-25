@@ -237,8 +237,9 @@ class GetAllAttributesResponse(BaseModel):
     last_seen: str | None = None
     value: str | None = None
 
-    @validator("sharing_group_id", always=True)
-    def check_sharing_group_id(self, value: Any, values: Dict[str, Any]) -> Optional[
+    @validator("sharing_group_id", always=True, allow_reuse=True)
+    @classmethod
+    def check_sharing_group_id(cls: Type["GetAllAttributesResponse"], value: Any, values: Dict[str, Any]) -> Optional[
         int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
