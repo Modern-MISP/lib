@@ -98,3 +98,28 @@ class AddUserBody(BaseModel):
 
 class AddUserResponse(BaseModel):
     id: str
+
+
+class GetAllUsersUser(BaseModel):
+    id: int
+    organisation: int
+    role: int
+    nids: int
+    name: str
+    email: str
+    last_login: int
+    created: int
+    totp: bool | None
+    contact: bool
+    notification: bool
+    gpg_key: str
+    terms: bool
+
+
+class GetAllUsersResponse(BaseModel):
+    users: list[GetAllUsersUser]
+
+
+class GetAllUsersBody(BaseModel):
+    page: int
+    limit: int
