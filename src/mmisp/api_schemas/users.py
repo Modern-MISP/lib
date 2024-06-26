@@ -118,8 +118,3 @@ class GetAllUsersUser(BaseModel):
 
 class GetAllUsersResponse(BaseModel):
     users: list[GetAllUsersUser]
-
-
-class GetAllUsersBody(BaseModel):
-    page: int
-    limit: int
