@@ -94,6 +94,7 @@ class AddUserBody(BaseModel):
     notification_monthly: bool
     totp: str | None = None
     password: str
+    name: str
 
 
 class AddUserResponse(BaseModel):
