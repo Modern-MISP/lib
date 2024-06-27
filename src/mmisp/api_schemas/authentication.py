@@ -7,8 +7,10 @@ class TokenResponse(BaseModel):
     token: str
     reqiuredPasswordChange: bool
 
+
 class ChangePasswordResponse(BaseModel):
     successful: bool
+
 
 class IdentityProviderInfo(BaseModel):
     id: str
@@ -32,9 +34,7 @@ class PasswordLoginBody(BaseModel):
     password: str
 
 class ChangePasswordBody(BaseModel):
-    email: str
-    oldPassword: str
-    newPassword: str
+    password: str
 
 class ExchangeTokenLoginBody(BaseModel):
     exchangeToken: str
