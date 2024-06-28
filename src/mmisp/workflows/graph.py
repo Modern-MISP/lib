@@ -86,11 +86,11 @@ class MultipleEdgesPerOutput(GraphError):
     This class represents the error if that's not allowed.
     """
 
-    affected: Tuple["Node", List["Node"]]
+    affected: Tuple["Node", int]
     """
     All edges affected by the problem: first component of the tuple
-    is the node with too many connections per output, the second component is a list
-    of all nodes connected to this output.
+    is the node with too many connections per output, the second
+    component is the ID of the affected output.
     """
 
 
@@ -137,6 +137,35 @@ class ConfigurationError(GraphError):
     context: str
     """
     Error message.
+    """
+
+
+@dataclass
+class InconsistentEdgeBetweenAdjacencyLists(GraphError):
+    """
+    In MISP the standard for storing the graph is in duplicated form, the graph is stored once as an adjacency list of
+    outgoing edges and in parallel a second time as an adjacency list of incoming edges.
+    In case there is an edge from node A to node B, that is registered as outgoing from node A to node B and not as
+    incoming from node A to node B or vica-versa, this is an inconsistency error that will be returned with an instance
+    of this class.
+    """
+
+    from_: "Node"
+    """
+    The starting node of the inconsistent edge.
+    """
+
+    outputPortID: int
+    "The output port of the inconsistent edge."
+
+    to: "Node"
+    """
+    The ending node of the inconsistent edge.
+    """
+
+    inputPortID: int
+    """
+    The input port of the inconsistent edge.
     """
 
 
@@ -203,6 +232,8 @@ class GraphValidationResult:
         Arguments:
             other: Another validation result added in here.
         """
+        self.errors += other.errors
+        self.warnings += other.warnings
 
     def is_valid(self: Self) -> bool:
         """
@@ -273,6 +304,29 @@ class Node(ABC):
     [`Node.check`][mmisp.workflows.graph.Node.check] method will return an error for this.
     """
 
+    enable_multiple_edges_per_output: bool = False
+    """
+    Whether it's OK to have multiple edges going from a single output.
+    See [`Node`][mmisp.workflows.graph.Node] for more context. Used by e.g. the concurrent
+    tasks module.
+    """
+
+    def __eq__(self: Self, other: object) -> bool:
+        return self is other
+
+    """
+    Custom comparison if two instances are equal, needed for our special hash function so that the statement
+    __eq__(a, b) = True => __hash__(a) == __hash__(b) is valid for every pair of nodes a nd b, which guaranties that the
+    Dict (HashMap) will not malfunction.
+    """
+
+    def __hash__(self: Self) -> int:
+        return id(self)
+
+    """
+    Our custom node hash function which allows to store nodes in a Dict (HashMap).
+    """
+
     def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
         """
         Checks if the module is correctly configured.
@@ -281,7 +335,24 @@ class Node(ABC):
             with_warnings: whether to also return warnings. Not needed when e.g.
             only persisting the graph.
         """
-        assert False
+        result = GraphValidationResult([], [])
+        if len(self.inputs) > self.n_inputs:
+            result.errors.append(
+                ConfigurationError(
+                    self, "The number of registered inputs of the node exceeds its maximum allowed amount."
+                )
+            )
+        if len(self.outputs) > self.n_outputs:
+            result.errors.append(
+                ConfigurationError(
+                    self, "The number of registered outputs of the node exceeds its maximum allowed amount."
+                )
+            )
+        if not self.enable_multiple_edges_per_output:
+            for key, value in self.outputs.items():
+                if len(value) > 1:
+                    result.errors.append(MultipleEdgesPerOutput((self, key)))
+        return result
 
 
 @dataclass(kw_only=True)
@@ -512,12 +583,75 @@ class Graph(ABC):
     List of frame objects in the visual editor.
     """
 
+    def __check_nodes(self: Self, storage: GraphValidationResult) -> None:
+        for node_id, node in self.nodes.items():
+            storage.add_result(node.check())
+
+    def __check_input_adjacency_list_correspond_to_output_one(self: Self, storage: GraphValidationResult) -> None:
+        for node_id, node in self.nodes.items():
+            for input_port_id, connections in node.inputs.items():
+                for connection in connections:
+                    list_outgoing = connection[1].outputs.get(connection[0])
+                    if list_outgoing is None:
+                        storage.errors.append(
+                            InconsistentEdgeBetweenAdjacencyLists(connection[1], connection[0], node, input_port_id)
+                        )
+                    elif (input_port_id, node) not in list_outgoing:
+                        storage.errors.append(
+                            InconsistentEdgeBetweenAdjacencyLists(connection[1], connection[0], node, input_port_id)
+                        )
+
+            for output_port_id, connections in node.outputs.items():
+                for connection in connections:
+                    list_incoming = connection[1].inputs.get(connection[0])
+                    if list_incoming is None:
+                        storage.errors.append(
+                            InconsistentEdgeBetweenAdjacencyLists(node, output_port_id, connection[1], connection[0])
+                        )
+                    elif (output_port_id, node) not in list_incoming:
+                        storage.errors.append(
+                            InconsistentEdgeBetweenAdjacencyLists(node, output_port_id, connection[1], connection[0])
+                        )
+
+    def __acyclic_check_dfs(self: Self, current: Node, storage: GraphValidationResult) -> None:
+        for output_id, connections in current.outputs.items():
+            for connection in connections:
+                next_node_state = self.__visited.get(connection[1])
+                if next_node_state is None:
+                    self.__visited[connection[1]] = False
+                    self.__parent[connection[1]] = current
+                    self.__acyclic_check_dfs(connection[1], storage)
+                elif not next_node_state:
+                    error = CyclicGraphError([])
+                    error.cycle_path.append((current, connection[1]))
+                    current_node_loop = current
+                    while current_node_loop is not connection[1]:
+                        parent_node = self.__parent.get(current_node_loop)
+                        assert parent_node is not None
+                        error.cycle_path.append((parent_node, current_node_loop))
+                        current_node_loop = parent_node
+                    storage.errors.append(error)
+        self.__visited[current] = True
+
+    def __check_is_graph_acyclic(self: Self, storage: GraphValidationResult) -> None:
+        self.__visited: Dict[Node, bool] = {}
+        self.__parent: Dict[Node, Node] = {}
+        for node_id, node in self.nodes.items():
+            if self.__visited.get(node) is None:
+                self.__visited[node] = False
+                self.__acyclic_check_dfs(node, storage)
+
     @abstractmethod
     def check(self: Self) -> GraphValidationResult:
         """
         Checks if the graph's structure is valid. Works as described in
         [`GraphValidationResult`][mmisp.workflows.graph.GraphValidationResult].
         """
+        storage = GraphValidationResult([], [])
+        self.__check_is_graph_acyclic(storage)
+        self.__check_input_adjacency_list_correspond_to_output_one(storage)
+        self.__check_nodes(storage)
+        return storage
 
     async def initialize_graph_modules(self: Self, db: AsyncSession) -> None:
         """
@@ -561,7 +695,19 @@ class WorkflowGraph(Graph):
     """
 
     def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
-        assert False
+        result = super().check()
+        if not isinstance(self.root, Trigger):
+            result.errors.append(MissingTrigger())
+        for node_id, node in self.nodes.items():
+            if (node is not self.root) and isinstance(node, Trigger):
+                result.errors.append(
+                    ConfigurationError(
+                        node,
+                        "This node is a trigger and not the root node. Only the"
+                        + " root is allowed (and must be) a trigger in a workflow.",
+                    )
+                )
+        return result
 
 
 class BlueprintGraph(Graph):
@@ -577,4 +723,8 @@ class BlueprintGraph(Graph):
         """
         Custom check method for blueprint graph.
         """
-        assert False
+        result = super().check()
+        for node_id, node in self.nodes.items():
+            if isinstance(node, Trigger):
+                result.errors.append(ConfigurationError(node, "Trigger nodes are not allowed in blueprints."))
+        return result
