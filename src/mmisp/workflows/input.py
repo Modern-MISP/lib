@@ -8,9 +8,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
 
 if TYPE_CHECKING:
+    from ..db.models.user import User
     from ..db.models.workflow import Workflow
-
-from ..db.models.user import User
 
 RoamingData = Dict[str, Any]
 
@@ -136,7 +135,7 @@ class WorkflowInput:
     class.
     """
 
-    user: User
+    user: "User"
     """
     Represents the user execution a workflow. Is a system
     user with all privileges. Mostly useful for logging
@@ -148,7 +147,7 @@ class WorkflowInput:
     Reference to the workflow object being executed.
     """
 
-    def __init__(self: Self, data: RoamingData, user: User, workflow: "Workflow") -> None:
+    def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
         self.user = user
         self.workflow = workflow

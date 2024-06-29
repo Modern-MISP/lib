@@ -4,6 +4,7 @@ from sqlalchemy import Boolean, Integer, String
 
 from mmisp.db.mypy import Mapped, mapped_column
 
+from ...workflows.graph import WorkflowGraph
 from ...workflows.legacy import JSONGraphType
 from ..database import Base
 
@@ -34,4 +35,4 @@ class Workflow(Base):
     counter: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     trigger_id: Mapped[str] = mapped_column(String(191), nullable=False, index=True)
     debug_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=0)
-    data: Mapped[str] = mapped_column(JSONGraphType, nullable=False, default=0)
+    data: Mapped[WorkflowGraph] = mapped_column(JSONGraphType, nullable=False, default=0)

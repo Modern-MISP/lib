@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Self, Tuple, Type
 
-from ..db.database import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .graph import ConfigurationError, Node
 from .input import Filter, WorkflowInput
 
@@ -217,7 +218,7 @@ class Module(Node):
     execution continues.
     """
 
-    async def initialize(self: Self, db: Session) -> None:
+    async def initialize(self: Self, db: AsyncSession) -> None:
         """
         Initializes the parameters for a module. Done in a method
         since that may involve further DB operations.
@@ -254,7 +255,21 @@ class Module(Node):
         assert False
 
 
-async def initialize_graph_modules(self: Self, db: Session) -> None:  # type:ignore[misc]
+class ModuleAction(Module):
+    """
+    Marker class representing an action module. Not relevant for the behavior,
+    but for the HTTP responses to determine which kind of module this is.
+    """
+
+
+class ModuleLogic(Module):
+    """
+    Marker class representing a logic module. Not relevant for the behavior,
+    but for the HTTP responses to determine which kind of module this is.
+    """
+
+
+async def initialize_graph_modules(self: Self, db: AsyncSession) -> None:  # type:ignore[misc]
     """
     This method is declared in `mmisp.workflows.modules`, but
     is a method of is part of [`Graph`][mmisp.workflows.graph.Graph].
@@ -374,7 +389,7 @@ class ModuleRegistry:
         return cls.modules[name]
 
 
-def workflow_module(cls: Type[Module]) -> None:
+def workflow_module(cls: Type[Module]) -> Type[Module]:
     """
     Annotation that registers the annotated class in the
     [`ModuleRegistry`][mmisp.workflows.modules.ModuleRegistry].
@@ -386,10 +401,12 @@ def workflow_module(cls: Type[Module]) -> None:
         raise ValueError(f"Class reference {cls} is not a subclass of mmisp.workflows.modules.Module!")
     ModuleRegistry.modules[cls.id] = cls
 
+    return cls
+
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleIfGeneric(Module):
+class ModuleIfGeneric(ModuleAction):
     id: str = "generic-if"
     n_outputs: int = 2
     name: str = "IF :: Generic"
@@ -404,7 +421,7 @@ class ModuleIfGeneric(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleEnrichEvent(Module):
+class ModuleEnrichEvent(ModuleAction):
     id: str = "enrich-event"
     name: str = "Enrich Event"
     version: str = "0.2"
@@ -414,7 +431,7 @@ class ModuleEnrichEvent(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAttributeCommentOperation(Module):
+class ModuleAttributeCommentOperation(ModuleAction):
     id: str = "Module_attribute_comment_operation"
     version: str = "0.1"
     name: str = "Attribute comment operation"
@@ -425,7 +442,7 @@ class ModuleAttributeCommentOperation(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTagIf(Module):
+class ModuleTagIf(ModuleLogic):
     id: str = "tag-if"
     n_outputs: int = 2
     name: str = "IF :: Tag"
@@ -440,7 +457,7 @@ class ModuleTagIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleStopWorkflow(Module):
+class ModuleStopWorkflow(ModuleAction):
     id: str = "stop-execution"
     name: str = "Stop execution"
     version: str = "0.2"
@@ -450,7 +467,7 @@ class ModuleStopWorkflow(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAttachWarninglist(Module):
+class ModuleAttachWarninglist(ModuleAction):
     id: str = "attach-warninglist"
     name: str = "Add to warninglist"
     description: str = "Append attributes to an active custom warninglist."
@@ -460,7 +477,7 @@ class ModuleAttachWarninglist(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleConcurrentTask(Module):
+class ModuleConcurrentTask(ModuleLogic):
     """
     Accepts multiple connecting nodes and executes all of them
     concurrently.
@@ -479,7 +496,7 @@ class ModuleConcurrentTask(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleCountIf(Module):
+class ModuleCountIf(ModuleLogic):
     id: str = "count-if"
     name: str = "IF :: Count"
     description: str = (
@@ -494,7 +511,7 @@ class ModuleCountIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleDistributionIf(Module):
+class ModuleDistributionIf(ModuleLogic):
     id: str = "distribution-if"
     name: str = "IF :: Distribution"
     version: str = "0.3"
@@ -510,7 +527,7 @@ class ModuleDistributionIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleGenericFilterData(Module):
+class ModuleGenericFilterData(ModuleLogic):
     """
     Configure a filter on the workflow payload. Every
     subsequent module will only see the filtered version
@@ -529,7 +546,7 @@ class ModuleGenericFilterData(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleGenericFilterReset(Module):
+class ModuleGenericFilterReset(ModuleLogic):
     """
     Resets all filters declared for the workflow payload.
     """
@@ -542,7 +559,7 @@ class ModuleGenericFilterReset(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleOrganisationIf(Module):
+class ModuleOrganisationIf(ModuleLogic):
     """
     Module allowing to check if the organistaion property
     of the payload matches a condition.
@@ -562,7 +579,7 @@ class ModuleOrganisationIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModulePublishedIf(Module):
+class ModulePublishedIf(ModuleLogic):
     id: str = "published-if"
     name: str = "IF :: Published"
     description: str = (
@@ -577,7 +594,7 @@ class ModulePublishedIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleThreatLevelIf(Module):
+class ModuleThreatLevelIf(ModuleLogic):
     id: str = "threat-level-if"
     html_template: str = "if"
     n_outputs: int = 2
@@ -593,7 +610,7 @@ class ModuleThreatLevelIf(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAddEventblocklistEntry(Module):
+class ModuleAddEventblocklistEntry(ModuleAction):
     id: str = "add_eventblocklist_entry"
     version: str = "0.1"
     name: str = "Add Event Blocklist entry"
@@ -603,7 +620,7 @@ class ModuleAddEventblocklistEntry(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAssignCountryFromEnrichment(Module):
+class ModuleAssignCountryFromEnrichment(ModuleAction):
     id: str = "assign_country"
     name: str = "IF :: Threat Level"
     version: str = "0.1"
@@ -617,7 +634,7 @@ class ModuleAssignCountryFromEnrichment(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAttachEnrichment(Module):
+class ModuleAttachEnrichment(ModuleAction):
     id: str = "attach-enrichment"
     name: str = "Attach enrichment"
     version: str = "0.3"
@@ -628,7 +645,7 @@ class ModuleAttachEnrichment(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAttributeEditionOperation(Module):
+class ModuleAttributeEditionOperation(ModuleAction):
     id: str = "attribute_edition_operation"
     name: str = "Attribute edition operation"
     description: str = "Base module allowing to modify attribute"
@@ -638,7 +655,7 @@ class ModuleAttributeEditionOperation(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleAttributeIdsFlagOperation(Module):
+class ModuleAttributeIdsFlagOperation(ModuleAction):
     id: str = "attribute_ids_flag_operation"
     name: str = "Attribute IDS Flag operation"
     description: str = "Toggle or remove the IDS flag on selected attributes."
@@ -648,7 +665,7 @@ class ModuleAttributeIdsFlagOperation(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleEventDistributionOperation(Module):
+class ModuleEventDistributionOperation(ModuleAction):
     id: str = "Module_event_distribution_operation"
     name: str = "Event distribution operation"
     description: str = "Set the Event's distribution to the selected level"
@@ -657,7 +674,7 @@ class ModuleEventDistributionOperation(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleMsTeamsWebhook(Module):
+class ModuleMsTeamsWebhook(ModuleAction):
     id: str = "ms-teams-webhook"
     name: str = "MS Teams Webhook"
     version: str = "0.5"
@@ -666,7 +683,7 @@ class ModuleMsTeamsWebhook(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModulePublishEvent(Module):
+class ModulePublishEvent(ModuleAction):
     id: str = "publish-event"
     name: str = "Publish Event"
     version: str = "0.1"
@@ -676,7 +693,7 @@ class ModulePublishEvent(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModulePushZMQ(Module):
+class ModulePushZMQ(ModuleAction):
     id: str = "push-zmq"
     name: str = "Push to ZMQ"
     version: str = "0.2"
@@ -685,7 +702,7 @@ class ModulePushZMQ(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleSendLogMail(Module):
+class ModuleSendLogMail(ModuleAction):
     id: str = "send-log-mail"
     name: str = "Send Log Mail"
     description: str = (
@@ -697,7 +714,7 @@ class ModuleSendLogMail(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleSendMail(Module):
+class ModuleSendMail(ModuleAction):
     id: str = "send-mail"
     name: str = "Send Mail"
     description: str = (
@@ -708,7 +725,7 @@ class ModuleSendMail(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleSplunkHecExport(Module):
+class ModuleSplunkHecExport(ModuleAction):
     id: str = "splunk-hec-export"
     name: str = "Splunk HEC export"
     version: str = "0.2"
@@ -720,7 +737,7 @@ class ModuleSplunkHecExport(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleStopExecution(Module):
+class ModuleStopExecution(ModuleAction):
     id: str = "stop-execution"
     name: str = "Stop execution"
     version: str = "0.2"
@@ -731,7 +748,7 @@ class ModuleStopExecution(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTagOperation(Module):
+class ModuleTagOperation(ModuleAction):
     id: str = "tag_operation"
     name: str = "Tag operation"
     description: str = "Add or remove tags on Event or Attributes."
@@ -742,7 +759,7 @@ class ModuleTagOperation(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTagReplacementGeneric(Module):
+class ModuleTagReplacementGeneric(ModuleAction):
     id: str = "tag_replacement_generic"
     name: str = "Tag Replacement Generic"
     description: str = "Attach a tag, or substitue a tag by another"
@@ -753,7 +770,7 @@ class ModuleTagReplacementGeneric(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTagReplacementPap(Module):
+class ModuleTagReplacementPap(ModuleAction):
     id: str = "tag_replacement_pap"
     name: str = "Tag Replacement - PAP"
     description: str = "Attach a tag (or substitue) a tag by another for the PAP taxonomy"
@@ -764,7 +781,7 @@ class ModuleTagReplacementPap(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTagReplacementTlp(Module):
+class ModuleTagReplacementTlp(ModuleAction):
     id: str = "tag_replacement_tlp"
     name: str = "Tag Replacement - TLP"
     version: str = "0.1"
@@ -775,7 +792,7 @@ class ModuleTagReplacementTlp(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleTelegramSendAlert(Module):
+class ModuleTelegramSendAlert(ModuleAction):
     id: str = "telegram-send-alert"
     name: str = "Telegram Send Alert"
     version: str = "0.1"
@@ -784,7 +801,7 @@ class ModuleTelegramSendAlert(Module):
 
 @workflow_module
 @dataclass(kw_only=True)
-class ModuleWebhook(Module):
+class ModuleWebhook(ModuleAction):
     id: str = "webhook"
     name: str = "Webhook"
     version: str = "0.7"

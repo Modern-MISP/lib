@@ -20,10 +20,11 @@ from .graph import (
     Graph,
     GraphValidationResult,
     Node,
+    NodeConnection,
     WorkflowGraph,
 )
 from .input import Filter, Operator
-from .modules import ModuleConfiguration, ModuleRegistry, Overhead, Trigger
+from .modules import Module, ModuleAction, ModuleConfiguration, ModuleLogic, ModuleRegistry, Overhead, Trigger
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
@@ -60,7 +61,160 @@ class GraphFactory:
         Arguments:
             graph:  Graph object to convert to JSON.
         """
-        assert False
+        reverse_edge_list = {id(node): str(local_id) for local_id, node in graph.nodes.items()}
+
+        nodes = {
+            str(local_id): cls.__node_to_dict(local_id, node, reverse_edge_list)
+            for local_id, node in graph.nodes.items()
+        }
+
+        frames = graph.frames
+        if len(list(frames)) > 0:
+            nodes["_frames"] = {
+                str(frame.uuid): {
+                    "id": str(frame.uuid),
+                    "text": frame.text,
+                    "class": frame.clazz,
+                    "nodes": [reverse_edge_list[id(node)] for node in frame.nodes],
+                }
+                for frame in frames
+            }
+
+        return nodes
+
+    @classmethod
+    def __node_to_dict(cls: Type[Self], id: int, node: Node, reverse_edge_list: Dict[int, str]) -> Dict[str, Any]:
+        match node:
+            case Trigger(
+                inputs={},
+                outputs=outputs,
+                apperance=Apperance((pos_x, pos_y), typenode, cssClass),
+                name=name,
+                raw_data=raw_data,
+                n_inputs=0,
+                n_outputs=n_outputs,
+            ):
+                ret_val = {
+                    "id": id,
+                    "data": raw_data,
+                    "class": cssClass,
+                    "typenode": typenode,
+                    "inputs": [],
+                    "outputs": cls.__edges_to_json("output", outputs, reverse_edge_list, n_outputs),
+                    "pos_x": cls.__maybe_int(pos_x),
+                    "pos_y": cls.__maybe_int(pos_y),
+                }
+
+                # Newly created workflows apparently don't have a `name`-attribute??!
+                if len(reverse_edge_list) > 1:
+                    ret_val["name"] = name
+
+                return ret_val
+            case Module(
+                inputs=inputs,
+                outputs=outputs,
+                apperance=Apperance((pos_x, pos_y), typenode, cssClass, node_uid),
+                name=name,
+                id=module_id,
+                version=version,
+                previous_version=previous_version,
+                configuration=configuration,
+                enable_multiple_edges_per_output=multiple_output_connection,
+                on_demand_filter=filter,
+                n_inputs=n_inputs,
+                n_outputs=n_outputs,
+            ):
+                # FIXME double-check if anything else also gets escaped.
+                name_escaped = name.replace(" ", "+")
+
+                match node:
+                    case ModuleAction():
+                        module_type = "action"
+                    case ModuleLogic():
+                        module_type = "logic"
+                    case _:
+                        raise ValueError(f"Module {node} must inherit either ModuleAction or ModuleLogic!")
+
+                return {
+                    "id": id,
+                    "name": name_escaped,
+                    "data": {
+                        "id": module_id,
+                        "indexed_params": [] if configuration.data == {} else configuration.data,
+                        "saved_filters": {
+                            "operator": "",
+                            "path": "",
+                            "selector": "",
+                            "value": "",
+                        }
+                        if filter is None
+                        else {
+                            "operator": filter.operator.value,
+                            "selector": filter.selector,
+                            "path": filter.path,
+                            "value": filter.value,
+                        },
+                        "name": name_escaped,
+                        "multiple_output_connection": multiple_output_connection,
+                        "previous_module_version": previous_version,
+                        "module_version": version,
+                        "node_uid": node_uid,
+                        "module_type": module_type,
+                    },
+                    "class": cssClass,
+                    "typenode": typenode,
+                    "inputs": cls.__edges_to_json("input", inputs, reverse_edge_list, n_inputs),
+                    "outputs": cls.__edges_to_json("output", outputs, reverse_edge_list, n_outputs),
+                    "pos_x": cls.__maybe_int(pos_x),
+                    "pos_y": cls.__maybe_int(pos_y),
+                }
+            case _:
+                raise ValueError(f"Unexpected node representation: {node}")
+
+    @classmethod
+    def __maybe_int(cls: Type[Self], value: float) -> int | float:
+        if round(value) == value:
+            return int(value)
+        return value
+
+    @classmethod
+    def __edges_to_json(
+        cls: Type[Self],
+        direction: str,
+        edges: Dict[int, List[NodeConnection]],
+        reverse_edge_list: Dict[int, str],
+        expected_num: int,
+    ) -> Dict[str, Any] | List[None]:
+        assert direction in ["output", "input"]
+        opposite = "input" if direction == "output" else "output"
+
+        if expected_num == 0:
+            assert len(edges) == 0
+            # empty input/output lists are a list instead of a dict because in PHP
+            # both have the same underlying datatype and the json_encode transforms
+            # an empty array into [].
+            return []
+
+        result = {
+            f"{direction}_{n}": {
+                "connections": [
+                    {
+                        "node": reverse_edge_list[id(connected_node)],
+                        direction: f"{opposite}_{connected_input}",
+                    }
+                    for connected_input, connected_node in edge_elems
+                ]
+            }
+            for n, edge_elems in edges.items()
+        }
+
+        # if no connections exist, but >0 outputs are defined, the JSON
+        # representation contains the inputs/outputs, but with
+        # connections being empty.
+        if result == {}:
+            return {f"output_{i}": {"connections": []} for i in range(1, expected_num + 1)}
+
+        return result
 
     @classmethod
     def jsondict2graph(cls: Type[Self], input: Dict[str, Any]) -> Graph:
@@ -144,6 +298,7 @@ class GraphFactory:
             on_demand_filter=cls.__build_filter(data.get("saved_filters", {})),
             # FIXME maybe check if version is too old?
             previous_version=data.get("previous_module_version", "?"),
+            version=data.get("module_version", module_cls.__dict__["version"]),
             apperance=apperance,
             configuration=ModuleConfiguration(data=dict(data.get("indexed_params", {}))),
         )
@@ -151,12 +306,12 @@ class GraphFactory:
     @staticmethod
     def __build_filter(input: Dict[str, Any]) -> Filter | None:
         if input == {} or (
-            # These can be empty, bust MUST exist
+            # These can be empty, but MUST exist
             (selector := input.get("selector")) is None
             or (value := input.get("value")) is None
+            or (path := input.get("path")) is None
             # These must not be empty
             or not (operator := input.get("operator"))
-            or not (path := input.get("path"))
         ):
             return None
 
