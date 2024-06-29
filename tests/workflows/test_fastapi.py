@@ -4,8 +4,8 @@ from typing import Any, Dict
 import pytest
 from fastapi import HTTPException
 
-from mmisp.api_schemas.workflow import json_dict_to_workflow_entity, workflow_entity_to_json_dict
 from mmisp.db.models.workflow import Workflow
+from mmisp.workflows.fastapi import json_dict_to_workflow_entity, workflow_entity_to_json_dict
 from mmisp.workflows.graph import WorkflowGraph
 from mmisp.workflows.modules import Trigger
 
