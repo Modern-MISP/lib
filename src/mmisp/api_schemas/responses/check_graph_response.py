@@ -1,13 +1,14 @@
-from typing import Dict, List
+from typing import List, Dict
+from pydantic import BaseModel
 
 
-class IsAcyclicInfo:
+class IsAcyclicInfo(BaseModel):
     nodeId1: int
     nodeID2: int
     cycle: str = "Cycle"
 
 
-class IsAcyclic:
+class IsAcyclic(BaseModel):
     """
     Represents the whether graph is acyclic and details of the first detected cycle.
 
@@ -39,7 +40,7 @@ class IsAcyclic:
     cycles: List[IsAcyclicInfo]
 
 
-class MultibleOutputConnection:
+class MultibleOutputConnection(BaseModel):
     """
     Represents the status and details of nodes with illegal multiple output connections in a graph.
 
@@ -67,7 +68,7 @@ class MultibleOutputConnection:
     edges: Dict[int, List[int]]
 
 
-class PathWarningsInfo:
+class PathWarningsInfo(BaseModel):
     source_id: int  # is a string in legacy misp
     next_node_id: int  # is a string in legacy misp
     warning: str
@@ -76,7 +77,7 @@ class PathWarningsInfo:
     module_id: int
 
 
-class PathWarnings:
+class PathWarnings(BaseModel):
     """
     Represents warnings for paths in a graph.
 
@@ -105,7 +106,7 @@ class PathWarnings:
     edges: List[PathWarningsInfo]
 
 
-class CheckGraphResponse:
+class CheckGraphResponse(BaseModel):
     """
     Response schema from the API for checking a graph.
 
