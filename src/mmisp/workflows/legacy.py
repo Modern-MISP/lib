@@ -336,14 +336,14 @@ class JSONGraphType(UserDefinedType):
         """
         return "LONGTEXT"
 
-    def bind_processor(self: Self, dialect: Any) -> None:
+    def bind_processor(self: Self, dialect: Any):  # ignore:type[override] # noqa: ANN201
         """
         Method for processing data before storing it in the database.
 
         Arguments:
             dialect:    SQLAlchemy dialect being used.
         """
-        pass
+        return lambda value: json.dumps(GraphFactory.graph2jsondict(value))
 
     def result_processor(self: Self, dialect: Any, coltype: Any):  # ignore:type[override] # noqa: ANN201
         """
