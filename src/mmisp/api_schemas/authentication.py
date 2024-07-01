@@ -8,8 +8,18 @@ class TokenResponse(BaseModel):
     reqiuredPasswordChange: bool
 
 
-class ChangePasswordResponse(BaseModel):
+class ChangeLoginInfoResponse(BaseModel):
     successful: bool
+
+
+class IdentityProviderEditBody(BaseModel):
+    name: str | None = None
+    org_id: str | None = None
+    active: bool | None = None
+    base_url: str | None = None
+    client_id: str | None = None
+    client_secret: str | None = None
+    scopes: str | None = None
 
 
 class IdentityProviderInfo(BaseModel):
