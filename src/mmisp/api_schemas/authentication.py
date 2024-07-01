@@ -12,6 +12,16 @@ class ChangeLoginInfoResponse(BaseModel):
     successful: bool
 
 
+class IdentityProviderBody(BaseModel):
+    name: str
+    org_id: str
+    active: bool
+    base_url: str
+    client_id: str
+    client_secret: str
+    scope: str | None = None
+
+
 class IdentityProviderEditBody(BaseModel):
     name: str | None = None
     org_id: str | None = None
@@ -19,7 +29,7 @@ class IdentityProviderEditBody(BaseModel):
     base_url: str | None = None
     client_id: str | None = None
     client_secret: str | None = None
-    scopes: str | None = None
+    scope: str | None = None
 
 
 class IdentityProviderInfo(BaseModel):
