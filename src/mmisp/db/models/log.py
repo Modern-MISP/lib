@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, Integer, String, Text
 
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -20,14 +20,14 @@ class Log(Base):
     __tablename__ = "logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    title: Mapped[str] = mapped_column(String(255), nullable=True)
+    title: Mapped[str] = mapped_column(Text, nullable=True)
     created: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     model: Mapped[str] = mapped_column(String(80), nullable=False)
     model_id: Mapped[int] = mapped_column(Integer, nullable=False)
     action: Mapped[str] = mapped_column(String(20), nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    change: Mapped[str] = mapped_column(String(255), nullable=True)
+    change: Mapped[str] = mapped_column(Text, nullable=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     org: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String(255), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
     ip: Mapped[str] = mapped_column(String(45), nullable=False)
