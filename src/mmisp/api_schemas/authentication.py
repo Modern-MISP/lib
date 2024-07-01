@@ -55,6 +55,7 @@ class PasswordLoginBody(BaseModel):
 
 class ChangePasswordBody(BaseModel):
     password: str
+    oldPassword: str | None = None
 
 class ExchangeTokenLoginBody(BaseModel):
     exchangeToken: str
