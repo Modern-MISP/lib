@@ -298,7 +298,7 @@ class GraphFactory:
             on_demand_filter=cls.__build_filter(data.get("saved_filters", {})),
             # FIXME maybe check if version is too old?
             previous_version=data.get("previous_module_version", "?"),
-            version=data.get("module_version", module_cls.__dict__["version"]),
+            version=data.get("module_version", module_cls.__dict__.get("version", "0.0")),
             apperance=apperance,
             configuration=ModuleConfiguration(data=dict(data.get("indexed_params", {}))),
         )

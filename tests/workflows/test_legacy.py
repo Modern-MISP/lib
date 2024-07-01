@@ -20,7 +20,7 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert str(frame.uuid) == "072abe47-f136-4ef2-8932-1b67af93e27b"
 
     # make sure the root is also the first node
-    assert graph.root == graph.nodes[1]
+    assert graph.root is graph.nodes[1]
     assert isinstance(graph.root, Trigger)
 
     # ONLY one trigger
@@ -33,7 +33,7 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     # local ID of the previous node
     assert graph.root.outputs[1][0][0] == 1
     first_node: ModuleAttributeCommentOperation = graph.root.outputs[1][0][1]
-    assert first_node.inputs[1][0][1] == graph.root
+    assert first_node.inputs[1][0][1] is graph.root
     assert isinstance(first_node, ModuleAttributeCommentOperation)
 
     assert first_node.configuration.data["comment"] == "just a test :D"
@@ -43,7 +43,7 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert len(first_node.outputs[1]) == 1
     assert isinstance(next_node, ModuleTagIf)
     assert len(next_node.inputs) == 1
-    assert next_node.inputs[1][0][1] == first_node
+    assert next_node.inputs[1][0][1] is first_node
     assert len(next_node.outputs) == 2
 
     assert next_node.id == "tag-if"
@@ -94,12 +94,28 @@ def test_invalid_class_type() -> None:
         pass
 
 
+def test_undefined_version(enrichment_before_query_workflow: Dict[str, Any]) -> None:
+    workflow = GraphFactory.jsondict2graph(enrichment_before_query_workflow)
+
+    assert isinstance(workflow.nodes[1], Trigger)
+
+    assert workflow.nodes[2].id == "attach-warninglist"
+    assert workflow.nodes[2].version == "0.0"  # the fallback
+
+
 def test_symmetry(attribute_after_save_workflow: Dict[str, Any], empty_workflow: Dict[str, Any]) -> None:
     for workflow in [
         attribute_after_save_workflow,
         empty_workflow,
     ]:
         assert workflow == GraphFactory.graph2jsondict(GraphFactory.jsondict2graph(workflow))
+
+
+@pytest.fixture
+def enrichment_before_query_workflow() -> Dict[str, Any]:
+    return loads(
+        """{\"1\":{\"class\":\"block-type-trigger\",\"data\":{\"id\":\"enrichment-before-query\",\"scope\":\"others\",\"name\":\"Enrichment Before Query\",\"description\":\"This trigger is called just before a query against the enrichment service is done\",\"icon\":\"asterisk\",\"inputs\":0,\"outputs\":1,\"blocking\":true,\"misp_core_format\":true,\"trigger_overhead\":1,\"trigger_overhead_message\":\"\",\"is_misp_module\":false,\"is_custom\":false,\"expect_misp_core_format\":false,\"version\":\"0.1\",\"icon_class\":\"\",\"multiple_output_connection\":false,\"support_filters\":false,\"saved_filters\":[{\"text\":\"selector\",\"value\":\"\"},{\"text\":\"value\",\"value\":\"\"},{\"text\":\"operator\",\"value\":\"\"},{\"text\":\"path\",\"value\":\"\"}],\"params\":[],\"module_type\":\"trigger\",\"html_template\":\"trigger\",\"disabled\":true},\"id\":1,\"inputs\":[],\"outputs\":{\"output_1\":{\"connections\":[{\"node\":\"2\",\"output\":\"input_1\"}]}},\"pos_x\":0,\"pos_y\":0,\"typenode\":false},\"2\":{\"id\":2,\"data\":{\"id\":\"attach-warninglist\",\"name\":\"Attach warninglist\",\"module_type\":\"action\",\"indexed_params\":[]},\"pos_x\":700,\"pos_y\":0,\"inputs\":{\"input_1\":{\"connections\":[{\"node\":\"1\",\"input\":\"output_1\"},{\"node\":\"3\",\"input\":\"output_1\"}]}},\"outputs\":{\"output_1\":{\"connections\":[]}}},\"3\":{\"id\":3,\"data\":{\"id\":\"attach-warninglist\",\"name\":\"Attach warninglist\",\"module_type\":\"action\",\"indexed_params\":[]},\"pos_x\":0,\"pos_y\":-500,\"inputs\":{\"input_1\":{\"connections\":[{\"node\":\"4\",\"input\":\"output_1\"}]}},\"outputs\":{\"output_1\":{\"connections\":[{\"node\":\"2\",\"output\":\"input_1\"}]}}},\"4\":{\"id\":4,\"data\":{\"id\":\"Module_attribute_comment_operation\",\"name\":\"Attribute comment operation\",\"module_type\":\"action\",\"indexed_params\":[]},\"pos_x\":-450,\"pos_y\":-600,\"inputs\":{\"input_1\":{\"connections\":[]}},\"outputs\":{\"output_1\":{\"connections\":[{\"node\":\"3\",\"output\":\"input_1\"}]}}}}"""  # noqa
+    )
 
 
 @pytest.fixture
