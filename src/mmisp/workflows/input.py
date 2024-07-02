@@ -217,7 +217,7 @@ class Filter:
         tokens = path.split('.')
         return _recursive_delete(data, tokens)
     
-    def apply(self: Self, data: dict | list) -> RoamingData:
+    def apply(self: Self, data: RoamingData) -> RoamingData:
 
         self._remove_not_matching_data(data, self.selector + '.' + self.path)
         return data
