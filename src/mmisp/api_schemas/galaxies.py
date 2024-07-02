@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from pydantic import BaseModel
 
@@ -188,7 +188,7 @@ class GalaxyClustersViewResponse(BaseModel):
     Org: mmisp.api_schemas.organisations.Organisation
     Orgc: mmisp.api_schemas.organisations.Organisation
     TargetingClusterRelation: list[TargetingClusterRelation] | None = None
-    RelationshipInbound: list[any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
+    RelationshipInbound: list[Any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
 
 class TargetingClusterRelation(BaseModel):
     id: int
