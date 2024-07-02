@@ -152,7 +152,7 @@ class Filter:
             pass
         return False
     
-    def _extract(self, data, path):
+    def _extract(self, data, path, filter_value):
         """
         Extracts values from a nested dictionary based on cakePHP hash path.
         Returns a list of extracted values.
@@ -163,27 +163,39 @@ class Filter:
 
         """
 
-        def _recursive_extract(data, tokens):
+        def _recursive_delete(data, tokens):
             """
             Recursive helper method for extracting values based on tokens.
             """
 
             if not tokens:
-                return [data]
+                #FIXME 0/1 better names etc.
+                if data == filter_value:
+                    return 0
+                return 1
             
             token = tokens.pop(0)
-            results = []
             
             if isinstance(data, dict):
                 #go through every key, value pair in dict and match the current token from the path
                 for key, value in data.items():
                     if _match_token(key, token):
-                        results.extend(_recursive_extract(value, tokens.copy()))
+                        #put in extra function
+                        return_code = _recursive_delete(value, tokens.copy())
+                        if return_code == 1:
+                            return data
+                        elif return_code != 0 and return_code != None:
+                            print("TODO")
+                            #FIXME what happenes if the element shouldnt be removed from a list?
+                            
             elif isinstance(data, list):
-                for item in data:
-                    results.extend(_recursive_extract(item, tokens.copy()))
-            
-            return results
+                for item in list(data):
+                    #put in extra function because should be same as this!
+                    return_code = _recursive_delete(item, tokens.copy())
+                    if return_code == 1:
+                            return data
+                    elif return_code != 0 and return_code != None:
+                        data.remove(return_code)
         
         
         def _match_token(key, token):
@@ -196,22 +208,13 @@ class Filter:
             
         #split path into tokens separated by dots.
         tokens = path.split('.')
-        return _recursive_extract(data, tokens)
+        return _recursive_delete(data, tokens)
     
     def apply(self: Self, data: dict | list):
-        
-        selection = self._extract(data, self.selector)
-
-        filtered_values = []
-
-        for element in selection:
-
-            values = self._extract(element, self.path)
-
-            for value in values:
-                if self.match_value(value):
-                    filtered_values.append(value)
-
+        #FIXME what does apply do?
+        #FIXME is path + selector mixing actually working?
+        selection = self._extract(data, self.selector + '.' + self.path, self.value)
+        return data
         #FIXME
         #able to extract the correct filtered values
         #how to create full filtered_data object
@@ -257,7 +260,7 @@ class WorkflowInput:
         OR a list with filter results if a filter was added
         using [`WorkflowInput.add_filter`][mmisp.workflows.input.WorkflowInput.add_filter].
         """
-        assert False
+        return self.__unfiltered_data
 
     def add_filter(self: Self, filter: Filter) -> None:
         """
