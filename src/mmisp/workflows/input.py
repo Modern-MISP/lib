@@ -149,9 +149,10 @@ class Filter:
             return value != None
         return False
     
-    def _remove_not_matching_data(self: Self, data: RoamingData, path: str):
+    def _remove_not_matching_data(self: Self, data: RoamingData, path: str) -> None:
         """
-        removes values from dictionary on  given cakePHP hash path that dont match the filter values and the filter operator
+        removes values from dictionary on  given cakePHP hash path that dont match 
+        the filter values and the filter operator
 
         Args:
             data (dict or list): The input data from which to extract values.
@@ -159,9 +160,7 @@ class Filter:
 
         """
 
-        
-
-        def _recursive_delete(data, tokens):
+        def _recursive_delete(data: RoamingData | list, tokens: list) -> Any:
             """
             Recursive helper method for deleting non matching values from the dictionary.
             If a non-matching value is found in the last recursion layer, this is returned
@@ -205,7 +204,7 @@ class Filter:
                         data.remove(return_code)
         
         
-        def _match_token(key, token):
+        def _match_token(key: str | int, token: str):
             #check if numeric key
             if token == '{n}':
                 return isinstance(key, int) or key.isdigit()
@@ -215,7 +214,7 @@ class Filter:
             
         #split path into tokens separated by dots.
         tokens = path.split('.')
-        return _recursive_delete(data, tokens)
+        _recursive_delete(data, tokens)
     
     def apply(self: Self, data: RoamingData) -> RoamingData:
 

@@ -12,7 +12,7 @@ def test_example():
 
 
 
-def load_event():
+def load_event() -> dict:
     data = {
         "Event": {
             "id": 1,
