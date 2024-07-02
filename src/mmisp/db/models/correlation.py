@@ -1,7 +1,8 @@
 from sqlalchemy import Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped
 
 from ..database import Base
+from ..mypy import mapped_column
 
 
 class OverCorrelatingValue(Base):

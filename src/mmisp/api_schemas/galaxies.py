@@ -39,8 +39,8 @@ class ExportGalaxyGalaxyElement(BaseModel):
 
 
 class GetGalaxyClusterResponse(BaseModel):
-    id: int | None = None
-    uuid: str | None = None
+    id: int
+    uuid: str
     collection_uuid: str
     type: str
     value: str
