@@ -204,7 +204,7 @@ class Filter:
                         data.remove(return_code)
         
         
-        def _match_token(key: str | int, token: str):
+        def _match_token(key: str | int, token: str) -> bool:
             #check if numeric key
             if token == '{n}':
                 return isinstance(key, int) or key.isdigit()
