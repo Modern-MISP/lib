@@ -24,7 +24,7 @@ class Operator(Enum):
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     ANY_VALUE = "any_value"
-    IN_OR = "in_or"
+    IN_OR = "in_or" #FIXME what does this do?
 
     @classmethod
     def from_str(cls: Type[Self], input: str) -> Self:
@@ -146,16 +146,12 @@ class Filter:
         elif self.operator == Operator.NOT_IN:
             return value not in self.value if isinstance(self.value, list) else False
         elif self.operator == Operator.ANY_VALUE:
-            return True
-        elif self.operator == Operator.IN_OR:
-            #FIXME idk what in or does
-            pass
+            return value != None
         return False
     
-    def _extract(self, data, path, filter_value):
+    def _remove_not_matching_data(self: Self, data: RoamingData, path: str):
         """
-        Extracts values from a nested dictionary based on cakePHP hash path.
-        Returns a list of extracted values.
+        removes values from dictionary on  given cakePHP hash path that dont match the filter values and the filter operator
 
         Args:
             data (dict or list): The input data from which to extract values.
@@ -163,38 +159,49 @@ class Filter:
 
         """
 
+        
+
         def _recursive_delete(data, tokens):
             """
-            Recursive helper method for extracting values based on tokens.
+            Recursive helper method for deleting non matching values from the dictionary.
+            If a non-matching value is found in the last recursion layer, this is returned
+            to the layer before that with the status "no_match". This layer then returns the
+            current data object for the 3rd last recursion layer to remove the non-matching value
+            from the dictionary.
             """
 
+            
             if not tokens:
-                #FIXME 0/1 better names etc.
-                if data == filter_value:
-                    return 0
-                return 1
+                #path destination and last recursion layer
+                #compare the found value in the dict with the given value from the filter
+                #using the operator from the filter.
+                if self.match_value(data):
+                    return "match"
+                return "no_match"
             
             token = tokens.pop(0)
             
             if isinstance(data, dict):
                 #go through every key, value pair in dict and match the current token from the path
-                for key, value in data.items():
+                for key, value in dict(data).items():
                     if _match_token(key, token):
-                        #put in extra function
+                        
                         return_code = _recursive_delete(value, tokens.copy())
-                        if return_code == 1:
+                        if return_code == "no_match":
                             return data
-                        elif return_code != 0 and return_code != None:
-                            print("TODO")
-                            #FIXME what happenes if the element shouldnt be removed from a list?
+                        elif return_code != "match" and return_code != None:
+                                                        
+                            for key, value in dict(data).items():
+                                if return_code == value:
+                                    del data[key]
                             
             elif isinstance(data, list):
                 for item in list(data):
-                    #put in extra function because should be same as this!
+                    
                     return_code = _recursive_delete(item, tokens.copy())
-                    if return_code == 1:
-                            return data
-                    elif return_code != 0 and return_code != None:
+                    if return_code == "no_match":
+                        return data
+                    elif return_code != "match" and return_code != None:
                         data.remove(return_code)
         
         
@@ -210,15 +217,11 @@ class Filter:
         tokens = path.split('.')
         return _recursive_delete(data, tokens)
     
-    def apply(self: Self, data: dict | list):
-        #FIXME what does apply do?
-        #FIXME is path + selector mixing actually working?
-        selection = self._extract(data, self.selector + '.' + self.path, self.value)
-        return data
-        #FIXME
-        #able to extract the correct filtered values
-        #how to create full filtered_data object
+    def apply(self: Self, data: dict | list) -> RoamingData:
 
+        self._remove_not_matching_data(data, self.selector + '.' + self.path)
+        return data
+    
 class WorkflowInput:
     """
     When a workflow gets executed, it gets input data. For
@@ -246,9 +249,11 @@ class WorkflowInput:
     """
 
     filters: list[Filter]
+    __filtered_data: list[RoamingData]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
+        self.__filtered_data = []
         self.user = user
         self.workflow = workflow
         self.filters = []
@@ -260,7 +265,17 @@ class WorkflowInput:
         OR a list with filter results if a filter was added
         using [`WorkflowInput.add_filter`][mmisp.workflows.input.WorkflowInput.add_filter].
         """
-        return self.__unfiltered_data
+
+        if len(self.filters) == 0:
+            return self.__unfiltered_data
+
+        return self.__filtered_data
+
+    def filter(self: Self) -> None:
+
+        for filter in self.filters:
+            current_filter_data = filter.apply(self.__unfiltered_data.copy())
+            self.__filtered_data.append(current_filter_data)
 
     def add_filter(self: Self, filter: Filter) -> None:
         """

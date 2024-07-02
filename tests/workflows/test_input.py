@@ -4,13 +4,11 @@ from mmisp.workflows.input import Filter, Operator, WorkflowInput
 def test_example():
     data = load_event()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "IVE tag")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "NCT tag")
 
     input.add_filter(fil)
-    result = fil.apply(input.data)
-
-    assert 1
-
+    input.filter()
+    assert isinstance(input.data, list)
 
 
 
@@ -35,27 +33,33 @@ def load_event():
                 {
                     "id": 33,
                     "type": "ip-src",
-                    "Tag": [
-                        {
-                        "id": 127,
-                        "name": "gr tag",
-                        "exportable": True
+                    "Tag": {
+                        "1": {
+                            "id": 127,
+                            "name": "gr tag",
+                            "exportable": True
                         },
-                        {
-                        "id": 127,
-                        "name": "NCT tag",
-                        "exportable": True
+                        "2": {
+                            "id": 4,
+                            "name": "NCT tag",
+                            "exportable": True
                         }
-                    ]
+                    }
+                        
                 },
                 {
                     "id": 35,
                     "type": "wow",
                     "Tag": [
                         {
-                        "id": 333,
-                        "name": "IVE tag",
-                        "exportable": True
+                            "id": 333,
+                            "name": "IVE tag",
+                            "exportable": True
+                        },
+                        {
+                            "id": 5,
+                            "name": "BTS tag",
+                            "exportable": False
                         }
                     ]
                 }
