@@ -120,6 +120,101 @@ class Filter:
     the item below `path` against `value`.
     """
 
+    def __init__(self: Self, selector: str, path: str, operator: Operator, value: str | List[str]) -> None:
+        self.selector = selector
+        self.path = path
+        self.operator = operator
+        self.value = value
+
+    def match_value(self: Self, value: Any) -> bool:
+        """
+        Check if a value matches a filter.
+
+        Arguments:
+            value: The value to check.
+            filter: The filter to match against.
+
+        Returns:
+            True if the value matches the filter, False otherwise.
+        """
+        if self.operator == Operator.EQUALS:
+            return value == self.value
+        elif self.operator == Operator.NOT_EQUALS:
+            return value != self.value
+        elif self.operator == Operator.IN:
+            return value in self.value if isinstance(self.value, list) else False
+        elif self.operator == Operator.NOT_IN:
+            return value not in self.value if isinstance(self.value, list) else False
+        elif self.operator == Operator.ANY_VALUE:
+            return True
+        elif self.operator == Operator.IN_OR:
+            #FIXME idk what in or does
+            pass
+        return False
+    
+    def _extract(self, data, path):
+        """
+        Extracts values from a nested dictionary based on cakePHP hash path.
+        Returns a list of extracted values.
+
+        Args:
+            data (dict or list): The input data from which to extract values.
+            path (str): The path string specifying which values to extract.
+
+        """
+
+        def _recursive_extract(data, tokens):
+            """
+            Recursive helper method for extracting values based on tokens.
+            """
+
+            if not tokens:
+                return [data]
+            
+            token = tokens.pop(0)
+            results = []
+            
+            if isinstance(data, dict):
+                #go through every key, value pair in dict and match the current token from the path
+                for key, value in data.items():
+                    if _match_token(key, token):
+                        results.extend(_recursive_extract(value, tokens.copy()))
+            elif isinstance(data, list):
+                for item in data:
+                    results.extend(_recursive_extract(item, tokens.copy()))
+            
+            return results
+        
+        
+        def _match_token(key, token):
+            #check if numeric key
+            if token == '{n}':
+                return isinstance(key, int) or key.isdigit()
+            else:
+                #check for exact key in dict.
+                return key == token
+            
+        #split path into tokens separated by dots.
+        tokens = path.split('.')
+        return _recursive_extract(data, tokens)
+    
+    def apply(self: Self, data: dict | list):
+        
+        selection = self._extract(data, self.selector)
+
+        filtered_values = []
+
+        for element in selection:
+
+            values = self._extract(element, self.path)
+
+            for value in values:
+                if self.match_value(value):
+                    filtered_values.append(value)
+
+        #FIXME
+        #able to extract the correct filtered values
+        #how to create full filtered_data object
 
 class WorkflowInput:
     """
@@ -147,18 +242,13 @@ class WorkflowInput:
     Reference to the workflow object being executed.
     """
 
-    user_messages: List[str] = []
-    """
-    List of user messages collected along the way. Those are not for debugging
-    purposes, but for informational purposes. For instance, we can use this to
-    indicate that an event was published along the way or why
-    the execution was blocked.
-    """
+    filters: list[Filter]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
         self.user = user
         self.workflow = workflow
+        self.filters = []
 
     @property
     def data(self: Self) -> RoamingData | List[RoamingData]:
@@ -178,6 +268,8 @@ class WorkflowInput:
             filter: Filter to be added.
         """
 
+        self.filters.append(filter)
+
     def reset_filters(self: Self) -> None:
         """
         Removes all filters from the workflow input.
@@ -185,3 +277,4 @@ class WorkflowInput:
         will contain all of the data it has instead of a
         filtered portion now.
         """
+        self.filters = []
