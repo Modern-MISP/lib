@@ -8,8 +8,14 @@ is implemented.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Self, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Self, Tuple
 from uuid import UUID
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+if TYPE_CHECKING:
+    from .input import Filter, WorkflowInput
+    from .modules import ModuleConfiguration, Overhead
 
 NodeConnection = Tuple[int, "Node"]
 
@@ -278,6 +284,183 @@ class Node(ABC):
         assert False
 
 
+@dataclass(kw_only=True)
+class Module(Node):
+    """
+    A module is a workflow node that is either
+
+    * an action, i.e. performs an operation with an observable effect
+    * a logic module, i.e. forwards to a different module based on
+      a condition
+    * a filter, i.e. manipulates the
+      [`WorkflowInput`][mmisp.workflows.input.WorkflowInput].
+
+    A module implementation can be provided by writing a subclass that
+    assigns values to at least `id`, `version`, `name`.
+    """
+
+    configuration: "ModuleConfiguration"
+    """
+    Values for the params required by this module.
+    """
+
+    on_demand_filter: Optional["Filter"]
+    """
+    Some modules allow filtering of data internally without modifying
+    [`WorkflowInput`][mmisp.workflows.input.WorkflowInput]. The filter
+    used for that is defined by this attribute.
+    """
+
+    previous_version: str = "?"
+    """
+    Previously used version of the module.
+    """
+
+    id: str
+    """
+    Unique identifier of the module. To be declared in the
+    subclass implementing a concrete module.
+    """
+
+    name: str
+    """
+    Human-readable identifier of the module. To be declared in the
+    subclass implementing a concrete module.
+    """
+
+    version: str = "0.0"
+    """
+    Current version of the module. To be declared in the
+    subclass implementing a concrete module.
+    """
+
+    html_template: str = ""
+    """
+    HTML template provided by the visual editor to use.
+    To be declared in the subclass implementing a concrete module.
+    """
+
+    on_demand_filtering_enabled: bool = False
+    """
+    Whether internal filtering is enabled.
+    """
+
+    enable_multiple_edges_per_output: bool = False
+    """
+    Whether it's OK to have multiple edges going from a single output.
+    See [`Node`][mmisp.workflows.graph.Node] for more context. Used by e.g. the concurrent
+    tasks module.
+    """
+
+    expect_misp_core_format: bool = True
+    """
+    Whether the workflow JSON is expected to be in the MISP format
+    as defined in
+    `https://www.misp-standard.org/rfc/misp-standard-core.html`.
+    """
+
+    blocking: bool = False
+    """
+    Whether or not the module is blocking, i.e. can abort the
+    workflow if it fails. If it's not blocking and fails,
+    execution continues.
+    """
+
+    async def initialize(self: Self, db: AsyncSession) -> None:
+        """
+        Initializes the parameters for a module. Done in a method
+        since that may involve further DB operations.
+
+        Arguments:
+            db: SQLAlchemy session
+        """
+
+    def is_initialized(self: Self) -> bool:
+        """
+        Checks if the module was initialized which happens by calling
+        [`Module.initialize`][mmisp.workflows.modules.Module.initialize].
+        It's expected that the attribute
+        `params` will be set by this method.
+        """
+        return hasattr(self, "params")
+
+    def exec(self: Self, payload: "WorkflowInput") -> Tuple[bool, Self | None]:
+        """
+        Executes the module using the specific payload given by the workflow that calls
+        the execution of the module.
+        Execution strongly depends on the type of the module that is executed.
+
+        The first component of the tuple indicates whether execution was successful.
+        The second component of the tuple is the next node to be executed.
+
+        Since this library allows arbitrarily many inputs & outputs, we cannot infer
+        the next module from the success of the execution of this module (relevant for
+        e.g. if/else).
+
+        Arguments:
+            payload: The workflows input for the specific module execution.
+        """
+        assert False
+
+
+@dataclass(kw_only=True)
+class Trigger(Node):
+    """
+    A trigger represents the starting point of a workflow.
+    It can have only one output and no inputs. Each trigger
+    is represented by this class, the attributes are loaded
+    from the DB.
+
+    Legacy MISP provides subclasses for each triggers, but
+    since the properties were saved into the database anyways
+    and no behavior was added to those classes, the idea was
+    dropped entirely in MMISP.
+    """
+
+    name: str
+    """
+    Name of the trigger.
+    """
+
+    scope: str
+    """
+    Scope the trigger operates on. E.g. `event` or `attribute`.
+    """
+
+    description: str
+    """
+    Human-readable description of when the trigger gets executed.
+    """
+
+    expect_misp_core_format: bool
+    """
+    Whether the workflow JSON is expected to be in the MISP format
+    as defined in
+    `https://www.misp-standard.org/rfc/misp-standard-core.html`.
+    """
+
+    blocking: bool
+    """
+    If the workflow of a blocking trigger fails, the actual
+    operation won't be carried out. For instance, if the
+    "event before save"-trigger fails, the event will not
+    besaved.
+    """
+
+    overhead: "Overhead"
+    """
+    Indicates the expensiveness/overhead of the trigger
+    as indicated by the [`Overhead`][mmisp.workflows.modules.Overhead] enum.
+    """
+
+    raw_data: Dict[str, Any]
+    """
+    Dictionary with arbitrary values passed to the visual editor.
+    """
+
+    n_inputs: int = 0
+
+
 @dataclass
 class Frame:
     """
@@ -312,14 +495,14 @@ class Graph(ABC):
     A representation of a workflow graph. Consists of
     """
 
-    nodes: Dict[int, Node]
+    nodes: Dict[int, Trigger | Module]
     """
     A list of all nodes inside the graph. Edges are represented by nodes
     having references to other nodes in their
     `inputs`/`outputs`.
     """
 
-    root: Node
+    root: Trigger | Module
     """
     Reference to the root of the graph.
     """
@@ -335,9 +518,40 @@ class Graph(ABC):
         Checks if the graph's structure is valid. Works as described in
         [`GraphValidationResult`][mmisp.workflows.graph.GraphValidationResult].
         """
-        pass
 
-    from .modules import initialize_graph_modules  # type:ignore[misc]
+    async def initialize_graph_modules(self: Self, db: AsyncSession) -> None:
+        """
+        This method is declared in `mmisp.workflows.modules`, but
+        is a method of is part of [`Graph`][mmisp.workflows.graph.Graph].
+        It injects `db` into each module. This is done to avoid
+        circular import situations.
+
+        !!! note
+            For now, this is necessary since modules may require other
+            objects from the database. E.g. the
+            [`ModuleOrganisationIf`][mmisp.workflows.modules.ModuleOrganisationIf]
+            loads the names of all organisations.
+
+            There are a few ways forward:
+
+            * Implement a more sophisticated SQLAlchemy type that
+              allows to query other entities while placing the JSON
+              into the [`Graph`][mmisp.workflows.graph.Graph] structure.
+
+            * Factor the :attribute:`mmisp.workflows.modules.Module.params`
+              structure out and inject it into the workflow editor on its own.
+
+            For modernizing legacy MISP's workflows and retaining backwards
+            compatibility, just injecting the DB into each node at the
+            beginning is the simplest solution though.
+
+        Arguments:
+            db: SQLAlchemy DB session.
+        """
+        for node in self.nodes:
+            if isinstance(node, Module):
+                await node.initialize(db)
+                assert node.is_initialized()
 
 
 class WorkflowGraph(Graph):

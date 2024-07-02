@@ -19,12 +19,14 @@ from .graph import (
     Frame,
     Graph,
     GraphValidationResult,
+    Module,
     Node,
     NodeConnection,
+    Trigger,
     WorkflowGraph,
 )
 from .input import Filter, Operator
-from .modules import Module, ModuleAction, ModuleConfiguration, ModuleLogic, ModuleRegistry, Overhead, Trigger
+from .modules import ModuleAction, ModuleConfiguration, ModuleLogic, ModuleRegistry, Overhead
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
@@ -239,7 +241,9 @@ class GraphFactory:
         return WorkflowGraph(nodes, next(iter(nodes.values())), frames.values())
 
     @classmethod
-    def __resolve_ports(cls: Type[Self], id: int, data: Dict[str, Any], direction: str, nodes: Dict[int, Node]) -> None:
+    def __resolve_ports(
+        cls: Type[Self], id: int, data: Dict[str, Any], direction: str, nodes: Dict[int, Module | Trigger]
+    ) -> None:
         dir_plural = f"{direction}s"
         for my_port_str, connections in cls.__portlist_to_dict_items(data[dir_plural]):
             my_port = cls.__port_to_num(my_port_str)
@@ -266,7 +270,7 @@ class GraphFactory:
         return int(result.group("num"))
 
     @classmethod
-    def __build_node(cls: Type[Self], input: Dict[str, Any]) -> Node:
+    def __build_node(cls: Type[Self], input: Dict[str, Any]) -> Module | Trigger:
         data = input["data"]
         apperance = Apperance(
             pos=tuple(map(float, [input["pos_x"], input["pos_y"]])),  # type:ignore[arg-type]

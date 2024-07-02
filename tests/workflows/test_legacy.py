@@ -4,9 +4,9 @@ from typing import Any, Dict
 
 import pytest
 
-from mmisp.workflows.graph import Apperance, Node, WorkflowGraph
+from mmisp.workflows.graph import Apperance, Node, Trigger, WorkflowGraph
 from mmisp.workflows.legacy import GraphFactory
-from mmisp.workflows.modules import ModuleAttributeCommentOperation, ModuleTagIf, Overhead, Trigger
+from mmisp.workflows.modules import ModuleAttributeCommentOperation, ModuleTagIf, Overhead
 
 
 def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:

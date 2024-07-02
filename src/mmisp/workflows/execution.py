@@ -2,11 +2,13 @@
 Models related to the execution of workflows.
 """
 
-from .graph import WorkflowGraph
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..db.models.workflow import Workflow
 from .input import WorkflowInput
 
 
-def execute_workflow(workflow: WorkflowGraph, input: WorkflowInput) -> bool:
+async def execute_workflow(workflow: Workflow, input: WorkflowInput, db: AsyncSession) -> bool:
     """
     Provides the functionality for executing a workflow, which consists of traversing
     the given workflow graph and its modules and executing these modules with their specific
@@ -16,4 +18,5 @@ def execute_workflow(workflow: WorkflowGraph, input: WorkflowInput) -> bool:
         workflow: The Graph representation of the workflow to be executed.
         input:    Initial payload for the workflow.
     """
+
     return True
