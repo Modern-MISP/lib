@@ -17,4 +17,4 @@ class AttributeWithTagRelationship(GetAttributeAttributes):
     Encapsulates a full MISP Attribute with all it's tags and tag relationships.
     """
 
-    Tag: list[AttributeTagWithRelationshipType]
+    Tag: list[AttributeTagWithRelationshipType] | None = None

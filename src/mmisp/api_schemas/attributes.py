@@ -200,8 +200,8 @@ class GetAttributeAttributes(BaseModel):
     distribution: str
     sharing_group_id: int
     comment: str | None = None
-    deleted: bool
-    disable_correlation: bool
+    deleted: bool = False
+    disable_correlation: bool = False
     first_seen: Optional[str] = Field(..., nullable=True)
     last_seen: Optional[str] = Field(..., nullable=True)
     event_uuid: str
