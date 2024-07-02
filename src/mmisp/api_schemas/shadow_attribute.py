@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from mmisp.api_schemas.organisations import ShadowAttributeOrganisation
+
 
 class ShadowAttribute(BaseModel):
     id: int

@@ -36,7 +36,7 @@ class ObjectSearchBody(BaseModel):
     return_format: str | None = "json"
     limit: str | None = "25"
 
-    @validator("limit")
+    @validator("limit", allow_reuse=True)
     @classmethod
     def check_limit(cls: Type["ObjectSearchBody"], value: Any) -> str:  # noqa: ANN101
         if value:
@@ -74,7 +74,8 @@ class ObjectWithAttributesResponse(BaseModel):
 
     @validator("sharing_group_id", always=True)
     @classmethod
-    def check_sharing_group_id(cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    def check_sharing_group_id(cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]) -> \
+    Optional[int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
@@ -100,7 +101,7 @@ class ObjectCreateBody(BaseModel):
     meta_category: str | None = None
     description: str | None = None
     distribution: str | None = None
-    sharing_group_id: int = Field(min_length=1)
+    sharing_group_id: int
     comment: str = Field(min_length=1)
     deleted: bool | None = None
     first_seen: str | None = None
