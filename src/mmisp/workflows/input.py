@@ -24,7 +24,7 @@ class Operator(Enum):
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     ANY_VALUE = "any_value"
-    IN_OR = "in_or" #FIXME what does this do?
+    IN_OR = "in_or"  # FIXME what does this do?
 
     @classmethod
     def from_str(cls: Type[Self], input: str) -> Self:
@@ -148,10 +148,10 @@ class Filter:
         elif self.operator == Operator.ANY_VALUE:
             return value != None
         return False
-    
+
     def _remove_not_matching_data(self: Self, data: RoamingData, path: str) -> None:
         """
-        removes values from dictionary on  given cakePHP hash path that dont match 
+        removes values from dictionary on  given cakePHP hash path that dont match
         the filter values and the filter operator
 
         Args:
@@ -169,58 +169,53 @@ class Filter:
             from the dictionary.
             """
 
-            
             if not tokens:
-                #path destination and last recursion layer
-                #compare the found value in the dict with the given value from the filter
-                #using the operator from the filter.
+                # path destination and last recursion layer
+                # compare the found value in the dict with the given value from the filter
+                # using the operator from the filter.
                 if self.match_value(data):
                     return "match"
                 return "no_match"
-            
+
             token = tokens.pop(0)
-            
+
             if isinstance(data, dict):
-                #go through every key, value pair in dict and match the current token from the path
+                # go through every key, value pair in dict and match the current token from the path
                 for key, value in dict(data).items():
                     if _match_token(key, token):
-                        
                         return_code = _recursive_delete(value, tokens.copy())
                         if return_code == "no_match":
                             return data
                         elif return_code != "match" and return_code != None:
-                                                        
                             for key, value in dict(data).items():
                                 if return_code == value:
                                     del data[key]
-                            
+
             elif isinstance(data, list):
                 for item in list(data):
-                    
                     return_code = _recursive_delete(item, tokens.copy())
                     if return_code == "no_match":
                         return data
                     elif return_code != "match" and return_code != None:
                         data.remove(return_code)
-        
-        
+
         def _match_token(key: str | int, token: str) -> bool:
-            #check if numeric key
-            if token == '{n}':
+            # check if numeric key
+            if token == "{n}":
                 return isinstance(key, int) or key.isdigit()
             else:
-                #check for exact key in dict.
+                # check for exact key in dict.
                 return key == token
-            
-        #split path into tokens separated by dots.
-        tokens = path.split('.')
-        _recursive_delete(data, tokens)
-    
-    def apply(self: Self, data: RoamingData) -> RoamingData:
 
-        self._remove_not_matching_data(data, self.selector + '.' + self.path)
+        # split path into tokens separated by dots.
+        tokens = path.split(".")
+        _recursive_delete(data, tokens)
+
+    def apply(self: Self, data: RoamingData) -> RoamingData:
+        self._remove_not_matching_data(data, self.selector + "." + self.path)
         return data
-    
+
+
 class WorkflowInput:
     """
     When a workflow gets executed, it gets input data. For
@@ -271,7 +266,6 @@ class WorkflowInput:
         return self.__filtered_data
 
     def filter(self: Self) -> None:
-
         for filter in self.filters:
             current_filter_data = filter.apply(self.__unfiltered_data.copy())
             self.__filtered_data.append(current_filter_data)
