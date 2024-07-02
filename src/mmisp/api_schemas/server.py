@@ -18,7 +18,7 @@ class ServerVersion(BaseModel):
 
 class Server(BaseModel):
     id: int
-    name: str | None = None
+    name: str
     url: str
     org_id: int
     push: bool
@@ -35,15 +35,15 @@ class Server(BaseModel):
     publish_without_email: bool
     unpublish_event: bool
     self_signed: bool
-    pull_rules: str | None = None
-    push_rules: str | None = None
+    pull_rules: str
+    push_rules: str
     cert_file: str | None = None
     client_cert_file: str | None = None
     internal: bool
     skip_proxy: bool
     remove_missing_tags: bool
     caching_enabled: bool
-    priority: int
+    priority: int | None = None
     cache_timestamp: bool
 
 
