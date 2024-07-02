@@ -1,6 +1,7 @@
 from sqlalchemy import DateTime, Integer, Text, text
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.orm import Mapped, mapped_column
+
+from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
 
