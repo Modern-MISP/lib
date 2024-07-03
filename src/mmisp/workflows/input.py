@@ -299,8 +299,8 @@ class WorkflowInput:
     Reference to the workflow object being executed.
     """
 
-    filters: list[Filter]
-    __filtered_data: list[RoamingData]
+    filters: List[Filter]
+    __filtered_data: list[Any]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
