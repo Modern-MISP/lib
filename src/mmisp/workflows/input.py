@@ -100,6 +100,11 @@ class Filter:
     [CakePHP hash path](https://book.cakephp.org/3/en/core-libraries/hash.html)
     since existing legacy MISP filters are using that format
     as well.
+    MMSIP filter currently only support limited hash path functionality.
+    Supported features are the dot-separated paths consisting of keys and
+    '{n}' indicating iterating over a list or a dictionary with numeric keys.
+
+    Additional hash path functionality such as Matchers could be added to MMISP later.
     """
 
     path: str
@@ -126,7 +131,7 @@ class Filter:
         self.operator = operator
         self.value = value
 
-    def match_value(self: Self, value: Any) -> bool:
+    def match_value(self: Self, value: str) -> bool:
         """
         Check if a value matches a filter.
 
@@ -149,7 +154,54 @@ class Filter:
             return value != None
         return False
 
-    def _remove_not_matching_data(self: Self, data: RoamingData, path: str) -> None:
+    def _match_token(self: Self, key: str | int, token: str) -> bool:
+        # check if numeric key
+        if token == "{n}":
+            return isinstance(key, int) or key.isdigit()
+        else:
+            # check for exact key in dict.
+            return key == token
+
+    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData]:
+        """
+        Extracts values from a nested dictionary based selector (cakePHP hash path).
+        Returns a list of extracted values.
+
+        Args:
+            data (dict or list): The input data from which to extract values.
+            path (str): The path string specifying which values to extract.
+
+        """
+
+        path = self.selector
+
+        def _recursive_extract(data: RoamingData, tokens: List[str]) -> list:
+            """
+            Recursive helper method for extracting values based on tokens.
+            """
+
+            if not tokens:
+                return [data]
+
+            token = tokens.pop(0)
+            results = []
+
+            if isinstance(data, dict):
+                # go through every key, value pair in dict and match the current token from the path
+                for key, value in data.items():
+                    if self._match_token(key, token):
+                        results.extend(_recursive_extract(value, tokens.copy()))
+            elif isinstance(data, list):
+                for item in data:
+                    results.extend(_recursive_extract(item, tokens.copy()))
+
+            return results
+
+        # split path into tokens separated by dots.
+        tokens = path.split(".")
+        return _recursive_extract(data, tokens)
+
+    def _remove_not_matching_data(self: Self, selection: RoamingData, data: RoamingData, path: str) -> None:
         """
         removes values from dictionary on  given cakePHP hash path that dont match
         the filter values and the filter operator
@@ -173,7 +225,7 @@ class Filter:
                 # path destination and last recursion layer
                 # compare the found value in the dict with the given value from the filter
                 # using the operator from the filter.
-                if self.match_value(data):
+                if self.match_value(str(data)):
                     return "match"
                 return "no_match"
 
@@ -182,7 +234,7 @@ class Filter:
             if isinstance(data, dict):
                 # go through every key, value pair in dict and match the current token from the path
                 for key, value in dict(data).items():
-                    if _match_token(key, token):
+                    if self._match_token(key, token):
                         return_code = _recursive_delete(value, tokens.copy())
                         if return_code == "no_match":
                             return data
@@ -199,21 +251,25 @@ class Filter:
                     elif return_code != "match" and return_code != None:
                         data.remove(return_code)
 
-        def _match_token(key: str | int, token: str) -> bool:
-            # check if numeric key
-            if token == "{n}":
-                return isinstance(key, int) or key.isdigit()
-            else:
-                # check for exact key in dict.
-                return key == token
-
         # split path into tokens separated by dots.
         tokens = path.split(".")
-        _recursive_delete(data, tokens)
+        return_code = _recursive_delete(data, tokens)
+        if return_code != None:
+            if isinstance(selection, list):
+                selection.remove(return_code)
+            elif isinstance(selection, dict):
+                for key, value in dict(selection).items():
+                    if return_code == value:
+                        del selection[key]
 
     def apply(self: Self, data: RoamingData) -> RoamingData:
-        self._remove_not_matching_data(data, self.selector + "." + self.path)
-        return data
+        selection = self._extract_selection(data)
+
+        for item in selection:
+            self._remove_not_matching_data(selection, item, self.path)
+            wait = item
+
+        return selection
 
 
 class WorkflowInput:
