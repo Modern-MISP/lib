@@ -201,7 +201,9 @@ class Filter:
         tokens = path.split(".")
         return _recursive_extract(data, tokens)
 
-    def _remove_not_matching_data(self: Self, selection: RoamingData, data: RoamingData, path: str) -> None:
+    def _remove_not_matching_data(
+        self: Self, selection: RoamingData | List[RoamingData], data: RoamingData | List[RoamingData], path: str
+    ) -> None:
         """
         removes values from dictionary on  given cakePHP hash path that dont match
         the filter values and the filter operator
@@ -262,12 +264,11 @@ class Filter:
                     if return_code == value:
                         del selection[key]
 
-    def apply(self: Self, data: RoamingData) -> RoamingData:
+    def apply(self: Self, data: RoamingData) -> RoamingData | List[RoamingData]:
         selection = self._extract_selection(data)
 
         for item in selection:
             self._remove_not_matching_data(selection, item, self.path)
-            wait = item
 
         return selection
 
