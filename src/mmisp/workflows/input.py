@@ -24,7 +24,6 @@ class Operator(Enum):
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     ANY_VALUE = "any_value"
-    IN_OR = "in_or"  # FIXME what does this do?
 
     @classmethod
     def from_str(cls: Type[Self], input: str) -> Self:
@@ -125,10 +124,10 @@ class Filter:
     the item below `path` against `value`.
     """
 
-    def __init__(self: Self, selector: str, path: str, operator: Operator, value: str | List[str]) -> None:
+    def __init__(self: Self, selector: str, path: str, operator: str, value: str | List[str]) -> None:
         self.selector = selector
         self.path = path
-        self.operator = operator
+        self.operator = Operator.from_str(operator)
         self.value = value
 
     def match_value(self: Self, value: str) -> bool:
@@ -199,7 +198,12 @@ class Filter:
 
         # split path into tokens separated by dots.
         tokens = path.split(".")
-        return _recursive_extract(data, tokens)
+
+        selection = _recursive_extract(data, tokens)
+
+        if len(selection) == 1 and (isinstance(selection[0], list)):
+            return selection[0]
+        return selection
 
     def _remove_not_matching_data(
         self: Self, selection: RoamingData | List[RoamingData], data: RoamingData | List[RoamingData], path: str
@@ -245,6 +249,9 @@ class Filter:
                                 if return_code == value:
                                     del data[key]
 
+                    elif self.operator == Operator.ANY_VALUE:
+                        return data
+
             elif isinstance(data, list):
                 for item in list(data):
                     return_code = _recursive_delete(item, tokens.copy())
@@ -254,6 +261,7 @@ class Filter:
                         data.remove(return_code)
 
         # split path into tokens separated by dots.
+
         tokens = path.split(".")
         return_code = _recursive_delete(data, tokens)
         if return_code != None:
@@ -266,6 +274,9 @@ class Filter:
 
     def apply(self: Self, data: RoamingData) -> RoamingData | List[RoamingData]:
         selection = self._extract_selection(data)
+
+        if self.path == "":
+            return []
 
         for item in selection:
             self._remove_not_matching_data(selection, item, self.path)
@@ -300,7 +311,6 @@ class WorkflowInput:
     """
 
     filters: List[Filter]
-    __filtered_data: list[Any]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data

@@ -4,7 +4,7 @@ from mmisp.workflows.input import Filter, Operator, WorkflowInput
 def test_match_attribute_tag_names_with_equals():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "NCT tag")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", "equals", "NCT tag")
 
     input.add_filter(fil)
     input.filter()
@@ -30,7 +30,7 @@ def test_match_attribute_tag_names_with_equals():
 def test_match_attribute_type_not_equals():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "wow")
+    fil = Filter("Event._AttributeFlattened.{n}", "type", "not_equals", "wow")
 
     input.add_filter(fil)
     input.filter()
@@ -56,7 +56,7 @@ def test_match_attribute_type_not_equals():
 def test_empty_selection():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("", "type", Operator.NOT_EQUALS, "wow")
+    fil = Filter("", "type", "not_equals", "wow")
 
     input.add_filter(fil)
     input.filter()
@@ -70,7 +70,7 @@ def test_empty_selection():
 def test_check_attribute_ids_with_in_operator():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.id", Operator.IN, ["127", "5"])
+    fil = Filter("Event._AttributeFlattened", "Tag.{n}.id", "in", ["127", "5"])
 
     input.add_filter(fil)
     input.filter()
@@ -89,15 +89,74 @@ def test_check_attribute_ids_with_in_operator():
     assert attribute_2["Tag"][0] == {"id": 5, "name": "BTS tag", "exportable": False}
 
 
+def test_empty_path():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened", "", "equals", "test")
+
+    input.add_filter(fil)
+    input.filter()
+
+    assert input.data[0] == []
+
+
+def test_any_value():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event.Tag.{n}", "exportable", "any_value", "")
+
+    input.add_filter(fil)
+    input.filter()
+
+    assert len(input.data) == 1
+    assert len(input.data[0]) == 1
+    assert input.data[0][0] == {"id": 1, "name": "other_tag", "exportable": False}
+
+
+def test_any_value2():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event.Attribute.{n}", "object_relation", "any_value", "")
+
+    input.add_filter(fil)
+    input.filter()
+
+    assert len(input.data) == 1
+    assert isinstance(input.data[0], list)
+    assert len(input.data[0]) == 0
+
+
+def test_not_in():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened", "id", "not_in", ["35"])
+
+    input.add_filter(fil)
+    input.filter()
+
+    assert len(input.data) == 1
+    assert len(input.data[0]) == 1
+    assert input.data[0][0] == {
+        "id": 33,
+        "type": "ip-src",
+        "Tag": {
+            "1": {"id": 127, "name": "gr tag", "exportable": True},
+            "2": {"id": 4, "name": "NCT tag", "exportable": True},
+        },
+    }
+
+
 def load_data() -> dict:
     data = {
         "Event": {
             "id": 1,
             "info": "blabal",
             "Tag": [
-                {"id": 0, "name": "cool_tag", "exportable": True},
+                {"id": 0, "name": "cool_tag"},
                 {"id": 1, "name": "other_tag", "exportable": False},
             ],
+            "Org": {"id": 1, "name": "ORGNAME", "uuid": "5de83b4-36ba-49d6-9530-2a315caeece"},
+            "Attribute": [{"id": 4444, "type": "network activity", "object_relation": None}],
             "_AttributeFlattened": [
                 {
                     "id": 33,
