@@ -124,10 +124,10 @@ class Filter:
     the item below `path` against `value`.
     """
 
-    def __init__(self: Self, selector: str, path: str, operator: str, value: str | List[str]) -> None:
+    def __init__(self: Self, selector: str, path: str, operator: Operator, value: str | List[str]) -> None:
         self.selector = selector
         self.path = path
-        self.operator = Operator.from_str(operator)
+        self.operator = operator
         self.value = value
 
     def match_value(self: Self, value: str) -> bool:
@@ -311,10 +311,11 @@ class WorkflowInput:
     """
 
     filters: List[Filter]
+    filtered_data: List[RoamingData] | List[list]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.__filtered_data = []
+        self.filtered_data = []
         self.user = user
         self.workflow = workflow
         self.filters = []
@@ -330,12 +331,12 @@ class WorkflowInput:
         if len(self.filters) == 0:
             return self.__unfiltered_data
 
-        return self.__filtered_data
+        return self.filtered_data
 
     def filter(self: Self) -> None:
         for filter in self.filters:
             current_filter_data = filter.apply(self.__unfiltered_data.copy())
-            self.__filtered_data.append(current_filter_data)
+            self.filtered_data.append(current_filter_data)
 
     def add_filter(self: Self, filter: Filter) -> None:
         """

@@ -4,7 +4,7 @@ from mmisp.workflows.input import Filter, Operator, WorkflowInput
 def test_match_attribute_tag_names_with_equals():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", "equals", "NCT tag")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "NCT tag")
 
     input.add_filter(fil)
     input.filter()
@@ -30,7 +30,7 @@ def test_match_attribute_tag_names_with_equals():
 def test_match_attribute_type_not_equals():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "type", "not_equals", "wow")
+    fil = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "wow")
 
     input.add_filter(fil)
     input.filter()
@@ -70,7 +70,7 @@ def test_empty_selection():
 def test_check_attribute_ids_with_in_operator():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "Tag.{n}.id", "in", ["127", "5"])
+    fil = Filter("Event._AttributeFlattened", "Tag.{n}.id", Operator.IN, ["127", "5"])
 
     input.add_filter(fil)
     input.filter()
@@ -92,7 +92,7 @@ def test_check_attribute_ids_with_in_operator():
 def test_empty_path():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "", "equals", "test")
+    fil = Filter("Event._AttributeFlattened", "", Operator.EQUALS, "test")
 
     input.add_filter(fil)
     input.filter()
@@ -103,7 +103,7 @@ def test_empty_path():
 def test_any_value():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event.Tag.{n}", "exportable", "any_value", "")
+    fil = Filter("Event.Tag.{n}", "exportable", Operator.ANY_VALUE, "")
 
     input.add_filter(fil)
     input.filter()
@@ -116,7 +116,7 @@ def test_any_value():
 def test_any_value2():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event.Attribute.{n}", "object_relation", "any_value", "")
+    fil = Filter("Event.Attribute.{n}", "object_relation", Operator.ANY_VALUE, "")
 
     input.add_filter(fil)
     input.filter()
@@ -129,7 +129,7 @@ def test_any_value2():
 def test_not_in():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "id", "not_in", ["35"])
+    fil = Filter("Event._AttributeFlattened", "id", Operator.NOT_IN, ["35"])
 
     input.add_filter(fil)
     input.filter()
