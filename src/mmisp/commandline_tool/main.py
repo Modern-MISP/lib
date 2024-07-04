@@ -1,15 +1,34 @@
 import fire
 
+from mmisp.db.database import sessionmanager
+
+import user, organisation, setup
+
+
 # This is a simple command line tool that uses the fire library to create a command line tool for creating users
 # and organisations and changing their details.
 
+async def setup_db() -> str:
+    """setup"""
+    sessionmanager.init()
+    await sessionmanager.create_all()
+    async with sessionmanager.session() as session:
+        await setup.setup(session)
+    await sessionmanager.close()
+    return "Database setup"
 
-def create_user(email: str, password: str, role: str = "user") -> str:
+async def create_user(email: str, password: str, organisation: str | int, role: int | str = "user") -> str:
     """create-user <email> <password> [-r <role>]"""
-    return "User created with role: {} email: {} and password: {}".format(role, email, password)
+    sessionmanager.init()
+    await sessionmanager.create_all()
+    async with sessionmanager.session() as session:
+        await user.create(session, email, password, organisation, role)
+
+    await sessionmanager.close()
+    return "User created with email: {}, password: {}, in organisation: {}, with role: {}".format(email, password, organisation, role)
 
 
-def create_organisation(
+async def create_organisation(
     name: str,
     admin_email: str,
     description: str,
@@ -32,22 +51,22 @@ def create_organisation(
     )
 
 
-def change_password(email: str, password: str) -> str:
+async def change_password(email: str, password: str) -> str:
     """change-password <email> <password>"""
     return "Password changed for user with email: {}".format(email)
 
 
-def change_email(email: str, new_email: str) -> str:
+async def change_email(email: str, new_email: str) -> str:
     """change-email <email> <new_email>"""
     return "Email changed for user with email: {} to {}".format(email, new_email)
 
 
-def change_role(email: str, role: str) -> str:
+async def change_role(email: str, role: str) -> str:
     """change-role <email> <role>"""
     return "Role changed for user with email: {} to {}".format(email, role)
 
 
-def edit_organisation(
+async def edit_organisation(
     name: str = None,
     admin_email: str = None,
     description: str = None,
@@ -70,14 +89,19 @@ def edit_organisation(
     )
 
 
-def delete_organisation(name: str, admin_email: str) -> str:
+async def delete_organisation(name: str, admin_email: str) -> str:
     """delete-organisation <name> <admin_email>"""
     return "organisation deleted with name: {} and admin_email: {}".format(name, admin_email)
 
 
 if __name__ == "__main__":
+    #db : Session = asyncio.run(init_command_line_tool())
+    #sessionmanager.init()
+    #asyncio.run(init_command_line_tool())
+
     fire.Fire(
         {
+            "setup": setup_db,
             "create-user": create_user,
             "create-organisation": create_organisation,
             "change-password": change_password,
