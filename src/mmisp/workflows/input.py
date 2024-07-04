@@ -311,7 +311,7 @@ class WorkflowInput:
     """
 
     filters: List[Filter]
-    filtered_data: List[RoamingData] | List[list]
+    filtered_data: List[RoamingData]
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
