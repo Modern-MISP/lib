@@ -1,4 +1,13 @@
-from mmisp.workflows.input import Filter, Operator, WorkflowInput
+from mmisp.workflows.input import (
+    Filter,
+    FilterError,
+    InvalidOperationError,
+    InvalidPathError,
+    InvalidSelectionError,
+    InvalidValueError,
+    Operator,
+    WorkflowInput,
+)
 
 
 def test_match_attribute_tag_names_with_equals():
@@ -6,7 +15,9 @@ def test_match_attribute_tag_names_with_equals():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "NCT tag")
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
     input.filter()
 
     attribute_1 = input.data[0][0]
@@ -32,7 +43,9 @@ def test_match_attribute_type_not_equals():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "wow")
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
     input.filter()
 
     assert isinstance(input.data, list)
@@ -53,26 +66,14 @@ def test_match_attribute_type_not_equals():
     ]
 
 
-def test_empty_selection():
-    data = load_data()
-    input = WorkflowInput(data, None, None)
-    fil = Filter("", "type", "not_equals", "wow")
-
-    input.add_filter(fil)
-    input.filter()
-
-    assert len(input.data) == 1
-    assert len(input.data[0]) == 0
-
-    assert input.data[0] == []
-
-
 def test_check_attribute_ids_with_in_operator():
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened", "Tag.{n}.id", Operator.IN, ["127", "5"])
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
     input.filter()
 
     assert len(input.data) == 1
@@ -94,10 +95,19 @@ def test_empty_path():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened", "", Operator.EQUALS, "test")
 
-    input.add_filter(fil)
-    input.filter()
+    response = input.add_filter(fil)
 
-    assert input.data[0] == []
+    assert isinstance(response, InvalidPathError)
+
+
+def test_invalid_value():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened", "Tag.{n}.name", Operator.IN, "test")
+
+    response = input.add_filter(fil)
+
+    assert isinstance(response, InvalidValueError)
 
 
 def test_any_value():
@@ -105,7 +115,9 @@ def test_any_value():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event.Tag.{n}", "exportable", Operator.ANY_VALUE, "")
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
     input.filter()
 
     assert len(input.data) == 1
@@ -118,7 +130,10 @@ def test_any_value2():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event.Attribute.{n}", "object_relation", Operator.ANY_VALUE, "")
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
+
     input.filter()
 
     assert len(input.data) == 1
@@ -131,7 +146,10 @@ def test_not_in():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened", "id", Operator.NOT_IN, ["35"])
 
-    input.add_filter(fil)
+    response = input.add_filter(fil)
+
+    assert response == None
+
     input.filter()
 
     assert len(input.data) == 1
@@ -144,6 +162,16 @@ def test_not_in():
             "2": {"id": 4, "name": "NCT tag", "exportable": True},
         },
     }
+
+
+def test_empty_selection():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("", "id", Operator.NOT_IN, ["35"])
+
+    response = input.add_filter(fil)
+
+    assert isinstance(response, InvalidSelectionError)
 
 
 def load_data() -> dict:

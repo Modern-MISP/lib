@@ -3,6 +3,7 @@ Data structure for the payload passed to the workflow and
 filtering mechanism associated with it.
 """
 
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
@@ -35,6 +36,53 @@ class Operator(Enum):
             input: string representation of the operator.
         """
         return cls(input)
+
+
+class FilterError(ABC):
+    """
+    Abstract class representing possible invalid Filter inputs
+    """
+
+
+@dataclass
+class InvalidSelectionError(FilterError):
+    """
+    If the selection passed to the filter is invalid this error is returned.
+    Examples for invalid selections are datatypes other from String, hashpahts,
+    that dont lead to a list or empty strings
+    """
+
+    message: str
+
+
+@dataclass
+class InvalidPathError(FilterError):
+    """
+    If the path passed to the filter is invalid this error is returned.
+    e.g.: empty String
+    """
+
+    message: str
+
+
+@dataclass
+class InvalidOperationError(FilterError):
+    """
+    If the operation passed to the filter is invalid this error is returned.
+    e.g.: Operation.to_str fails to return a valid operation.
+    """
+
+    message: str
+
+
+@dataclass
+class InvalidValueError(FilterError):
+    """
+    If the value passed to the filter is invalid this error is returned.
+    e.g.: input not of type str or List[str]
+    """
+
+    message: str
 
 
 @dataclass
@@ -161,7 +209,7 @@ class Filter:
             # check for exact key in dict.
             return key == token
 
-    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData]:
+    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData] | FilterError:
         """
         Extracts values from a nested dictionary based selector (cakePHP hash path).
         Returns a list of extracted values.
@@ -283,6 +331,34 @@ class Filter:
 
         return selection
 
+    def validate(self: Self) -> None | FilterError:
+        # check selection
+        if not isinstance(self.selector, str):
+            return InvalidSelectionError("incorrect type")
+        elif self.selector == "":
+            return InvalidSelectionError("empty selection")
+
+        # check path
+        if not isinstance(self.path, str):
+            return InvalidPathError("incorrect type")
+        elif self.path == "":
+            return InvalidPathError("empty path")
+
+        # check value
+        if self.operator in [Operator.IN, Operator.NOT_IN]:
+            if not isinstance(self.value, list):
+                return InvalidValueError("incorrect type")
+
+        elif self.operator == Operator.ANY_VALUE:
+            if self.value != "":
+                return InvalidValueError("any value operator does not accept a value")
+
+        elif self.operator in [Operator.EQUALS, Operator.NOT_EQUALS]:
+            if not isinstance(self.value, str):
+                return InvalidValueError("incorrect type")
+
+        return None
+
 
 class WorkflowInput:
     """
@@ -338,7 +414,7 @@ class WorkflowInput:
             current_filter_data = filter.apply(self.__unfiltered_data.copy())
             self.filtered_data.append(current_filter_data)
 
-    def add_filter(self: Self, filter: Filter) -> None:
+    def add_filter(self: Self, filter: Filter) -> None | FilterError:
         """
         Adds another [`Filter`][mmisp.workflows.input.Filter]
         to the workflow input.
@@ -346,6 +422,11 @@ class WorkflowInput:
         Arguments:
             filter: Filter to be added.
         """
+
+        filterCheck = filter.validate()
+
+        if filterCheck != None:
+            return filterCheck
 
         self.filters.append(filter)
 
