@@ -209,7 +209,7 @@ class Filter:
             # check for exact key in dict.
             return key == token
 
-    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData] | FilterError:
+    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData]:
         """
         Extracts values from a nested dictionary based selector (cakePHP hash path).
         Returns a list of extracted values.
@@ -429,6 +429,7 @@ class WorkflowInput:
             return filterCheck
 
         self.filters.append(filter)
+        return None
 
     def reset_filters(self: Self) -> None:
         """
