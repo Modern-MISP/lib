@@ -149,21 +149,32 @@ class GraphFactory:
                     "pos_y": cls.__maybe_int(pos_y),
                 }
 
+                # So far, this was relatively straight-forward. Now let's tackle a
+                # few corner-cases for the old garbage 🤡
+
+                # node_uid is only set if it has a value. But it can be empty.
                 if node_uid is not None:
                     ret_val["data"]["node_uid"] = node_uid
 
-                # Newly created workflows apparently don't have a `name`-attribute
-                # and no key module_version??!
                 if len(reverse_edge_list) > 1:
+                    # Non-newly created workflow names have
+                    # `+` instead of spaces.
                     ret_val["name"] = name.replace(" ", "+")
+
+                    # Also, a version and an empty list `indexed_params`
+                    # (as opposed to `params`) exists.
                     ret_val["data"]["module_version"] = version
                     ret_val["data"]["indexed_params"] = []
+
                     # So far I haven't seen a versioned trigger, so let's
                     # hardcode it that way for now.
                     ret_val["data"]["previous_module_version"] = version
                 else:
+                    # Newly created workflows appear to have a non-normalized
+                    # description and name, i.e. w/o spaces being replaced by `+`.
                     ret_val["data"]["description"] = description
                     ret_val["data"]["name"] = name
+                    # Also these appear to have an empty list `params`.
                     ret_val["data"]["params"] = []
 
                 return ret_val
