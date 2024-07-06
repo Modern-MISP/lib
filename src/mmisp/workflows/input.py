@@ -7,6 +7,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
+import copy
 
 if TYPE_CHECKING:
     from ..db.models.user import User
@@ -198,7 +199,7 @@ class Filter:
         elif self.operator == Operator.NOT_IN:
             return value not in self.value if isinstance(self.value, list) else False
         elif self.operator == Operator.ANY_VALUE:
-            return value != None
+            return value != "None"
         return False
 
     def _match_token(self: Self, key: str | int, token: str) -> bool:
@@ -286,9 +287,11 @@ class Filter:
             token = tokens.pop(0)
 
             if isinstance(data, dict):
+                key_found = False
                 # go through every key, value pair in dict and match the current token from the path
                 for key, value in dict(data).items():
                     if self._match_token(key, token):
+                        key_found = True
                         return_code = _recursive_delete(value, tokens.copy())
                         if return_code == "no_match":
                             return data
@@ -297,10 +300,10 @@ class Filter:
                                 if return_code == value:
                                     del data[key]
 
-                    elif self.operator == Operator.ANY_VALUE:
-                        return data
+                if self.operator == Operator.ANY_VALUE and not key_found:
+                    return data
 
-            elif isinstance(data, list):
+            elif isinstance(data, list) and token == "{n}":
                 for item in list(data):
                     return_code = _recursive_delete(item, tokens.copy())
                     if return_code == "no_match":
@@ -322,11 +325,9 @@ class Filter:
 
     def apply(self: Self, data: RoamingData) -> RoamingData | List[RoamingData]:
         selection = self._extract_selection(data)
+        selection_copy = selection.copy()
 
-        if self.path == "":
-            return []
-
-        for item in selection:
+        for item in selection_copy:
             self._remove_not_matching_data(selection, item, self.path)
 
         return selection
@@ -410,8 +411,12 @@ class WorkflowInput:
         return self.filtered_data
 
     def filter(self: Self) -> None:
-        for filter in self.filters:
-            current_filter_data = filter.apply(self.__unfiltered_data.copy())
+        for i, filter in enumerate(self.filters):
+            if i == 0:
+                current_filter_data = filter.apply(self.__unfiltered_data)
+            else:
+                current_filter_data = filter.apply(copy.deepcopy(self.filtered_data[-1]))
+
             self.filtered_data.append(current_filter_data)
 
     def add_filter(self: Self, filter: Filter) -> None | FilterError:

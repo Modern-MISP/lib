@@ -29,13 +29,13 @@ def test_match_attribute_tag_names_with_equals():
     assert isinstance(input.data, list)
     assert len(input.data) == 1
 
-    assert isinstance(attribute_1_tags, dict)
+    assert isinstance(attribute_1_tags, list)
     assert len(attribute_1_tags) == 1
 
     assert isinstance(attribute_2_tags, list)
     assert len(attribute_2_tags) == 0
 
-    assert attribute_1_tags["2"] == {"id": 4, "name": "NCT tag", "exportable": True}
+    assert attribute_1_tags[0] == {"id": 4, "name": "NCT tag", "exportable": True}
 
 
 def test_match_attribute_type_not_equals():
@@ -58,10 +58,10 @@ def test_match_attribute_type_not_equals():
         {
             "id": 33,
             "type": "ip-src",
-            "Tag": {
-                "1": {"id": 127, "name": "gr tag", "exportable": True},
-                "2": {"id": 4, "name": "NCT tag", "exportable": True},
-            },
+            "Tag": [
+                {"id": 127, "name": "gr tag", "exportable": True},
+                {"id": 4, "name": "NCT tag", "exportable": True},
+            ],
         }
     ]
 
@@ -86,7 +86,7 @@ def test_check_attribute_ids_with_in_operator():
     assert len(attribute_1["Tag"]) == 1
     assert len(attribute_2["Tag"]) == 1
 
-    assert attribute_1["Tag"]["1"] == {"id": 127, "name": "gr tag", "exportable": True}
+    assert attribute_1["Tag"][0] == {"id": 127, "name": "gr tag", "exportable": True}
     assert attribute_2["Tag"][0] == {"id": 5, "name": "BTS tag", "exportable": False}
 
 
@@ -113,12 +113,14 @@ def test_invalid_value():
 def test_any_value():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event.Tag.{n}", "exportable", Operator.ANY_VALUE, "")
+    fil = Filter("Event.Tag", "exportable", Operator.ANY_VALUE, "")
 
     response = input.add_filter(fil)
 
     assert response == None
     input.filter()
+
+    what = input.data
 
     assert len(input.data) == 1
     assert len(input.data[0]) == 1
@@ -135,6 +137,8 @@ def test_any_value2():
     assert response == None
 
     input.filter()
+
+    wow = input.data
 
     assert len(input.data) == 1
     assert isinstance(input.data[0], list)
@@ -157,10 +161,10 @@ def test_not_in():
     assert input.data[0][0] == {
         "id": 33,
         "type": "ip-src",
-        "Tag": {
-            "1": {"id": 127, "name": "gr tag", "exportable": True},
-            "2": {"id": 4, "name": "NCT tag", "exportable": True},
-        },
+        "Tag": [
+            {"id": 127, "name": "gr tag", "exportable": True},
+            {"id": 4, "name": "NCT tag", "exportable": True},
+        ],
     }
 
 
@@ -172,6 +176,61 @@ def test_empty_selection():
     response = input.add_filter(fil)
 
     assert isinstance(response, InvalidSelectionError)
+
+
+def test_delete_all_tags():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "test")
+
+    response = input.add_filter(fil)
+
+    assert response == None
+    input.filter()
+
+    attribute_1 = input.data[0][0]
+    attribute_2 = input.data[0][1]
+
+    attribute_1_tags = attribute_1["Tag"]
+    attribute_2_tags = attribute_2["Tag"]
+
+    assert isinstance(input.data, list)
+    assert len(input.data) == 1
+
+    assert attribute_1_tags == []
+    assert attribute_2_tags == []
+
+
+def test_multiple_filters():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter1 = Filter("Event._AttributeFlattened", "type", Operator.NOT_EQUALS, "ip-src")
+
+    response = input.add_filter(filter1)
+
+    assert response == None
+
+    filter2 = Filter("{n}.Tag", "id", Operator.EQUALS, "3")
+
+    response = input.add_filter(filter2)
+
+    assert response == None
+
+    input.filter()
+
+    assert len(input.data) == 2
+    assert input.data[0] == [
+        {
+            "id": 35,
+            "type": "wow",
+            "Tag": [
+                {"id": 333, "name": "IVE tag", "exportable": True},
+                {"id": 5, "name": "BTS tag", "exportable": False},
+            ],
+        },
+    ]
+
+    assert input.data[1] == []
 
 
 def load_data() -> dict:
@@ -189,10 +248,10 @@ def load_data() -> dict:
                 {
                     "id": 33,
                     "type": "ip-src",
-                    "Tag": {
-                        "1": {"id": 127, "name": "gr tag", "exportable": True},
-                        "2": {"id": 4, "name": "NCT tag", "exportable": True},
-                    },
+                    "Tag": [
+                        {"id": 127, "name": "gr tag", "exportable": True},
+                        {"id": 4, "name": "NCT tag", "exportable": True},
+                    ],
                 },
                 {
                     "id": 35,
