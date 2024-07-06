@@ -119,9 +119,6 @@ def test_any_value():
 
     assert response == None
     input.filter()
-
-    what = input.data
-
     assert len(input.data) == 1
     assert len(input.data[0]) == 1
     assert input.data[0][0] == {"id": 1, "name": "other_tag", "exportable": False}
@@ -137,9 +134,6 @@ def test_any_value2():
     assert response == None
 
     input.filter()
-
-    wow = input.data
-
     assert len(input.data) == 1
     assert isinstance(input.data[0], list)
     assert len(input.data[0]) == 0
