@@ -361,6 +361,7 @@ class GraphFactory:
             return trigger_cls(  # type:ignore[call-arg]
                 inputs={},
                 outputs={},
+                graph_id=input["id"],
                 apperance=apperance,
                 disabled=data.get("disabled", False),
                 overhead_message=data.get("trigger_overhead_message", ""),
@@ -371,6 +372,7 @@ class GraphFactory:
         return module_cls(  # type:ignore[call-arg]
             inputs={},
             outputs={},
+            graph_id=input["id"],
             enable_multiple_edges_per_output=data.get("multiple_output_connection", False),
             on_demand_filter=cls.__build_filter(data.get("saved_filters", {})),
             # FIXME maybe check if version is too old?

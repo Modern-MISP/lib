@@ -57,6 +57,7 @@ def test_simple_workflow_to_dict() -> None:
         apperance=Apperance((1.0, 1.0), False, "disabled", "lalala"),
         inputs={},
         outputs={},
+        graph_id=1,
         scope="attribute",
         description="wat",
         blocking=False,
@@ -88,7 +89,7 @@ def test_invalid_class_type() -> None:
     class Node_(Node):
         pass
 
-    instance = Node_(inputs={}, outputs={})
+    instance = Node_(inputs={}, outputs={}, graph_id=1)
     try:
         GraphFactory.graph2jsondict(WorkflowGraph({1: instance}, instance, []))
         pytest.fail()

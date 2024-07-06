@@ -71,9 +71,9 @@ class CyclicGraphError(GraphError):
     If a cycle was found in the graph it is invalid. This class represents that error.
     """
 
-    cycle_path: List[Tuple["Node", "Node"]]
+    cycle_path: List[Tuple["Node", int, "Node", int]]
     """
-    List of edges (from, to) that create a cycle.
+    List of edges (from, output_port, to, input_port) that create a cycle.
     """
 
 
@@ -156,7 +156,7 @@ class InconsistentEdgeBetweenAdjacencyLists(GraphError):
     The starting node of the inconsistent edge.
     """
 
-    outputPortID: int
+    output_port_id: int
     "The output port of the inconsistent edge."
 
     to: "Node"
@@ -164,46 +164,9 @@ class InconsistentEdgeBetweenAdjacencyLists(GraphError):
     The ending node of the inconsistent edge.
     """
 
-    inputPortID: int
+    input_port_id: int
     """
     The input port of the inconsistent edge.
-    """
-
-
-@dataclass
-class PathWarning:
-    """
-    The `checkGraph` endpoint also allows to warn about workflow configurations. These
-    are non-fatal. Right now this is only used if blocking nodes are used in a non-blocking
-    context.
-
-    Other uses may be e.g.
-    * "expensive" configurations: blocking workflows are executed synchronously and
-      modules in such a workflow shouldn't take too long.
-
-    !!! note
-        There are three node IDs in the legacy MISP variant. It seems as if
-        the `to` node is used twice there.
-    """
-
-    from_: "Node"
-    """
-    Node the blocking node is connected with.
-    """
-
-    to: "Node"
-    """
-    Blocking node called within a non-blocking context.
-    """
-
-    message: str
-    """
-    Warning text.
-    """
-
-    blocking: bool
-    """
-    Whether the current module is blocking.
     """
 
 
@@ -221,11 +184,6 @@ class GraphValidationResult:
     Fatal errors in the workflow graph. The graph is unusable like this.
     """
 
-    warnings: List[PathWarning]
-    """
-    Warnings about the workflow graph. Non-fatal.
-    """
-
     def add_result(self: Self, other: Self) -> None:
         """
         Merges another validation result into this accumulator object.
@@ -234,13 +192,12 @@ class GraphValidationResult:
             other: Another validation result added in here.
         """
         self.errors += other.errors
-        self.warnings += other.warnings
 
     def is_valid(self: Self) -> bool:
         """
         If neither errors nor warnings are added, the graph is valid.
         """
-        return self.errors == [] and self.warnings == []
+        return self.errors == []
 
 
 @dataclass(kw_only=True)
@@ -288,6 +245,11 @@ class Node(ABC):
     using references to make walking the graph as easy as possible.
     """
 
+    graph_id: int
+    """
+    The id with which this node was identified in the json data, that was used to initialize its parent graph.
+    """
+
     n_inputs: int = 1
     """
     Number of _allowed_ inputs. If `inputs` exceeds this, the
@@ -315,42 +277,54 @@ class Node(ABC):
     """
 
     def __eq__(self: Self, other: object) -> bool:
-        return self is other
-
-    """
-    Custom comparison if two instances are equal, needed for our special hash function so that the statement
-    __eq__(a, b) = True => __hash__(a) == __hash__(b) is valid for every pair of nodes a nd b, which guaranties that the
-    Dict (HashMap) will not malfunction.
-    """
-
-    def __hash__(self: Self) -> int:
-        return id(self)
-
-    """
-    Our custom node hash function which allows to store nodes in a Dict (HashMap).
-    """
-
-    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
         """
-        Checks if the module is correctly configured.
+        Custom comparison if two instances are equal, needed for our special hash function so that the statement
+        __eq__(a, b) = True => __hash__(a) == __hash__(b) is valid for every pair of nodes a nd b, which guaranties that
+        the Dict (HashMap) will not malfunction.
 
         Arguments:
-            with_warnings: whether to also return warnings. Not needed when e.g.
-            only persisting the graph.
+            other: A reference to the other object to be compared.
         """
-        result = GraphValidationResult([], [])
-        if len(self.inputs) > self.n_inputs:
-            result.errors.append(
-                ConfigurationError(
-                    self, "The number of registered inputs of the node exceeds its maximum allowed amount."
+        return self is other
+
+    def __hash__(self: Self) -> int:
+        """
+        Our custom node hash function which allows to store nodes in a Dict (HashMap).
+        """
+        return id(self)
+
+    def check(self: Self) -> GraphValidationResult:
+        """
+        Checks if the module is correctly configured. At Node level 3 conditions are checked (and errors returned if not
+        fulfilled):
+        1(2). The registered input(output) ports are in the range from 1 to
+        ['n_inputs'][mmisp.workflows.graph.Node.n_inputs](['n_outputs'][mmisp.workflows.graph.Node.n_outputs]) incl.
+        It is allowed to have less registered input(output) ports than the specified maximum amount.
+        3. In case ['enable_multiple_edges_per_output'][mmisp.workflows.graph.Node.enable_multiple_edges_per_output] has
+        a value of false, each outgoing port has maximum 1 outgoing edge. (It is allowed for an outgoing port to have no
+        outgoing edges.)
+        """
+        result = GraphValidationResult([])
+        for input_id in self.inputs.keys():
+            if input_id < 1 or input_id > self.n_inputs:
+                result.errors.append(
+                    ConfigurationError(
+                        self,
+                        "There is an input port registered for this node outside of the valid range of [1, "
+                        + str(self.n_inputs)
+                        + "].",
+                    )
                 )
-            )
-        if len(self.outputs) > self.n_outputs:
-            result.errors.append(
-                ConfigurationError(
-                    self, "The number of registered outputs of the node exceeds its maximum allowed amount."
+        for output_id in self.outputs.keys():
+            if output_id < 1 or output_id > self.n_outputs:
+                result.errors.append(
+                    ConfigurationError(
+                        self,
+                        "There is an output port registered for this node outside of the valid range of [1, "
+                        + str(self.n_outputs)
+                        + "].",
+                    )
                 )
-            )
         if not self.enable_multiple_edges_per_output:
             for key, value in self.outputs.items():
                 if len(value) > 1:
@@ -358,7 +332,7 @@ class Node(ABC):
         return result
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class WorkflowNode(Node):
     """
     Dataclass with shared properties for both modules & triggers,
@@ -400,7 +374,7 @@ class WorkflowNode(Node):
     """
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class Module(WorkflowNode):
     """
     A module is a workflow node that is either
@@ -443,13 +417,6 @@ class Module(WorkflowNode):
     Whether internal filtering is enabled.
     """
 
-    enable_multiple_edges_per_output: bool = False
-    """
-    Whether it's OK to have multiple edges going from a single output.
-    See [`Node`][mmisp.workflows.graph.Node] for more context. Used by e.g. the concurrent
-    tasks module.
-    """
-
     blocking: bool = False
 
     async def initialize(self: Self, db: AsyncSession) -> None:
@@ -489,7 +456,7 @@ class Module(WorkflowNode):
         assert False
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class Trigger(WorkflowNode):
     """
     A trigger represents the starting point of a workflow.
@@ -645,23 +612,23 @@ class Graph(ABC):
                 next_node_state = self.__visited.get(connection[1])
                 if next_node_state is None:
                     self.__visited[connection[1]] = False
-                    self.__parent[connection[1]] = current
+                    self.__parent[connection[1]] = (current, output_id, connection[0])
                     self.__acyclic_check_dfs(connection[1], storage)
                 elif not next_node_state:
                     error = CyclicGraphError([])
-                    error.cycle_path.append((current, connection[1]))
+                    error.cycle_path.append((current, output_id, connection[1], connection[0]))
                     current_node_loop = current
                     while current_node_loop is not connection[1]:
                         parent_node = self.__parent.get(current_node_loop)
                         assert parent_node is not None
-                        error.cycle_path.append((parent_node, current_node_loop))
-                        current_node_loop = parent_node
+                        error.cycle_path.append((parent_node[0], parent_node[1], current_node_loop, parent_node[2]))
+                        current_node_loop = parent_node[0]
                     storage.errors.append(error)
         self.__visited[current] = True
 
     def __check_is_graph_acyclic(self: Self, storage: GraphValidationResult) -> None:
         self.__visited: Dict[Node, bool] = {}
-        self.__parent: Dict[Node, Node] = {}
+        self.__parent: Dict[Node, Tuple[Node, int, int]] = {}
         for node_id, node in self.nodes.items():
             if self.__visited.get(node) is None:
                 self.__visited[node] = False
@@ -673,7 +640,7 @@ class Graph(ABC):
         Checks if the graph's structure is valid. Works as described in
         [`GraphValidationResult`][mmisp.workflows.graph.GraphValidationResult].
         """
-        storage = GraphValidationResult([], [])
+        storage = GraphValidationResult([])
         self.__check_is_graph_acyclic(storage)
         self.__check_input_adjacency_list_correspond_to_output_one(storage)
         self.__check_nodes(storage)

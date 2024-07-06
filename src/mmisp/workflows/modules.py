@@ -209,7 +209,7 @@ def trigger_node(cls: Type[Trigger]) -> Type[Trigger]:
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerAttributeAfterSave(Trigger):
     id: str = "attribute-after-save"
     name: str = "Attribute After Save"
@@ -221,7 +221,7 @@ class TriggerAttributeAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEnrichmentBeforeQuery(Trigger):
     id: str = "enrichment-before-query"
     scope: str = "others"
@@ -233,7 +233,7 @@ class TriggerEnrichmentBeforeQuery(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEventAfterSaveNewFromPull(Trigger):
     id: str = "event-after-save-new-from-pull"
     scope: str = "event"
@@ -248,7 +248,7 @@ class TriggerEventAfterSaveNewFromPull(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEventAfterSaveNew(Trigger):
     id: str = "event-after-save-new"
     scope: str = "event"
@@ -260,7 +260,7 @@ class TriggerEventAfterSaveNew(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEventAfterSave(Trigger):
     id: str = "event-after-save"
     scope: str = "event"
@@ -272,7 +272,7 @@ class TriggerEventAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEventBeforeSave(Trigger):
     id: str = "event-before-save"
     scope: str = "event"
@@ -286,7 +286,7 @@ class TriggerEventBeforeSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerEventPublish(Trigger):
     id: str = "event-publish"
     scope: str = "event"
@@ -298,7 +298,7 @@ class TriggerEventPublish(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerLogAfterSave(Trigger):
     id: str = "log-after-save"
     scope: str = "log"
@@ -310,7 +310,7 @@ class TriggerLogAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerObjectAfterSave(Trigger):
     id: str = "object-after-save"
     scope: str = "object"
@@ -322,7 +322,7 @@ class TriggerObjectAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerPostAfterSave(Trigger):
     id: str = "post-after-save"
     scope: str = "post"
@@ -334,7 +334,7 @@ class TriggerPostAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerShadowAttributeBeforeSave(Trigger):
     id: str = "shadow-attribute-before-save"
     scope: str = "shadow-attribute"
@@ -346,7 +346,7 @@ class TriggerShadowAttributeBeforeSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerSightingAfterSave(Trigger):
     id: str = "sighting-after-save"
     scope: str = "sighting"
@@ -358,7 +358,7 @@ class TriggerSightingAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerUserAfterSave(Trigger):
     id: str = "user-after-save"
     scope: str = "user"
@@ -370,7 +370,7 @@ class TriggerUserAfterSave(Trigger):
 
 
 @trigger_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class TriggerUserBeforeSave(Trigger):
     id: str = "user-before-save"
     scope: str = "user"
@@ -382,7 +382,7 @@ class TriggerUserBeforeSave(Trigger):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleIfGeneric(ModuleAction):
     id: str = "generic-if"
     n_outputs: int = 2
@@ -397,7 +397,7 @@ class ModuleIfGeneric(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleEnrichEvent(ModuleAction):
     id: str = "enrich-event"
     name: str = "Enrich Event"
@@ -406,7 +406,7 @@ class ModuleEnrichEvent(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAttributeCommentOperation(ModuleAction):
     id: str = "Module_attribute_comment_operation"
     version: str = "0.1"
@@ -417,7 +417,7 @@ class ModuleAttributeCommentOperation(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTagIf(ModuleLogic):
     id: str = "tag-if"
     n_outputs: int = 2
@@ -432,7 +432,7 @@ class ModuleTagIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleStopWorkflow(ModuleAction):
     id: str = "stop-execution"
     name: str = "Stop execution"
@@ -442,7 +442,7 @@ class ModuleStopWorkflow(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAttachWarninglist(ModuleAction):
     id: str = "attach-warninglist"
     name: str = "Add to warninglist"
@@ -452,7 +452,7 @@ class ModuleAttachWarninglist(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleConcurrentTask(ModuleLogic):
     """
     Accepts multiple connecting nodes and executes all of them
@@ -471,7 +471,7 @@ class ModuleConcurrentTask(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleCountIf(ModuleLogic):
     id: str = "count-if"
     name: str = "IF :: Count"
@@ -486,7 +486,7 @@ class ModuleCountIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleDistributionIf(ModuleLogic):
     id: str = "distribution-if"
     name: str = "IF :: Distribution"
@@ -502,7 +502,7 @@ class ModuleDistributionIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleGenericFilterData(ModuleLogic):
     """
     Configure a filter on the workflow payload. Every
@@ -521,7 +521,7 @@ class ModuleGenericFilterData(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleGenericFilterReset(ModuleLogic):
     """
     Resets all filters declared for the workflow payload.
@@ -534,7 +534,7 @@ class ModuleGenericFilterReset(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleOrganisationIf(ModuleLogic):
     """
     Module allowing to check if the organistaion property
@@ -554,7 +554,7 @@ class ModuleOrganisationIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModulePublishedIf(ModuleLogic):
     id: str = "published-if"
     name: str = "IF :: Published"
@@ -569,7 +569,7 @@ class ModulePublishedIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleThreatLevelIf(ModuleLogic):
     id: str = "threat-level-if"
     html_template: str = "if"
@@ -585,7 +585,7 @@ class ModuleThreatLevelIf(ModuleLogic):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAddEventblocklistEntry(ModuleAction):
     id: str = "add_eventblocklist_entry"
     version: str = "0.1"
@@ -595,7 +595,7 @@ class ModuleAddEventblocklistEntry(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAssignCountryFromEnrichment(ModuleAction):
     id: str = "assign_country"
     name: str = "IF :: Threat Level"
@@ -609,7 +609,7 @@ class ModuleAssignCountryFromEnrichment(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAttachEnrichment(ModuleAction):
     id: str = "attach-enrichment"
     name: str = "Attach enrichment"
@@ -620,7 +620,7 @@ class ModuleAttachEnrichment(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAttributeEditionOperation(ModuleAction):
     id: str = "attribute_edition_operation"
     name: str = "Attribute edition operation"
@@ -629,7 +629,7 @@ class ModuleAttributeEditionOperation(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleAttributeIdsFlagOperation(ModuleAction):
     id: str = "attribute_ids_flag_operation"
     name: str = "Attribute IDS Flag operation"
@@ -639,7 +639,7 @@ class ModuleAttributeIdsFlagOperation(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleEventDistributionOperation(ModuleAction):
     id: str = "Module_event_distribution_operation"
     name: str = "Event distribution operation"
@@ -648,7 +648,7 @@ class ModuleEventDistributionOperation(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleMsTeamsWebhook(ModuleAction):
     id: str = "ms-teams-webhook"
     name: str = "MS Teams Webhook"
@@ -657,7 +657,7 @@ class ModuleMsTeamsWebhook(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModulePublishEvent(ModuleAction):
     id: str = "publish-event"
     name: str = "Publish Event"
@@ -667,7 +667,7 @@ class ModulePublishEvent(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModulePushZMQ(ModuleAction):
     id: str = "push-zmq"
     name: str = "Push to ZMQ"
@@ -676,7 +676,7 @@ class ModulePushZMQ(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleSendLogMail(ModuleAction):
     id: str = "send-log-mail"
     name: str = "Send Log Mail"
@@ -688,7 +688,7 @@ class ModuleSendLogMail(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleSendMail(ModuleAction):
     id: str = "send-mail"
     name: str = "Send Mail"
@@ -699,7 +699,7 @@ class ModuleSendMail(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleSplunkHecExport(ModuleAction):
     id: str = "splunk-hec-export"
     name: str = "Splunk HEC export"
@@ -711,7 +711,7 @@ class ModuleSplunkHecExport(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleStopExecution(ModuleAction):
     id: str = "stop-execution"
     name: str = "Stop execution"
@@ -722,7 +722,7 @@ class ModuleStopExecution(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTagOperation(ModuleAction):
     id: str = "tag_operation"
     name: str = "Tag operation"
@@ -733,7 +733,7 @@ class ModuleTagOperation(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTagReplacementGeneric(ModuleAction):
     id: str = "tag_replacement_generic"
     name: str = "Tag Replacement Generic"
@@ -744,7 +744,7 @@ class ModuleTagReplacementGeneric(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTagReplacementPap(ModuleAction):
     id: str = "tag_replacement_pap"
     name: str = "Tag Replacement - PAP"
@@ -755,7 +755,7 @@ class ModuleTagReplacementPap(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTagReplacementTlp(ModuleAction):
     id: str = "tag_replacement_tlp"
     name: str = "Tag Replacement - TLP"
@@ -766,7 +766,7 @@ class ModuleTagReplacementTlp(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleTelegramSendAlert(ModuleAction):
     id: str = "telegram-send-alert"
     name: str = "Telegram Send Alert"
@@ -775,7 +775,7 @@ class ModuleTelegramSendAlert(ModuleAction):
 
 
 @module_node
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class ModuleWebhook(ModuleAction):
     id: str = "webhook"
     name: str = "Webhook"
