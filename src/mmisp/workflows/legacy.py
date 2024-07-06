@@ -113,7 +113,7 @@ class GraphFactory:
                 icon=icon,
                 disabled=disabled,
             ):
-                ret_val = {
+                ret_val: Dict = {
                     "id": id,
                     "data": {
                         "id": trigger_id,
@@ -133,8 +133,6 @@ class GraphFactory:
                         "html_template": "trigger",
                         "icon": icon,
                         "disabled": disabled,
-                        # seems to only apply to modules.
-                        "support_filters": False,
                         # MISP module is not implemented.
                         "is_misp_module": False,
                         "is_custom": False,
@@ -161,6 +159,7 @@ class GraphFactory:
                 # For now, I'm not aware of filters being attached to triggers, so let's leave this
                 # for now 🤷
                 ret_val["data"]["saved_filters"] = EMPTY_FILTER
+                ret_val["data"]["support_filters"] = False
 
                 # node_uid is only set if it has a value. But it can be empty.
                 if node_uid is not None:
@@ -218,14 +217,14 @@ class GraphFactory:
                     "data": {
                         "id": module_id,
                         "indexed_params": [] if configuration.data == {} else configuration.data,
-                        "saved_filters": EMPTY_FILTER
-                        if filter is None
-                        else {
+                        "saved_filters": {
                             "operator": filter.operator.value,
                             "selector": filter.selector,
                             "path": filter.path,
                             "value": filter.value,
-                        },
+                        }
+                        if filter is not None
+                        else EMPTY_FILTER,
                         "name": name_escaped,
                         "multiple_output_connection": multiple_output_connection,
                         "previous_module_version": previous_version,
