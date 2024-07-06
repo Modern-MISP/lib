@@ -131,7 +131,6 @@ class GraphFactory:
                         "multiple_output_connection": multiple_output_connection,
                         "module_type": "trigger",
                         "html_template": "trigger",
-                        "saved_filters": EMPTY_FILTER,
                         "icon": icon,
                         "disabled": disabled,
                         # seems to only apply to modules.
@@ -151,6 +150,17 @@ class GraphFactory:
 
                 # So far, this was relatively straight-forward. Now let's tackle a
                 # few corner-cases for the old garbage 🤡
+
+                # saved_filters are super inconsistent. It's either EMPTY_FILTER from legacy.py
+                # or
+                # [
+                #    { text: selector, value: ''} {text: value, value: ''}
+                #    {text: operator, value: ''} {text: path, value: ''}
+                # ]
+                # and I have not idea which one is correct when.
+                # For now, I'm not aware of filters being attached to triggers, so let's leave this
+                # for now 🤷
+                ret_val["data"]["saved_filters"] = EMPTY_FILTER
 
                 # node_uid is only set if it has a value. But it can be empty.
                 if node_uid is not None:

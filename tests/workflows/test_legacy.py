@@ -111,16 +111,9 @@ def test_symmetry(attribute_after_save_workflow: Dict[str, Any], empty_workflow:
         attribute_after_save_workflow,
         empty_workflow,
     ]:
-        # saved_filters are super inconsistent. It's either EMPTY_FILTER from legacy.py
-        # or
-        # [
-        #    { text: selector, value: ''} {text: value, value: ''}
-        #    {text: operator, value: ''} {text: path, value: ''}
-        # ]
-        # and I have not idea which one is correct when.
-        # For now, I'm not aware of filters being attached to triggers, so let's leave this
-        # for now 🤷
         json_from_graph = GraphFactory.graph2jsondict(GraphFactory.jsondict2graph(workflow))
+        # we ignore filter inconsistencies. See comment in `GraphFactory.__node_to_dict`
+        # for rationale.
         del workflow["1"]["data"]["saved_filters"]
         del json_from_graph["1"]["data"]["saved_filters"]
         assert workflow == json_from_graph
