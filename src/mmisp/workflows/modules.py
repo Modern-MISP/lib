@@ -213,8 +213,184 @@ def trigger_node(cls: Type[Trigger]) -> Type[Trigger]:
 @dataclass(kw_only=True)
 class TriggerAfterSave(Trigger):
     id: str = "attribute-after-save"
-    name: str = "Attribute after save"
+    name: str = "Attribute After Save"
     scope: str = "attribute"
+    icon: str = "cube"
+    description: str = "This trigger is called after an Attribute has been saved in the database"
+    blocking: bool = False
+    overhead: Overhead = Overhead.HIGH
+    expect_misp_core_format: bool = True
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEnrichmentBeforeQuery(Trigger):
+    id: str = "enrichment-before-query"
+    scope: str = "others"
+    name: str = "Enrichment Before Query"
+    description: str = "This trigger is called just before a query against the enrichment service is done"
+    icon: str = "asterisk"
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.LOW
+    blocking: bool = True
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEventAfterSaveNewFromPull(Trigger):
+    id: str = "event-after-save-new-from-pull"
+    scope: str = "event"
+    name: str = "Event After Save New From Pull"
+    description: str = (
+        "This trigger is called after a new Event has been saved in the database "
+        "from a PULL operation. This trigger executes in place of `event-after-save-new`"
+    )
+    icon: str = "envelope"
+    blocking: bool = False
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.LOW
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEventAfterSaveNew(Trigger):
+    id: str = "event-after-save-new"
+    scope: str = "event"
+    name: str = "Event After Save New"
+    description: str = "This trigger is called after a new Event has been saved in the database"
+    icon: str = "envelope"
+    blocking: bool = False
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.LOW
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEventAfterSave(Trigger):
+    id: str = "event-after-save"
+    scope: str = "event"
+    name: str = "Event After Save"
+    description: str = "This trigger is called after an Event or any of its elements has been saved in the database"
+    icon: str = "envelope"
+    blocking: bool = False
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.HIGH
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEventBeforeSave(Trigger):
+    id: str = "event-before-save"
+    scope: str = "event"
+    name: str = "Event Before Save"
+    description: str = (
+        "This trigger is called before an Event or any of its elements is about to be saved in the database"
+    )
+    icon: str = "envelope"
+    blocking: bool = True
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.HIGH
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerEventPublish(Trigger):
+    id: str = "event-publish"
+    scope: str = "event"
+    name: str = "Event Publish"
+    description: str = "This trigger is called just before a MISP Event starts the publishing process"
+    icon: str = "upload"
+    blocking: bool = True
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.LOW
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerLogAfterSave(Trigger):
+    id: str = "log-after-save"
+    scope: str = "log"
+    name: str = "Log After Save"
+    description: str = "This trigger is called after a Log event has been saved in the database"
+    icon: str = "file"
+    blocking: bool = False
+    overhead: Overhead = Overhead.HIGH
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerObjectAfterSave(Trigger):
+    id: str = "object-after-save"
+    scope: str = "object"
+    name: str = "Object After Save"
+    description: str = "This trigger is called after an Object has been saved in the database"
+    icon: str = "cubes"
+    blocking: bool = False
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.HIGH
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerPostAfterSave(Trigger):
+    id: str = "post-after-save"
+    scope: str = "post"
+    name: str = "Post After Save"
+    description: str = "This trigger is called after a Post has been saved in the database"
+    icon: str = "comment"
+    blocking: bool = False
+    expect_misp_core_format: bool = False
+    overhead: Overhead = Overhead.LOW
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerShadowAttributeBeforeSave(Trigger):
+    id: str = "shadow-attribute-before-save"
+    scope: str = "shadow-attribute"
+    name: str = "Shadow Attribute Before Save"
+    description: str = "This trigger is called just before a Shadow Attribute is saved in the database"
+    icon: str = "comment"
+    blocking: bool = True
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.MEDIUM
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerSightingAfterSave(Trigger):
+    id: str = "sighting-after-save"
+    scope: str = "sighting"
+    name: str = "Sighting After Save"
+    description: str = "This trigger is called when a sighting has been saved"
+    icon: str = "eye"
+    blocking: bool = False
+    expect_misp_core_format: bool = True
+    overhead: Overhead = Overhead.MEDIUM
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerUserAfterSave(Trigger):
+    id: str = "user-after-save"
+    scope: str = "user"
+    name: str = "User After Save"
+    description: str = "This trigger is called after a user has been saved in the database"
+    icon: str = "user-edit"
+    blocking: bool = False
+    overhead: Overhead = Overhead.LOW
+
+
+@trigger_node
+@dataclass(kw_only=True)
+class TriggerUserBeforeSave(Trigger):
+    id: str = "user-before-save"
+    scope: str = "user"
+    name: str = "User Before Save"
+    description: str = "This trigger is called just before a user is save in the database"
+    icon: str = "user-plus"
+    blocking: bool = True
+    overhead: Overhead = Overhead.LOW
 
 
 @module_node

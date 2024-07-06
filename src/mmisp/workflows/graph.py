@@ -311,6 +311,13 @@ class Node(ABC):
     tasks module.
     """
 
+    supported: bool = True
+    """
+    Indicator whether the module / trigger is supported. All items from legacy MISP
+    exist here to allow loading any workflow, but not all are actually supported by
+    the application.
+    """
+
     def __eq__(self: Self, other: object) -> bool:
         return self is other
 
@@ -488,6 +495,11 @@ class Trigger(Node):
     dropped entirely in MMISP.
     """
 
+    id: str = "???"
+    """
+    ID of the trigger.
+    """
+
     name: str
     """
     Name of the trigger.
@@ -522,6 +534,11 @@ class Trigger(Node):
     """
     Indicates the expensiveness/overhead of the trigger
     as indicated by the [`Overhead`][mmisp.workflows.modules.Overhead] enum.
+    """
+
+    icon: str = "envelope"
+    """
+    Frontend icon.
     """
 
     raw_data: Dict[str, Any]
