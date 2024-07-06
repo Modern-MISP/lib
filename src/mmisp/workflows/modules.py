@@ -203,8 +203,7 @@ def trigger_node(cls: Type[Trigger]) -> Type[Trigger]:
     if not issubclass(cls, Trigger):
         raise ValueError(f"Class reference {cls} is not a subclass of mmisp.workflows.modules.Trigger!")
 
-    # FIXME make it cls.id
-    TRIGGER_REGISTRY.modules[cls.name] = cls
+    TRIGGER_REGISTRY.modules[cls.id] = cls
 
     return cls
 

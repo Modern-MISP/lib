@@ -26,7 +26,7 @@ from .graph import (
     WorkflowGraph,
 )
 from .input import Filter, Operator
-from .modules import MODULE_REGISTRY, ModuleAction, ModuleConfiguration, ModuleLogic, Overhead
+from .modules import MODULE_REGISTRY, TRIGGER_REGISTRY, ModuleAction, ModuleConfiguration, ModuleLogic
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
@@ -109,7 +109,7 @@ class GraphFactory:
 
                 # Newly created workflows apparently don't have a `name`-attribute??!
                 if len(reverse_edge_list) > 1:
-                    ret_val["name"] = name
+                    ret_val["name"] = name.replace(" ", "+")
 
                 return ret_val
             case Module(
@@ -280,13 +280,8 @@ class GraphFactory:
         )
 
         if input["data"].get("module_type") == "trigger":
-            return Trigger(
-                name=data["name"],
-                description=data["description"],
-                scope=data["scope"],
-                overhead=Overhead.from_int(data["trigger_overhead"]),
-                expect_misp_core_format=data["misp_core_format"],
-                blocking=data["blocking"],
+            trigger_cls = TRIGGER_REGISTRY.lookup(data["id"])
+            return trigger_cls(  # type:ignore[call-arg]
                 inputs={},
                 outputs={},
                 apperance=apperance,
