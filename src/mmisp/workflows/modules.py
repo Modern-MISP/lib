@@ -218,7 +218,6 @@ class TriggerAttributeAfterSave(Trigger):
     description: str = "This trigger is called after an Attribute has been saved in the database"
     blocking: bool = False
     overhead: Overhead = Overhead.HIGH
-    expect_misp_core_format: bool = True
 
 
 @trigger_node
@@ -229,7 +228,6 @@ class TriggerEnrichmentBeforeQuery(Trigger):
     name: str = "Enrichment Before Query"
     description: str = "This trigger is called just before a query against the enrichment service is done"
     icon: str = "asterisk"
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.LOW
     blocking: bool = True
 
@@ -246,7 +244,6 @@ class TriggerEventAfterSaveNewFromPull(Trigger):
     )
     icon: str = "envelope"
     blocking: bool = False
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.LOW
 
 
@@ -259,7 +256,6 @@ class TriggerEventAfterSaveNew(Trigger):
     description: str = "This trigger is called after a new Event has been saved in the database"
     icon: str = "envelope"
     blocking: bool = False
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.LOW
 
 
@@ -272,7 +268,6 @@ class TriggerEventAfterSave(Trigger):
     description: str = "This trigger is called after an Event or any of its elements has been saved in the database"
     icon: str = "envelope"
     blocking: bool = False
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.HIGH
 
 
@@ -287,7 +282,6 @@ class TriggerEventBeforeSave(Trigger):
     )
     icon: str = "envelope"
     blocking: bool = True
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.HIGH
 
 
@@ -300,7 +294,6 @@ class TriggerEventPublish(Trigger):
     description: str = "This trigger is called just before a MISP Event starts the publishing process"
     icon: str = "upload"
     blocking: bool = True
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.LOW
 
 
@@ -325,7 +318,6 @@ class TriggerObjectAfterSave(Trigger):
     description: str = "This trigger is called after an Object has been saved in the database"
     icon: str = "cubes"
     blocking: bool = False
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.HIGH
 
 
@@ -338,7 +330,6 @@ class TriggerPostAfterSave(Trigger):
     description: str = "This trigger is called after a Post has been saved in the database"
     icon: str = "comment"
     blocking: bool = False
-    expect_misp_core_format: bool = False
     overhead: Overhead = Overhead.LOW
 
 
@@ -351,7 +342,6 @@ class TriggerShadowAttributeBeforeSave(Trigger):
     description: str = "This trigger is called just before a Shadow Attribute is saved in the database"
     icon: str = "comment"
     blocking: bool = True
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.MEDIUM
 
 
@@ -364,7 +354,6 @@ class TriggerSightingAfterSave(Trigger):
     description: str = "This trigger is called when a sighting has been saved"
     icon: str = "eye"
     blocking: bool = False
-    expect_misp_core_format: bool = True
     overhead: Overhead = Overhead.MEDIUM
 
 
@@ -414,7 +403,6 @@ class ModuleEnrichEvent(ModuleAction):
     name: str = "Enrich Event"
     version: str = "0.2"
     description: str = "Enrich all Attributes contained in the Event with the provided module."
-    expect_misp_core_format: bool = True
 
 
 @module_node
@@ -638,7 +626,6 @@ class ModuleAttributeEditionOperation(ModuleAction):
     name: str = "Attribute edition operation"
     description: str = "Base module allowing to modify attribute"
     icon: str = "edit"
-    expect_misp_core_format: bool = True
 
 
 @module_node

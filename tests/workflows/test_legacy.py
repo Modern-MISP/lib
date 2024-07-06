@@ -59,7 +59,6 @@ def test_simple_workflow_to_dict() -> None:
         outputs={},
         scope="attribute",
         description="wat",
-        expect_misp_core_format=True,
         blocking=False,
         overhead=Overhead.HIGH,
     )

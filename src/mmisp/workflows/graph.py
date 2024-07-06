@@ -8,13 +8,14 @@ is implemented.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Self, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Self, Tuple, Union
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 if TYPE_CHECKING:
-    from .input import Filter, WorkflowInput
+    from ..db.database import Base
+    from .input import Filter, RoamingData, WorkflowInput
     from .modules import ModuleConfiguration, Overhead
 
 NodeConnection = Tuple[int, "Node"]
@@ -449,13 +450,6 @@ class Module(WorkflowNode):
     tasks module.
     """
 
-    expect_misp_core_format: bool = True
-    """
-    Whether the workflow JSON is expected to be in the MISP format
-    as defined in
-    `https://www.misp-standard.org/rfc/misp-standard-core.html`.
-    """
-
     blocking: bool = False
 
     async def initialize(self: Self, db: AsyncSession) -> None:
@@ -519,13 +513,6 @@ class Trigger(WorkflowNode):
     Human-readable description of when the trigger gets executed.
     """
 
-    expect_misp_core_format: bool
-    """
-    Whether the workflow JSON is expected to be in the MISP format
-    as defined in
-    `https://www.misp-standard.org/rfc/misp-standard-core.html`.
-    """
-
     overhead: "Overhead"
     """
     Indicates the expensiveness/overhead of the trigger
@@ -550,15 +537,23 @@ class Trigger(WorkflowNode):
 
     n_inputs: int = 0
 
-    async def normalize_data(self: Self, db: AsyncSession, input: "WorkflowInput") -> "WorkflowInput":
+    async def normalize_data(self: Self, db: AsyncSession, input: Union["RoamingData", "Base"]) -> "RoamingData":
         """
         Allows triggers to perform custom "normalization" operations
         before handing over to the actual modules.
+
+        Workflow input can be an arbitrary JSON already, but it can also be
+        a SQLAlchemy model. In the latter case it's this method's responsibility
+        to transform it into MISP compliant data.
 
         Arguments:
             db:     DB handle to load more entities from the database.
             input:  Workflow input to modify.
         """
+
+        # if a different model is provided here, you need
+        # a custom implementation.
+        assert isinstance(input, dict)
 
         return input
 
