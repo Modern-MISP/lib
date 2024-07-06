@@ -531,6 +531,18 @@ class Trigger(Node):
 
     n_inputs: int = 0
 
+    async def normalize_data(self: Self, db: AsyncSession, input: "WorkflowInput") -> "WorkflowInput":
+        """
+        Allows triggers to perform custom "normalization" operations
+        before handing over to the actual modules.
+
+        Arguments:
+            db:     DB handle to load more entities from the database.
+            input:  Workflow input to modify.
+        """
+
+        return input
+
 
 @dataclass
 class Frame:

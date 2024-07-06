@@ -26,7 +26,7 @@ from .graph import (
     WorkflowGraph,
 )
 from .input import Filter, Operator
-from .modules import ModuleAction, ModuleConfiguration, ModuleLogic, ModuleRegistry, Overhead
+from .modules import MODULE_REGISTRY, ModuleAction, ModuleConfiguration, ModuleLogic, Overhead
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
@@ -293,7 +293,7 @@ class GraphFactory:
                 raw_data=data,
             )
 
-        module_cls = ModuleRegistry.lookup(data["id"])
+        module_cls = MODULE_REGISTRY.lookup(data["id"])
 
         return module_cls(  # type:ignore[call-arg]
             inputs={},
