@@ -118,8 +118,8 @@ class GraphFactory:
                     "data": {
                         "id": trigger_id,
                         "scope": scope,
-                        "name": name.replace(" ", "+"),
-                        "description": description.replace(" ", "+"),
+                        "name": cls.__normalize_legacy_string(name),
+                        "description": cls.__normalize_legacy_string(description),
                         "inputs": 0,
                         "outputs": n_outputs,
                         "misp_core_format": misp_core_format,
@@ -169,7 +169,7 @@ class GraphFactory:
                 if len(reverse_edge_list) > 1:
                     # Non-newly created workflow names have
                     # `+` instead of spaces.
-                    ret_val["name"] = name.replace(" ", "+")
+                    ret_val["name"] = cls.__normalize_legacy_string(name)
 
                     # Also, a version and an empty list `indexed_params`
                     # (as opposed to `params`) exists.
@@ -202,8 +202,7 @@ class GraphFactory:
                 n_inputs=n_inputs,
                 n_outputs=n_outputs,
             ):
-                # FIXME double-check if anything else also gets escaped.
-                name_escaped = name.replace(" ", "+")
+                name_escaped = cls.__normalize_legacy_string(name)
 
                 match node:
                     case ModuleAction():
@@ -243,6 +242,15 @@ class GraphFactory:
                 }
             case _:
                 raise ValueError(f"Unexpected node representation: {node}")
+
+    @classmethod
+    def __normalize_legacy_string(cls: Type[Self], val: str) -> str:
+        # For reasons I'm not aware of, some of the descriptions and names
+        # have a special normalisation in legacy MISP, i.e. spaces
+        # are escaped with `+`.
+
+        # FIXME double-check if anything else also gets escaped.
+        return val.replace(" ", "+")
 
     @classmethod
     def __maybe_int(cls: Type[Self], value: float) -> int | float:
