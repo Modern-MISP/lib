@@ -210,7 +210,7 @@ def trigger_node(cls: Type[Trigger]) -> Type[Trigger]:
 
 @trigger_node
 @dataclass(kw_only=True)
-class TriggerAfterSave(Trigger):
+class TriggerAttributeAfterSave(Trigger):
     id: str = "attribute-after-save"
     name: str = "Attribute After Save"
     scope: str = "attribute"

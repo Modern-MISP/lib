@@ -8,7 +8,7 @@ is implemented.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Self, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Self, Tuple
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -287,11 +287,6 @@ class Node(ABC):
     using references to make walking the graph as easy as possible.
     """
 
-    apperance: Apperance
-    """
-    Value object with miscellaneous settings for the visual editor.
-    """
-
     n_inputs: int = 1
     """
     Number of _allowed_ inputs. If `inputs` exceeds this, the
@@ -363,7 +358,49 @@ class Node(ABC):
 
 
 @dataclass(kw_only=True)
-class Module(Node):
+class WorkflowNode(Node):
+    """
+    Dataclass with shared properties for both modules & triggers,
+    but not relevant for the abstract Node type.
+    """
+
+    id: str
+    """
+    Unique identifier of the module/trigger. To be declared in the
+    subclass implementing a concrete module/trigger.
+    """
+
+    name: str
+    """
+    Human-readable identifier of the module/trigger. To be declared in the
+    subclass implementing a concrete module/trigger.
+    """
+
+    blocking: bool
+    """
+    If the workflow of a blocking trigger fails, the actual
+    operation won't be carried out. For instance, if the
+    "event before save"-trigger fails, the event will not
+    besaved.
+
+    For modules, blocking and failing modules will terminate
+    the workflow execution.
+    """
+
+    version: str = "0.1"
+    """
+    Current version of the module. To be declared in the
+    subclass implementing a concrete module.
+    """
+
+    apperance: Apperance
+    """
+    Value object with miscellaneous settings for the visual editor.
+    """
+
+
+@dataclass(kw_only=True)
+class Module(WorkflowNode):
     """
     A module is a workflow node that is either
 
@@ -394,24 +431,6 @@ class Module(Node):
     Previously used version of the module.
     """
 
-    id: str
-    """
-    Unique identifier of the module. To be declared in the
-    subclass implementing a concrete module.
-    """
-
-    name: str
-    """
-    Human-readable identifier of the module. To be declared in the
-    subclass implementing a concrete module.
-    """
-
-    version: str = "0.0"
-    """
-    Current version of the module. To be declared in the
-    subclass implementing a concrete module.
-    """
-
     html_template: str = ""
     """
     HTML template provided by the visual editor to use.
@@ -438,11 +457,6 @@ class Module(Node):
     """
 
     blocking: bool = False
-    """
-    Whether or not the module is blocking, i.e. can abort the
-    workflow if it fails. If it's not blocking and fails,
-    execution continues.
-    """
 
     async def initialize(self: Self, db: AsyncSession) -> None:
         """
@@ -482,7 +496,7 @@ class Module(Node):
 
 
 @dataclass(kw_only=True)
-class Trigger(Node):
+class Trigger(WorkflowNode):
     """
     A trigger represents the starting point of a workflow.
     It can have only one output and no inputs. Each trigger
@@ -493,16 +507,6 @@ class Trigger(Node):
     since the properties were saved into the database anyways
     and no behavior was added to those classes, the idea was
     dropped entirely in MMISP.
-    """
-
-    id: str = "???"
-    """
-    ID of the trigger.
-    """
-
-    name: str
-    """
-    Name of the trigger.
     """
 
     scope: str
@@ -522,18 +526,16 @@ class Trigger(Node):
     `https://www.misp-standard.org/rfc/misp-standard-core.html`.
     """
 
-    blocking: bool
-    """
-    If the workflow of a blocking trigger fails, the actual
-    operation won't be carried out. For instance, if the
-    "event before save"-trigger fails, the event will not
-    besaved.
-    """
-
     overhead: "Overhead"
     """
     Indicates the expensiveness/overhead of the trigger
     as indicated by the [`Overhead`][mmisp.workflows.modules.Overhead] enum.
+    """
+
+    overhead_message: str = ""
+    """
+    Explanatory message describing why the overhead level was chosen
+    for this trigger.
     """
 
     icon: str = "envelope"
@@ -541,9 +543,9 @@ class Trigger(Node):
     Frontend icon.
     """
 
-    raw_data: Dict[str, Any]
+    disabled: bool = False
     """
-    Dictionary with arbitrary values passed to the visual editor.
+    Whether or not the trigger is disabled, i.e. ignored when triggered.
     """
 
     n_inputs: int = 0

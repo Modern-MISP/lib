@@ -35,7 +35,7 @@ def dummy_add_edge(_from: Node, to: Node) -> None:
 def test_node_check() -> None:
     inp = {0: [(0, None)], 1: [(0, None)]}
     out = {0: [(0, None), (0, None)], 1: [(0, None)], 2: [(0, None)]}
-    dummy_node = DummyNode(inputs=inp, outputs=out, apperance=None, n_outputs=2)
+    dummy_node = DummyNode(inputs=inp, outputs=out, n_outputs=2)
     issues = dummy_node.check()
     assert len(issues.errors) == 3
     assert len(issues.warnings) == 0
@@ -63,8 +63,8 @@ def test_graph_validation_result() -> None:
 
 
 def test_graph_check_output_edge_no_input_edge() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None)
-    b = DummyNode(inputs={}, outputs={}, apperance=None)
+    a = DummyNode(inputs={}, outputs={})
+    b = DummyNode(inputs={}, outputs={})
     a.outputs[0] = [(0, b), (1, b)]
     a.enable_multiple_edges_per_output = True
     b.inputs[1] = [(0, a)]
@@ -73,8 +73,8 @@ def test_graph_check_output_edge_no_input_edge() -> None:
 
 
 def test_graph_check_input_edge_no_output_edge() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None)
-    b = DummyNode(inputs={}, outputs={}, apperance=None)
+    a = DummyNode(inputs={}, outputs={})
+    b = DummyNode(inputs={}, outputs={})
     a.outputs[0] = [(1, b)]
     a.enable_multiple_edges_per_output = True
     b.inputs[1] = [(0, a), (1, a)]
@@ -83,15 +83,15 @@ def test_graph_check_input_edge_no_output_edge() -> None:
 
 
 def test_graph_check_cycle() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    b = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    c = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    d = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    e = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    f = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    g = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    h = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
-    i = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True)
+    a = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    b = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    c = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    d = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    e = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    f = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    g = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    h = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
+    i = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True)
     dummy_add_edge(a, b)
     dummy_add_edge(b, c)
     dummy_add_edge(b, d)

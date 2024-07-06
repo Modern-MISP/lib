@@ -30,6 +30,13 @@ from .modules import MODULE_REGISTRY, TRIGGER_REGISTRY, ModuleAction, ModuleConf
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
+EMPTY_FILTER = {
+    "operator": "",
+    "path": "",
+    "selector": "",
+    "value": "",
+}
+
 
 class GraphValidation:
     """
@@ -90,16 +97,51 @@ class GraphFactory:
             case Trigger(
                 inputs={},
                 outputs=outputs,
-                apperance=Apperance((pos_x, pos_y), typenode, cssClass),
+                apperance=Apperance((pos_x, pos_y), typenode, css_class, node_uid),
                 name=name,
-                raw_data=raw_data,
                 n_inputs=0,
                 n_outputs=n_outputs,
+                id=trigger_id,
+                scope=scope,
+                description=description,
+                expect_misp_core_format=misp_core_format,
+                blocking=blocking,
+                overhead=overhead,
+                overhead_message=overhead_message,
+                version=version,
+                enable_multiple_edges_per_output=multiple_output_connection,
+                icon=icon,
+                disabled=disabled,
             ):
                 ret_val = {
                     "id": id,
-                    "data": raw_data,
-                    "class": cssClass,
+                    "data": {
+                        "id": trigger_id,
+                        "scope": scope,
+                        "name": name.replace(" ", "+"),
+                        "description": description.replace(" ", "+"),
+                        "inputs": 0,
+                        "outputs": n_outputs,
+                        "misp_core_format": misp_core_format,
+                        "expect_misp_core_format": False,
+                        "blocking": blocking,
+                        "trigger_overhead": overhead.value,
+                        "trigger_overhead_message": overhead_message,
+                        "version": version,
+                        "multiple_output_connection": multiple_output_connection,
+                        "module_type": "trigger",
+                        "html_template": "trigger",
+                        "saved_filters": EMPTY_FILTER,
+                        "icon": icon,
+                        "disabled": disabled,
+                        # seems to only apply to modules.
+                        "support_filters": False,
+                        # MISP module is not implemented.
+                        "is_misp_module": False,
+                        "is_custom": False,
+                        "icon_class": "",
+                    },
+                    "class": css_class,
                     "typenode": typenode,
                     "inputs": [],
                     "outputs": cls.__edges_to_json("output", outputs, reverse_edge_list, n_outputs),
@@ -107,9 +149,22 @@ class GraphFactory:
                     "pos_y": cls.__maybe_int(pos_y),
                 }
 
-                # Newly created workflows apparently don't have a `name`-attribute??!
+                if node_uid is not None:
+                    ret_val["data"]["node_uid"] = node_uid
+
+                # Newly created workflows apparently don't have a `name`-attribute
+                # and no key module_version??!
                 if len(reverse_edge_list) > 1:
                     ret_val["name"] = name.replace(" ", "+")
+                    ret_val["data"]["module_version"] = version
+                    ret_val["data"]["indexed_params"] = []
+                    # So far I haven't seen a versioned trigger, so let's
+                    # hardcode it that way for now.
+                    ret_val["data"]["previous_module_version"] = version
+                else:
+                    ret_val["data"]["description"] = description
+                    ret_val["data"]["name"] = name
+                    ret_val["data"]["params"] = []
 
                 return ret_val
             case Module(
@@ -143,12 +198,7 @@ class GraphFactory:
                     "data": {
                         "id": module_id,
                         "indexed_params": [] if configuration.data == {} else configuration.data,
-                        "saved_filters": {
-                            "operator": "",
-                            "path": "",
-                            "selector": "",
-                            "value": "",
-                        }
+                        "saved_filters": EMPTY_FILTER
                         if filter is None
                         else {
                             "operator": filter.operator.value,
@@ -214,7 +264,7 @@ class GraphFactory:
         # representation contains the inputs/outputs, but with
         # connections being empty.
         if result == {}:
-            return {f"output_{i}": {"connections": []} for i in range(1, expected_num + 1)}
+            return {f"{direction}_{i}": {"connections": []} for i in range(1, expected_num + 1)}
 
         return result
 
@@ -285,7 +335,8 @@ class GraphFactory:
                 inputs={},
                 outputs={},
                 apperance=apperance,
-                raw_data=data,
+                disabled=data.get("disabled", False),
+                overhead_message=data.get("trigger_overhead_message", ""),
             )
 
         module_cls = MODULE_REGISTRY.lookup(data["id"])
