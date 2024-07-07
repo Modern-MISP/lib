@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from typing import List, Self, Tuple
+from typing import Dict, List, Self, Tuple
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -134,7 +134,7 @@ def wf_fail(trigger: Trigger) -> Workflow:
         trigger_id="demo",
         debug_enabled=True,
         data=WorkflowGraph(
-            nodes=[trigger] + [m1],
+            nodes={0: trigger, 1: m1},
             root=trigger,
             frames=[],
         ),
@@ -142,7 +142,7 @@ def wf_fail(trigger: Trigger) -> Workflow:
 
 
 @pytest.fixture
-def wf(trigger: Trigger, modules: List[Module]) -> Workflow:
+def wf(trigger: Trigger, modules: Dict[int, Module]) -> Workflow:
     return Workflow(
         id=24,
         uuid=str(uuid.uuid4()),
@@ -153,7 +153,7 @@ def wf(trigger: Trigger, modules: List[Module]) -> Workflow:
         trigger_id="demo",
         debug_enabled=True,
         data=WorkflowGraph(
-            nodes=[trigger] + modules,
+            nodes={0: trigger, **modules},
             root=trigger,
             frames=[],
         ),
@@ -194,10 +194,7 @@ def modules(trigger: Trigger) -> List[Module]:
     trigger.outputs[0] = [(0, m1)]
     m1.outputs[0] = [(0, m2)]
 
-    return [
-        m1,
-        m2,
-    ]
+    return {1: m1, 2: m2}
 
 
 @pytest.fixture
@@ -212,7 +209,7 @@ def empty_wf(trigger: Trigger) -> Workflow:
         trigger_id="demo",
         debug_enabled=True,
         data=WorkflowGraph(
-            nodes=[trigger],
+            nodes={0: trigger},
             root=trigger,
             frames=[],
         ),
