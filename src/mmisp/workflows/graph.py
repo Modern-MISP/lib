@@ -419,18 +419,23 @@ class Module(WorkflowNode):
 
     blocking: bool = False
 
-    async def initialize(self: Self, db: AsyncSession) -> None:
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
         """
         Initializes the parameters for a module. Done in a method
         since that may involve further DB operations.
+
+        Only needed for the visual editor, not the execution since it
+        defines which params are expected and which values are accepted
+        (e.g. all attributes stored in the database).
 
         Arguments:
             db: SQLAlchemy session
         """
 
-    def is_initialized(self: Self) -> bool:
+    def is_initialized_for_visual_editor(self: Self) -> bool:
         """
-        Checks if the module was initialized which happens by calling
+        Checks if the module was initialized for the visual editor
+        which happens by calling
         [`Module.initialize`][mmisp.workflows.modules.Module.initialize].
         It's expected that the attribute
         `params` will be set by this method.
@@ -706,8 +711,8 @@ class Graph(ABC):
         """
         for node in self.nodes:
             if isinstance(node, Module):
-                await node.initialize(db)
-                assert node.is_initialized()
+                await node.initialize_for_visual_editor(db)
+                assert node.is_initialized_for_visual_editor()
 
 
 class WorkflowGraph(Graph):
