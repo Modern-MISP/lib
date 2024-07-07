@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from .input import Filter, RoamingData, WorkflowInput
     from .modules import ModuleConfiguration, Overhead
 
-NodeConnection = Tuple[int, "Node"]
+NodeConnection = Tuple[int, Union["Module", "Trigger"]]
 
 
 @dataclass
@@ -437,7 +437,7 @@ class Module(WorkflowNode):
         """
         return hasattr(self, "params")
 
-    def exec(self: Self, payload: "WorkflowInput") -> Tuple[bool, Self | None]:
+    async def exec(self: Self, payload: "WorkflowInput") -> Tuple[bool, Union["Module", None]]:
         """
         Executes the module using the specific payload given by the workflow that calls
         the execution of the module.
@@ -450,10 +450,33 @@ class Module(WorkflowNode):
         the next module from the success of the execution of this module (relevant for
         e.g. if/else).
 
+        The default implementation assumes exactly one output and returns it on success.
+
         Arguments:
             payload: The workflows input for the specific module execution.
         """
-        assert False
+
+        assert self.n_outputs == 1, """
+            Module.exec() assumes exactly one output. If that's not the case,
+            override the method.
+        """
+        assert not self.enable_multiple_edges_per_output, """
+            Module.exec() assumes each output allows only a single edge.
+            if that's not the case, override the method.
+        """
+
+        result = await self._exec(payload)
+        # execution failed, no more things to do.
+        if not result:
+            return (False, None)
+
+        return (result, next(iter(self.outputs.values()))[0][1])
+
+    async def _exec(self: Self, payload: "WorkflowInput") -> bool:
+        return False
+
+
+VerbatimWorkflowInput = Union["RoamingData", "Base"]
 
 
 @dataclass(kw_only=True, eq=False)
@@ -504,7 +527,7 @@ class Trigger(WorkflowNode):
 
     n_inputs: int = 0
 
-    async def normalize_data(self: Self, db: AsyncSession, input: Union["RoamingData", "Base"]) -> "RoamingData":
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> "RoamingData":
         """
         Allows triggers to perform custom "normalization" operations
         before handing over to the actual modules.
@@ -520,7 +543,10 @@ class Trigger(WorkflowNode):
 
         # if a different model is provided here, you need
         # a custom implementation.
-        assert isinstance(input, dict)
+        assert isinstance(input, dict), (
+            "No dict was passed to default normalize_data implementation of a trigger. "
+            f"Override your trigger if other inputs shall be accepted. Got: {type(input)}"
+        )
 
         return input
 
