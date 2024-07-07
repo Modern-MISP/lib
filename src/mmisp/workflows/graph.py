@@ -437,7 +437,7 @@ class Module(WorkflowNode):
         """
         return hasattr(self, "params")
 
-    async def exec(self: Self, payload: "WorkflowInput") -> Tuple[bool, Union["Module", None]]:
+    async def exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
         """
         Executes the module using the specific payload given by the workflow that calls
         the execution of the module.
@@ -454,6 +454,7 @@ class Module(WorkflowNode):
 
         Arguments:
             payload: The workflows input for the specific module execution.
+            db: Database handle for write operations.
         """
 
         assert self.n_outputs == 1, """
@@ -465,14 +466,16 @@ class Module(WorkflowNode):
             if that's not the case, override the method.
         """
 
-        result = await self._exec(payload)
+        result = await self._exec(payload, db)
         # execution failed, no more things to do.
         if not result:
             return (False, None)
 
-        return (result, next(iter(self.outputs.values()))[0][1])
+        next_step = next(iter(self.outputs.values()))[0][1]
+        assert not isinstance(next_step, Trigger)
+        return (result, next_step)
 
-    async def _exec(self: Self, payload: "WorkflowInput") -> bool:
+    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
         return False
 
 

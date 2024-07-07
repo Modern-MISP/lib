@@ -2,6 +2,7 @@ from typing import Self
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.workflows.graph import Apperance, Module
 from mmisp.workflows.input import WorkflowInput
@@ -20,13 +21,13 @@ async def test_default_exec_impl() -> None:
         apperance=Apperance((0, 0), False, "mock", None),
     )
 
-    assert await m.exec(WorkflowInput({}, Mock(), Mock())) == (False, None)
+    assert await m.exec(WorkflowInput({}, Mock(), Mock()), Mock()) == (False, None)
 
 
 @pytest.mark.asyncio
 async def test_default_exec_impl_success() -> None:
     class Module_(Module):
-        async def _exec(self: Self, payload: WorkflowInput) -> bool:
+        async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> bool:
             return True
 
     next_step = Mock()
@@ -41,7 +42,7 @@ async def test_default_exec_impl_success() -> None:
         apperance=Apperance((0, 0), False, "mock", None),
     )
 
-    result = await m.exec(WorkflowInput({}, Mock(), Mock()))
+    result = await m.exec(WorkflowInput({}, Mock(), Mock()), Mock())
     assert result[0]
     assert result[1] == next_step
 
@@ -61,7 +62,7 @@ async def test_default_exec_impl_2_outputs() -> None:
     )
 
     try:
-        await m.exec(WorkflowInput({}, Mock(), Mock())) == (False, None)
+        await m.exec(WorkflowInput({}, Mock(), Mock()), Mock()) == (False, None)
         pytest.fail()
     except AssertionError as e:
         assert "Module.exec() assumes exactly one output." in str(e)
@@ -82,7 +83,7 @@ async def test_default_exec_impl_multiple_edges_per_output() -> None:
     )
 
     try:
-        await m.exec(WorkflowInput({}, Mock(), Mock())) == (False, None)
+        await m.exec(WorkflowInput({}, Mock(), Mock()), Mock()) == (False, None)
         pytest.fail()
     except AssertionError as e:
         assert "Module.exec() assumes each output allows only a single edge." in str(e)
