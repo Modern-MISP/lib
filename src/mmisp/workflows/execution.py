@@ -2,6 +2,8 @@
 Models related to the execution of workflows.
 """
 
+from typing import List, Tuple
+
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,12 +33,12 @@ def as_module(node: Module | Trigger) -> Module:
 
 async def walk_nodes(
     input: WorkflowInput, current_node: Module, workflow: Workflow, logger: ApplicationLogger, db: AsyncSession
-) -> bool:
+) -> Tuple[bool, List[str]]:
     try:
         result, next_node = await current_node.exec(input, db)
     except Exception as e:
         logger.log_workflow_execution_error(workflow, f"Error while executing module {current_node.id}. Error: {e}")
-        return False
+        return False, []
 
     success_type = "partial-success" if not result and not isinstance(current_node, ModuleLogic) else "success"
 
@@ -48,17 +50,17 @@ async def walk_nodes(
     )
 
     if not result:
-        return False
+        return False, input.user_messages
 
     if next_node is None:
-        return True
+        return True, input.user_messages
 
     return await walk_nodes(input, next_node, workflow, logger, db)
 
 
 async def execute_workflow(
     workflow: Workflow, user: User, input: VerbatimWorkflowInput, db: AsyncSession, logger: ApplicationLogger
-) -> bool:
+) -> Tuple[bool, List[str]]:
     """
     Provides the functionality for executing a workflow, which consists of traversing
     the given workflow graph and its modules and executing these modules with their specific
@@ -89,13 +91,13 @@ async def execute_workflow(
     """
 
     if not workflow.enabled:
-        return False
+        return False, []
 
     graph = workflow.data
     trigger = as_trigger(graph.root)
 
     if trigger.disabled:
-        return True
+        return True, []
 
     logger.log_workflow_debug_message(
         workflow, f"Started executing workflow for trigger `{trigger.name}` ({workflow.id})"
@@ -104,13 +106,13 @@ async def execute_workflow(
     next_step = next(iter(trigger.outputs.values()), None)
     # Nothing to do.
     if not next_step:
-        return True
+        return True, []
 
     try:
         roaming_data = await trigger.normalize_data(db, input)
     except Exception as e:
         logger.log_workflow_execution_error(workflow, f"Error while normalizing data for trigger. Error: \n{e}")
-        return False
+        return False, []
 
     input = WorkflowInput(
         data=roaming_data,
@@ -122,7 +124,7 @@ async def execute_workflow(
 
     result = await walk_nodes(input, as_module(next_step[0][1]), workflow, logger, db)
 
-    if result:
+    if result[0]:
         outcome = "success"
     else:
         outcome = "blocked" if trigger.blocking else "failure"

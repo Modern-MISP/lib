@@ -21,7 +21,7 @@ async def test_trigger_disabled(trigger: Trigger, empty_wf: Workflow) -> None:
     db = AsyncMock()
     user = Mock()
     logger = ApplicationLogger(db)
-    assert await execute_workflow(empty_wf, user, {}, db, logger)
+    assert (await execute_workflow(empty_wf, user, {}, db, logger))[0]
 
 
 @pytest.mark.asyncio
@@ -29,7 +29,7 @@ async def test_nothing_to_do(empty_wf: Workflow) -> None:
     db = AsyncMock()
     user = Mock()
     logger = Mock()
-    assert await execute_workflow(empty_wf, user, {}, db, logger)
+    assert (await execute_workflow(empty_wf, user, {}, db, logger))[0]
 
     # we went a little further and thus a first log message should've been received.
     assert logger.log_workflow_debug_message.called == 1
@@ -42,7 +42,7 @@ async def test_normalization_error(wf: Workflow) -> None:
     user = Mock()
     logger = Mock()
 
-    assert not await execute_workflow(wf, user, Mock(), db, logger)
+    assert not (await execute_workflow(wf, user, Mock(), db, logger))[0]
     assert logger.log_workflow_execution_error.called == 1
     logger.log_workflow_execution_error.assert_called_with(
         wf,
@@ -61,7 +61,7 @@ async def test_execute(wf: Workflow) -> None:
     logger = Mock()
 
     result = await execute_workflow(wf, user, {}, db, logger)
-    assert result
+    assert result[0]
     assert logger.log_workflow_debug_message.call_count == 4
     assert not logger.log_workflow_execution_error.called
 
@@ -84,7 +84,8 @@ async def test_execute_error(wf_fail: Workflow) -> None:
     logger = Mock()
 
     result = await execute_workflow(wf_fail, user, {}, db, logger)
-    assert not result
+    assert not result[0]
+    assert "Hello World" in result[1]
     assert logger.log_workflow_debug_message.call_count == 3
     assert not logger.log_workflow_execution_error.called
 
@@ -171,6 +172,7 @@ def modules(trigger: Trigger) -> List[Module]:
         async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Self | None]:
             if self.outputs[0] != []:
                 return True, self.outputs[0][0][1]
+            payload.user_messages += ["Hello World"]
             return True, None
 
     m1 = MockupModule(
