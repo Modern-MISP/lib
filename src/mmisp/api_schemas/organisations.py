@@ -38,3 +38,13 @@ class GetOrganisationResponse(BaseModel):
     local: bool
     restricted_to_domain: str | None = None
     landingpage: str | None = None
+
+class DeleteForceUpdateOrganisationResponse(BaseModel):
+    saved: bool | None = None
+    success: bool | None = None
+    name: str
+    message: str
+    url: str
+
+    class Config:
+        orm_mode = True
