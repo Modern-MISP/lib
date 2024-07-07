@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.workflow import Workflow
 from mmisp.lib.logging import ApplicationLogger
-from mmisp.workflows.execution import execute_workflow
+from mmisp.workflows.execution import UnsupportedModules, execute_workflow
 from mmisp.workflows.graph import Apperance, Module, Trigger, WorkflowGraph
 from mmisp.workflows.input import WorkflowInput
 from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead
@@ -100,6 +100,21 @@ async def test_execute_error(wf_fail: Workflow) -> None:
     logger.log_workflow_debug_message.assert_called_with(
         wf_fail, ("Finished executing workflow for trigger `demo` (25). Outcome: failure")
     )
+
+
+@pytest.mark.asyncio
+async def test_execute_unsupported(wf: Workflow) -> None:
+    db = AsyncMock()
+    user = Mock()
+    logger = Mock()
+
+    wf.data.nodes[1].supported = False
+
+    try:
+        await execute_workflow(wf, user, {}, db, logger)
+        pytest.fail()
+    except Exception as e:
+        assert isinstance(e, UnsupportedModules)
 
 
 @pytest.fixture

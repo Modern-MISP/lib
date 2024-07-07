@@ -58,6 +58,10 @@ async def walk_nodes(
     return await walk_nodes(input, next_node, workflow, logger, db)
 
 
+class UnsupportedModules(Exception):
+    pass
+
+
 async def execute_workflow(
     workflow: Workflow, user: User, input: VerbatimWorkflowInput, db: AsyncSession, logger: ApplicationLogger
 ) -> Tuple[bool, List[str]]:
@@ -107,6 +111,9 @@ async def execute_workflow(
     # Nothing to do.
     if not next_step:
         return True, []
+
+    if not all(x.supported for x in graph.nodes.values()):
+        raise UnsupportedModules()
 
     try:
         roaming_data = await trigger.normalize_data(db, input)
