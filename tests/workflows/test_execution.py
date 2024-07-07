@@ -11,7 +11,7 @@ from mmisp.lib.logging import ApplicationLogger
 from mmisp.workflows.execution import execute_workflow
 from mmisp.workflows.graph import Apperance, Module, Trigger, WorkflowGraph
 from mmisp.workflows.input import WorkflowInput
-from mmisp.workflows.modules import ModuleAction, Overhead
+from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead
 
 
 @pytest.mark.asyncio
@@ -118,7 +118,7 @@ def wf_fail(trigger: Trigger) -> Workflow:
         graph_id=2,
         inputs={0: [(0, trigger)]},
         outputs={},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
@@ -179,7 +179,7 @@ def modules(trigger: Trigger) -> List[Module]:
         graph_id=2,
         inputs={0: [(0, trigger)]},
         outputs={},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
@@ -187,7 +187,7 @@ def modules(trigger: Trigger) -> List[Module]:
         graph_id=3,
         inputs={0: [(0, m1)]},
         outputs={0: []},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )

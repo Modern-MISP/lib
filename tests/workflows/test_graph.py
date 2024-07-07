@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.workflows.graph import Apperance, Module
 from mmisp.workflows.input import WorkflowInput
+from mmisp.workflows.modules import ModuleConfiguration
 
 
 @pytest.mark.asyncio
@@ -16,7 +17,7 @@ async def test_default_exec_impl() -> None:
         name="Demo Name",
         inputs={},
         outputs={0: [(0, Mock())]},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
@@ -37,7 +38,7 @@ async def test_default_exec_impl_success() -> None:
         name="Demo Name",
         inputs={},
         outputs={0: [(0, next_step)]},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
@@ -56,7 +57,7 @@ async def test_default_exec_impl_2_outputs() -> None:
         inputs={},
         n_outputs=2,
         outputs={0: [(0, Mock())], 1: []},
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
@@ -77,7 +78,7 @@ async def test_default_exec_impl_multiple_edges_per_output() -> None:
         inputs={},
         outputs={0: [(0, Mock())]},
         enable_multiple_edges_per_output=True,
-        configuration={},
+        configuration=ModuleConfiguration({}),
         on_demand_filter=None,
         apperance=Apperance((0, 0), False, "mock", None),
     )
