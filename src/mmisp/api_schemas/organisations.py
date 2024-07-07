@@ -23,6 +23,7 @@ class Organisation(BaseModel):
     class Config:
         orm_mode = True
 
+
 class GetOrganisationResponse(BaseModel):
     id: str
     name: str
@@ -38,6 +39,7 @@ class GetOrganisationResponse(BaseModel):
     local: bool
     restricted_to_domain: str | None = None
     landingpage: str | None = None
+
 
 class DeleteForceUpdateOrganisationResponse(BaseModel):
     saved: bool | None = None
