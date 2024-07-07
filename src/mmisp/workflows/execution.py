@@ -88,6 +88,9 @@ async def execute_workflow(
         logger:   Application logger to notify about errors or (if debug is enabled) execution steps.
     """
 
+    if not workflow.enabled:
+        return False
+
     graph = workflow.data
     trigger = as_trigger(graph.root)
 
