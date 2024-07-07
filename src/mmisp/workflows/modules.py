@@ -419,6 +419,7 @@ class ModuleEnrichEvent(ModuleAction):
     name: str = "Enrich Event"
     version: str = "0.2"
     description: str = "Enrich all Attributes contained in the Event with the provided module."
+    supported: bool = False
 
 
 @module_node
@@ -430,6 +431,7 @@ class ModuleAttributeCommentOperation(ModuleAction):
     description: str = "Set the Attribute's comment to the selected value"
     icon: str = "edit"
     on_demand_filtering_enabled: bool = True
+    supported: bool = False
 
 
 @module_node
@@ -465,6 +467,7 @@ class ModuleAttachWarninglist(ModuleAction):
     description: str = "Append attributes to an active custom warninglist."
     icon: str = "exclamation-triangle"
     on_demand_filtering_enabled: bool = True
+    supported: bool = False
 
 
 @module_node
@@ -499,6 +502,7 @@ class ModuleCountIf(ModuleLogic):
     )
     icon: str = "code-branch"
     html_template: str = "if"
+    supported: bool = False
 
 
 @module_node
@@ -515,6 +519,7 @@ class ModuleDistributionIf(ModuleLogic):
     icon: str = "code-branch"
     n_outputs: int = 2
     html_template: str = "if"
+    supported: bool = False
 
 
 @module_node
@@ -567,6 +572,7 @@ class ModuleOrganisationIf(ModuleLogic):
     icon: str = "code-branch"
     n_outputs: int = 2
     html_template: str = "if"
+    supported: bool = False
 
 
 @module_node
@@ -582,6 +588,7 @@ class ModulePublishedIf(ModuleLogic):
     icon: str = "code-branch"
     n_outputs: int = 2
     html_template: str = "if"
+    supported: bool = False
 
 
 @module_node
@@ -598,6 +605,7 @@ class ModuleThreatLevelIf(ModuleLogic):
         "the`else` output will be used."
     )
     icon: str = "code-branch"
+    supported: bool = False
 
 
 @module_node
@@ -622,6 +630,7 @@ class ModuleAssignCountryFromEnrichment(ModuleAction):
     )
     icon: str = "code-branch"
     n_outputs: int = 2
+    supported: bool = False
 
 
 @module_node
@@ -633,6 +642,7 @@ class ModuleAttachEnrichment(ModuleAction):
     description: str = "Attach selected enrichment result to Attributes."
     icon: str = "asterisk"
     on_demand_filtering_enabled: bool = True
+    supported: bool = False
 
 
 @module_node
@@ -642,6 +652,7 @@ class ModuleAttributeEditionOperation(ModuleAction):
     name: str = "Attribute edition operation"
     description: str = "Base module allowing to modify attribute"
     icon: str = "edit"
+    supported: bool = False
 
 
 @module_node
@@ -652,6 +663,7 @@ class ModuleAttributeIdsFlagOperation(ModuleAction):
     description: str = "Toggle or remove the IDS flag on selected attributes."
     icon: str = "edit"
     on_demand_filtering_enabled: bool = True
+    supported: bool = False
 
 
 @module_node
@@ -661,6 +673,7 @@ class ModuleEventDistributionOperation(ModuleAction):
     name: str = "Event distribution operation"
     description: str = "Set the Event's distribution to the selected level"
     icon: str = "edit"
+    supported: bool = False
 
 
 @module_node
@@ -670,6 +683,7 @@ class ModuleMsTeamsWebhook(ModuleAction):
     name: str = "MS Teams Webhook"
     version: str = "0.5"
     description: str = 'Perform callbacks to the MS Teams webhook provided by the "Incoming Webhook" connector'
+    supported: bool = False
 
 
 @module_node
@@ -689,6 +703,7 @@ class ModulePushZMQ(ModuleAction):
     name: str = "Push to ZMQ"
     version: str = "0.2"
     description: str = "Push to the ZMQ channel"
+    supported: bool = False
 
 
 @module_node
@@ -701,6 +716,7 @@ class ModuleSendLogMail(ModuleAction):
         " Requires functional misp-modules to be functional."
     )
     icon: str = "envelope"
+    supported: bool = False
 
 
 @module_node
@@ -712,6 +728,7 @@ class ModuleSendMail(ModuleAction):
         "Allow to send a Mail to a list or recipients. Requires functional misp-modules to be functional."
     )
     icon: str = "envelope"
+    supported: bool = False
 
 
 @module_node
@@ -724,6 +741,7 @@ class ModuleSplunkHecExport(ModuleAction):
         "Export Event Data to Splunk HTTP Event Collector. Due to the potential high amount "
         "of requests, it's recommanded to put this module after a `concurrent_task` logic module."
     )
+    supported: bool = False
 
 
 @module_node
@@ -746,6 +764,7 @@ class ModuleTagOperation(ModuleAction):
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
     version: str = "0.2"
+    supported: bool = False
 
 
 @module_node
@@ -757,6 +776,7 @@ class ModuleTagReplacementGeneric(ModuleAction):
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
     version: str = "0.1"
+    supported: bool = False
 
 
 @module_node
@@ -768,6 +788,7 @@ class ModuleTagReplacementPap(ModuleAction):
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
     version: str = "0.1"
+    supported: bool = False
 
 
 @module_node
@@ -779,6 +800,7 @@ class ModuleTagReplacementTlp(ModuleAction):
     description: str = "Attach a tag (or substitue) a tag by another for the TLP taxonomy"
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
+    supported: bool = False
 
 
 @module_node
@@ -788,6 +810,7 @@ class ModuleTelegramSendAlert(ModuleAction):
     name: str = "Telegram Send Alert"
     version: str = "0.1"
     description: str = "Send a message alert to a Telegram channel"
+    supported: bool = False
 
 
 @module_node
@@ -797,3 +820,4 @@ class ModuleWebhook(ModuleAction):
     name: str = "Webhook"
     version: str = "0.7"
     description: str = "Allow to perform custom callbacks to the provided URL"
+    supported: bool = False

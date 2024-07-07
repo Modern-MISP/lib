@@ -329,6 +329,7 @@ class Node(ABC):
             for key, value in self.outputs.items():
                 if len(value) > 1:
                     result.errors.append(MultipleEdgesPerOutput((self, key)))
+
         return result
 
 
@@ -372,6 +373,13 @@ class WorkflowNode(Node):
     """
     Value object with miscellaneous settings for the visual editor.
     """
+
+    def check(self: Self) -> GraphValidationResult:
+        results = super().check()
+        if not self.supported:
+            results.errors.append(UnsupportedWorkflow(self.id))
+
+        return results
 
 
 @dataclass(kw_only=True, eq=False)
