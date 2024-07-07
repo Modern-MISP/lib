@@ -75,13 +75,12 @@ def workflow(trigger: Trigger) -> Workflow:
 @pytest.fixture
 def trigger() -> Trigger:
     return Trigger(
+        id="demo",
         name="demo",
         scope="local",
         description="Hello World",
-        expect_misp_core_format=False,
         blocking=False,
         overhead=Overhead.LOW,
-        raw_data={},
         inputs={},
         outputs={},
         apperance=Apperance((0, 0), False, "", None),
