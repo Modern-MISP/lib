@@ -147,6 +147,14 @@ class WorkflowInput:
     Reference to the workflow object being executed.
     """
 
+    user_messages: List[str] = []
+    """
+    List of user messages collected along the way. Those are not for debugging
+    purposes, but for informational purposes. For instance, we can use this to
+    indicate that an event was published along the way or why
+    the execution was blocked.
+    """
+
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
         self.user = user
