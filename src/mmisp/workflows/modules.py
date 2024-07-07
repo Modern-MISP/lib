@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Generic, List, Self, Type, TypeVar
 
-from .graph import ConfigurationError, Module, Node, Trigger
+from .graph import Module, Node, Trigger
 
 
 class ModuleParamType(Enum):
@@ -25,7 +25,6 @@ class ModuleParamType(Enum):
     SELECT = "select"
     PICKER = "picker"
     CHECKBOX = "checkbox"
-    RADIO = "radio"
 
 
 class Overhead(Enum):
@@ -116,11 +115,11 @@ class ModuleConfiguration:
 
     data: Dict[str, Any]
     """
-    The dictionaryh containing values for the parameters a module
+    The dictionary containing values for the parameters a module
     needs.
     """
 
-    def validate(self: Self, structure: ModuleParams) -> List[ConfigurationError]:
+    def validate(self: Self, structure: ModuleParams) -> List[str]:
         """
         Check if the parameters specified here are correct. For e.g. a
         `select`-param with id "foobar", it will be checked if
@@ -128,9 +127,26 @@ class ModuleConfiguration:
 
         Arguments:
             structure: The module param definitions to validate the
-            configuration against.
+                configuration against.
         """
-        assert False
+
+        errors = []
+        extraneous = set(self.data.keys()) - set(structure.keys())
+        if len(extraneous) > 0:
+            errors += [f"Unspecified keys found in configuration: {extraneous}"]
+
+        for key, config in structure.items():
+            if not (value := self.data.get(key)):
+                errors += [f"Missing configured key {key}"]
+                continue
+
+            if config.kind in (ModuleParamType.SELECT, ModuleParamType.PICKER) and value not in config.options.keys():
+                errors += [f"Param {key} has an invalid value"]
+
+            if config.kind == ModuleParamType.CHECKBOX and not isinstance(value, bool):
+                errors += [f"Param {key} is expected to be a boolean"]
+
+        return errors
 
 
 class ModuleAction(Module):
