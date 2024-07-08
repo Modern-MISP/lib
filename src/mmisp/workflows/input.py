@@ -414,7 +414,7 @@ class WorkflowInput:
         return self.__filtered_data
 
     def filter(self: Self) -> None:
-        filter_data = copy.deepcopy(self.__unfiltered_data)
+        filter_data: RoamingData | List[RoamingData] = copy.deepcopy(self.__unfiltered_data)
 
         for i, filter in enumerate(self.filters):
             if i == 0:
