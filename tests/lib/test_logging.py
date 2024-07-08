@@ -83,5 +83,6 @@ def trigger() -> Trigger:
         overhead=Overhead.LOW,
         inputs={},
         outputs={},
+        graph_id=1,
         apperance=Apperance((0, 0), False, "", None),
     )

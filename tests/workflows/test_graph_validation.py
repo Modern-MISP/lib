@@ -36,7 +36,7 @@ def dummy_add_edge(_from: Node, to: Node) -> None:
 def test_node_check() -> None:
     inp = {1: [(0, None)], 2: [(0, None)]}
     out = {1: [(0, None), (0, None)], 2: [(0, None)], 3: [(0, None)]}
-    dummy_node = DummyNode(inputs=inp, outputs=out, apperance=None, n_outputs=2, graph_id=1)
+    dummy_node = DummyNode(inputs=inp, outputs=out, n_outputs=2, graph_id=1)
     issues = dummy_node.check()
     # print(str(dummy_node.inputs.keys()) + "\n" + str(dummy_node.n_inputs))
     assert len(issues.errors) == 3
@@ -58,8 +58,8 @@ def test_graph_validation_result() -> None:
 
 
 def test_graph_check_output_edge_no_input_edge() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    b = DummyNode(inputs={}, outputs={}, apperance=None, graph_id=1)
+    a = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, graph_id=1)
     a.outputs[1] = [(1, b), (2, b)]
     b.inputs[1] = [(1, a)]
     graph = DummyGraph({0: a, 1: b}, a, None)
@@ -67,8 +67,8 @@ def test_graph_check_output_edge_no_input_edge() -> None:
 
 
 def test_graph_check_input_edge_no_output_edge() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None, graph_id=1)
-    b = DummyNode(inputs={}, outputs={}, apperance=None, n_inputs=2, graph_id=1)
+    a = DummyNode(inputs={}, outputs={}, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, n_inputs=2, graph_id=1)
     a.outputs[1] = [(2, b)]
     b.inputs[2] = [(1, a), (2, a)]
     graph = DummyGraph({0: a, 1: b}, a, None)
@@ -76,15 +76,15 @@ def test_graph_check_input_edge_no_output_edge() -> None:
 
 
 def test_graph_check_cycle() -> None:
-    a = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    b = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    c = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    d = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    e = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    f = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    g = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    h = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
-    i = DummyNode(inputs={}, outputs={}, apperance=None, enable_multiple_edges_per_output=True, graph_id=1)
+    a = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    c = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    d = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    e = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    f = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    g = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    h = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    i = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
     dummy_add_edge(a, b)
     dummy_add_edge(b, c)
     dummy_add_edge(b, d)
@@ -112,14 +112,13 @@ def test_if_node_subclasses_are_hashable() -> None:
         inputs={},
         outputs={},
         graph_id=1,
-        apperance=None,
+        id="Test",
         name="Test",
-        scope="scope",
-        description="des",
-        expect_misp_core_format=True,
         blocking=True,
+        apperance=None,
+        scope="None",
+        description="Des",
         overhead=None,
-        raw_data=None,
     )
     assert trigger.__hash__() == id(trigger)
     assert trigger == trigger
@@ -127,11 +126,11 @@ def test_if_node_subclasses_are_hashable() -> None:
         inputs={},
         outputs={},
         graph_id=1,
+        id="Test",
+        name="Test",
         apperance=None,
         configuration=None,
         on_demand_filter=None,
-        id="TestModule",
-        name="Test",
     )
     assert module.__hash__() == id(module)
     assert module == module
