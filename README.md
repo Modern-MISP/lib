@@ -14,6 +14,8 @@ Create a file called `.env` and copy the contents of `.env.example` into it. Fin
 
 You should now be able to access the api on `localhost:4000`.
 
+To use the commandline tool run `python .\src\mmisp\commandline_tool\main.py -h` from the base directory to view all commands.
+
 Run tests using `make test` (local database container required running) or `make test/lite`.
 
 ## Setting up your IDE

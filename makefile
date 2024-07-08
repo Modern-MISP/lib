@@ -9,7 +9,8 @@ setup:
 	virtualenv venv; \
 	source venv/bin/activate; \
 	pip install -e ".[dev]"; \
-	pre-commit install --install-hooks
+	pre-commit install --install-hooks; \
+	pip install fire
 
 setup/ci:
 	pip install virtualenv; \
