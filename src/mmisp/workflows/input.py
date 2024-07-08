@@ -397,7 +397,7 @@ class WorkflowInput:
         self.filters: List[Filter] = []
 
     @property
-    def data(self: Self) -> RoamingData | List[RoamingData]:
+    def data(self: Self) -> RoamingData | List[RoamingData] | None:
         """
         Returns either all of the data given to the workflow input
         OR a list with filter results if a filter was added
