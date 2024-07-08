@@ -22,6 +22,8 @@ async def create(session: AsyncSession, email: str, password: str, org: str | in
 
     user.org_id = await get_element_id(session, org, "Organisation")
 
+    user.change_pw = True
+
     session.add(user)
     await session.commit()
 
@@ -73,6 +75,7 @@ async def set_password(session: AsyncSession, email: str, password: str):
     user = await session.execute(query)
     user = user.scalar_one_or_none()
     user.password = hash_secret(password)
+    user.change_pw = True
     await session.commit()
 
 
