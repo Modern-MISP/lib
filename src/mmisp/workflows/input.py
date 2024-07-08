@@ -3,7 +3,6 @@ Data structure for the payload passed to the workflow and
 filtering mechanism associated with it.
 """
 
-from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
@@ -39,7 +38,7 @@ class Operator(Enum):
         return cls(input)
 
 
-class FilterError(ABC):
+class FilterError(Exception):
     """
     Abstract class representing possible invalid Filter inputs
     """
@@ -149,6 +148,8 @@ class Filter:
     since existing legacy MISP filters are using that format
     as well.
     MMSIP filter currently only support limited hash path functionality.
+    
+    **NOTE**
     Supported features are the dot-separated paths consisting of keys and
     '{n}' indicating iterating over a list or a dictionary with numeric keys.
 
@@ -161,25 +162,19 @@ class Filter:
     checked against `value` using operation `operator`.
     """
 
-    value: str | List[str]
-    """
-    Value to compare against. Can be a list for operations
-    `in`/`not_in` or a string value for `equals`/etc..
-    """
-
     operator: Operator
     """
     [`Operator`][mmisp.workflows.input.Operator] to compare
     the item below `path` against `value`.
     """
 
-    def __init__(self: Self, selector: str, path: str, operator: Operator, value: str | List[str]) -> None:
-        self.selector = selector
-        self.path = path
-        self.operator = operator
-        self.value = value
+    value: str | List[str]
+    """
+    Value to compare against. Can be a list for operations
+    `in`/`not_in` or a string value for `equals`/etc..
+    """
 
-    def match_value(self: Self, value: str) -> bool:
+    def match_value(self: Self, value: Any) -> bool:
         """
         Check if a value matches a filter.
 
@@ -190,16 +185,19 @@ class Filter:
         Returns:
             True if the value matches the filter, False otherwise.
         """
+
+        value_str = str(value)
+
         if self.operator == Operator.EQUALS:
-            return value == self.value
+            return value_str == self.value
         elif self.operator == Operator.NOT_EQUALS:
-            return value != self.value
+            return value_str != self.value
         elif self.operator == Operator.IN:
-            return value in self.value if isinstance(self.value, list) else False
+            return value_str in self.value if isinstance(self.value, list) else False
         elif self.operator == Operator.NOT_IN:
-            return value not in self.value if isinstance(self.value, list) else False
+            return value_str not in self.value if isinstance(self.value, list) else False
         elif self.operator == Operator.ANY_VALUE:
-            return value != "None"
+            return value != None
         return False
 
     def _match_token(self: Self, key: str | int, token: str) -> bool:
@@ -210,7 +208,7 @@ class Filter:
             # check for exact key in dict.
             return key == token
 
-    def _extract_selection(self: Self, data: RoamingData) -> List[RoamingData]:
+    def _extract_selection(self: Self, data: RoamingData | List[RoamingData]) -> List[RoamingData]:
         """
         Extracts values from a nested dictionary based selector (cakePHP hash path).
         Returns a list of extracted values.
@@ -222,37 +220,44 @@ class Filter:
         """
 
         path = self.selector
+        results = []
 
-        def _recursive_extract(data: RoamingData, tokens: List[str]) -> list:
+        def _recursive_extract(data: RoamingData, tokens: List[str]) -> None:
             """
             Recursive helper method for extracting values based on tokens.
             """
 
-            if not tokens:
-                return [data]
+            if not tokens and not isinstance(data, list):
+                results.append(data)
+                return
+            elif not tokens and isinstance(data, list):
+                raise InvalidSelectionError("Path does not lead to a valid selection.")
 
             token = tokens.pop(0)
-            results = []
+            match = False
 
             if isinstance(data, dict):
-                # go through every key, value pair in dict and match the current token from the path
                 for key, value in data.items():
                     if self._match_token(key, token):
-                        results.extend(_recursive_extract(value, tokens.copy()))
-            elif isinstance(data, list):
+                        match = True
+                        _recursive_extract(value, tokens.copy())
+
+                if not match:
+                    raise InvalidSelectionError("Path does not lead to a valid selection.")
+            elif isinstance(data, list) and token == "{n}":
                 for item in data:
-                    results.extend(_recursive_extract(item, tokens.copy()))
+                    _recursive_extract(item, tokens.copy())
 
-            return results
+            else:
+                raise InvalidSelectionError("Path does not lead to a valid selection.")
 
-        # split path into tokens separated by dots.
         tokens = path.split(".")
 
-        selection = _recursive_extract(data, tokens)
+        _recursive_extract(data, tokens)
 
-        if len(selection) == 1 and (isinstance(selection[0], list)):
-            return selection[0]
-        return selection
+        if len(results) == 1 and (isinstance(results[0], list)):
+            return results[0]
+        return results
 
     def _remove_not_matching_data(
         self: Self, selection: RoamingData | List[RoamingData], data: RoamingData | List[RoamingData], path: str
@@ -280,7 +285,7 @@ class Filter:
                 # path destination and last recursion layer
                 # compare the found value in the dict with the given value from the filter
                 # using the operator from the filter.
-                if self.match_value(str(data)):
+                if self.match_value(data):
                     return "match"
                 return "no_match"
 
@@ -332,31 +337,28 @@ class Filter:
 
         return selection
 
-    def validate(self: Self) -> None | FilterError:
+    def validate(self: Self) -> None:
         # check selection
-        if not isinstance(self.selector, str):
-            return InvalidSelectionError("incorrect type")
-        elif self.selector == "":
-            return InvalidSelectionError("empty selection")
+
+        if self.selector == "":
+            raise InvalidSelectionError("empty selection")
 
         # check path
-        if not isinstance(self.path, str):
-            return InvalidPathError("incorrect type")
-        elif self.path == "":
-            return InvalidPathError("empty path")
+        if self.path == "":
+            raise InvalidPathError("empty path")
+
+        # check operator
+        if not isinstance(self.operator, Operator):
+            raise InvalidOperationError("invalid operator")
 
         # check value
         if self.operator in [Operator.IN, Operator.NOT_IN]:
             if not isinstance(self.value, list):
-                return InvalidValueError("incorrect type")
+                raise InvalidValueError("incorrect type")
 
         elif self.operator == Operator.ANY_VALUE:
             if self.value != "":
-                return InvalidValueError("any value operator does not accept a value")
-
-        elif self.operator in [Operator.EQUALS, Operator.NOT_EQUALS]:
-            if not isinstance(self.value, str):
-                return InvalidValueError("incorrect type")
+                raise InvalidValueError("any value operator does not accept a value")
 
         return None
 
@@ -387,15 +389,12 @@ class WorkflowInput:
     Reference to the workflow object being executed.
     """
 
-    filters: List[Filter]
-    filtered_data: list
-
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.filtered_data = []
+        self.__filtered_data: list = None
         self.user = user
         self.workflow = workflow
-        self.filters = []
+        self.filters: List[Filter] = []
 
     @property
     def data(self: Self) -> RoamingData | List[RoamingData]:
@@ -408,18 +407,24 @@ class WorkflowInput:
         if len(self.filters) == 0:
             return self.__unfiltered_data
 
-        return self.filtered_data
+        if self.__filtered_data == None:
+            self.__filtered_data = []
+            self.filter()
+
+        return self.__filtered_data
 
     def filter(self: Self) -> None:
+        filter_data = copy.deepcopy(self.__unfiltered_data)
+
         for i, filter in enumerate(self.filters):
             if i == 0:
-                current_filter_data = filter.apply(self.__unfiltered_data)
+                filter_data = filter.apply(filter_data)
             else:
-                current_filter_data = filter.apply(copy.deepcopy(self.filtered_data[-1]))
+                filter_data = filter.apply(filter_data[-1])
 
-            self.filtered_data.append(current_filter_data)
+            self.__filtered_data.append(filter_data)
 
-    def add_filter(self: Self, filter: Filter) -> None | FilterError:
+    def add_filter(self: Self, filter: Filter) -> None:
         """
         Adds another [`Filter`][mmisp.workflows.input.Filter]
         to the workflow input.
@@ -428,13 +433,10 @@ class WorkflowInput:
             filter: Filter to be added.
         """
 
-        filterCheck = filter.validate()
-
-        if filterCheck != None:
-            return filterCheck
+        filter.validate()
 
         self.filters.append(filter)
-        return None
+        self.filtered_data = None
 
     def reset_filters(self: Self) -> None:
         """

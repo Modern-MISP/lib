@@ -18,7 +18,8 @@ def test_match_attribute_tag_names_with_equals():
     response = input.add_filter(fil)
 
     assert response == None
-    input.filter()
+
+    input.data
 
     attribute_1 = input.data[0][0]
     attribute_2 = input.data[0][1]
@@ -46,7 +47,6 @@ def test_match_attribute_type_not_equals():
     response = input.add_filter(fil)
 
     assert response == None
-    input.filter()
 
     assert isinstance(input.data, list)
     assert len(input.data) == 1
@@ -69,12 +69,11 @@ def test_match_attribute_type_not_equals():
 def test_check_attribute_ids_with_in_operator():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "Tag.{n}.id", Operator.IN, ["127", "5"])
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.id", Operator.IN, ["127", "5"])
 
     response = input.add_filter(fil)
 
     assert response == None
-    input.filter()
 
     assert len(input.data) == 1
     assert isinstance(input.data[0], list)
@@ -95,30 +94,37 @@ def test_empty_path():
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened", "", Operator.EQUALS, "test")
 
-    response = input.add_filter(fil)
+    try:
+        input.add_filter(fil)
+    except InvalidPathError:
+        assert 1
+        return
 
-    assert isinstance(response, InvalidPathError)
+    assert 0
 
 
 def test_invalid_value():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "Tag.{n}.name", Operator.IN, "test")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.IN, "test")
 
-    response = input.add_filter(fil)
+    try:
+        input.add_filter(fil)
+    except InvalidValueError:
+        assert 1
+        return
 
-    assert isinstance(response, InvalidValueError)
+    assert 0
 
 
 def test_any_value():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event.Tag", "exportable", Operator.ANY_VALUE, "")
+    fil = Filter("Event.Tag.{n}", "exportable", Operator.ANY_VALUE, "")
 
     response = input.add_filter(fil)
 
     assert response == None
-    input.filter()
     assert len(input.data) == 1
     assert len(input.data[0]) == 1
     assert input.data[0][0] == {"id": 1, "name": "other_tag", "exportable": False}
@@ -133,7 +139,6 @@ def test_any_value2():
 
     assert response == None
 
-    input.filter()
     assert len(input.data) == 1
     assert isinstance(input.data[0], list)
     assert len(input.data[0]) == 0
@@ -142,13 +147,11 @@ def test_any_value2():
 def test_not_in():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "id", Operator.NOT_IN, ["35"])
+    fil = Filter("Event._AttributeFlattened.{n}", "id", Operator.NOT_IN, ["35"])
 
     response = input.add_filter(fil)
 
     assert response == None
-
-    input.filter()
 
     assert len(input.data) == 1
     assert len(input.data[0]) == 1
@@ -167,9 +170,27 @@ def test_empty_selection():
     input = WorkflowInput(data, None, None)
     fil = Filter("", "id", Operator.NOT_IN, ["35"])
 
-    response = input.add_filter(fil)
+    try:
+        input.add_filter(fil)
+    except InvalidSelectionError:
+        assert 1
+        return
 
-    assert isinstance(response, InvalidSelectionError)
+    assert 0
+
+
+def test_invalid_selection2():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened", "id", Operator.NOT_IN, ["35"])
+
+    try:
+        input.add_filter(fil)
+        input.data
+    except InvalidSelectionError:
+        assert 1
+        return
+    assert 0
 
 
 def test_delete_all_tags():
@@ -180,7 +201,6 @@ def test_delete_all_tags():
     response = input.add_filter(fil)
 
     assert response == None
-    input.filter()
 
     attribute_1 = input.data[0][0]
     attribute_2 = input.data[0][1]
@@ -198,19 +218,17 @@ def test_delete_all_tags():
 def test_multiple_filters():
     data = load_data()
     input = WorkflowInput(data, None, None)
-    filter1 = Filter("Event._AttributeFlattened", "type", Operator.NOT_EQUALS, "ip-src")
+    filter1 = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "ip-src")
 
     response = input.add_filter(filter1)
 
     assert response == None
 
-    filter2 = Filter("{n}.Tag", "id", Operator.EQUALS, "3")
+    filter2 = Filter("Tag.{n}", "id", Operator.EQUALS, "3")
 
     response = input.add_filter(filter2)
 
     assert response == None
-
-    input.filter()
 
     assert len(input.data) == 2
     assert input.data[0] == [
@@ -225,6 +243,49 @@ def test_multiple_filters():
     ]
 
     assert input.data[1] == []
+
+
+def test_invalid_selection():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter = Filter("Event.wrongSelection", "id", Operator.EQUALS, "test")
+
+    try:
+        input.add_filter(filter)
+        test = input.data
+    except InvalidSelectionError:
+        assert 1
+        return
+
+    assert 0
+
+
+def test_multiple_selection_locations():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter = Filter("Event._AttributeFlattened.{n}.Tag.{n}", "name", Operator.NOT_EQUALS, "gr tag")
+    input.add_filter(filter)
+
+    assert len(input.data[0]) == 3
+    assert input.data[0] == [
+        {"id": 4, "name": "NCT tag", "exportable": True},
+        {"id": 333, "name": "IVE tag", "exportable": True},
+        {"id": 5, "name": "BTS tag", "exportable": False},
+    ]
+
+
+def test_invalid_operator():
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter = Filter("Event._AttributeFlattened", "id", "equals", "3")
+
+    try:
+        input.add_filter(filter)
+    except InvalidOperationError:
+        assert 1
+        return
+
+    assert 0
 
 
 def load_data() -> dict:
