@@ -328,7 +328,7 @@ class Filter:
                     if return_code == value:
                         del selection[key]
 
-    def apply(self: Self, data: RoamingData | List[RoamingData]) -> RoamingData | List[RoamingData]:
+    def apply(self: Self, data: RoamingData | List[RoamingData]) -> List[RoamingData]:
         selection = self._extract_selection(data)
         selection_copy = selection.copy()
 
@@ -391,7 +391,8 @@ class WorkflowInput:
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.__filtered_data: list | None = None
+        self.__filtered_data: list = []
+        self.__filters_applied: bool = False
         self.user = user
         self.workflow = workflow
         self.filters: List[Filter] = []
@@ -407,18 +408,19 @@ class WorkflowInput:
         if len(self.filters) == 0:
             return self.__unfiltered_data
 
-        if self.__filtered_data == None:
+        if not self.__filters_applied:
             self.__filtered_data = []
+            self.__filters_applied = True
             self.filter()
 
         return self.__filtered_data
 
     def filter(self: Self) -> None:
-        filter_data: RoamingData | List[RoamingData] = copy.deepcopy(self.__unfiltered_data)
+        unfiltered_data = copy.deepcopy(self.__unfiltered_data)
 
         for i, filter in enumerate(self.filters):
             if i == 0:
-                filter_data = filter.apply(filter_data)
+                filter_data = filter.apply(unfiltered_data)
             else:
                 filter_data = filter.apply(filter_data[-1])
 
