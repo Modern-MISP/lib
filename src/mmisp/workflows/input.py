@@ -222,7 +222,7 @@ class Filter:
         path = self.selector
         results = []
 
-        def _recursive_extract(data: RoamingData, tokens: List[str]) -> None:
+        def _recursive_extract(data: RoamingData | List[RoamingData], tokens: List[str]) -> None:
             """
             Recursive helper method for extracting values based on tokens.
             """
@@ -328,7 +328,7 @@ class Filter:
                     if return_code == value:
                         del selection[key]
 
-    def apply(self: Self, data: RoamingData) -> RoamingData | List[RoamingData]:
+    def apply(self: Self, data: RoamingData | List[RoamingData]) -> RoamingData | List[RoamingData]:
         selection = self._extract_selection(data)
         selection_copy = selection.copy()
 
@@ -391,7 +391,7 @@ class WorkflowInput:
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.__filtered_data: list = None
+        self.__filtered_data: list | None = None
         self.user = user
         self.workflow = workflow
         self.filters: List[Filter] = []
