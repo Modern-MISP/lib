@@ -67,6 +67,10 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert next_node.id == "tag-if"
     assert next_node.apperance.cssClass == "block-type-if block-type-logic expect-misp-core-format disabled"
 
+    # There are unsupported modules in the fixture data, but other than that,
+    # ensure that the workflows built here are fine.
+    assert list(filter(lambda x: not isinstance(x, UnsupportedWorkflow), graph.check().errors)) == []
+
 
 def test_simple_workflow_to_dict() -> None:
     trigger = Trigger(
@@ -100,6 +104,8 @@ def test_simple_workflow_to_dict() -> None:
     assert isinstance(workflow_json["1"]["outputs"], dict)
     assert len(workflow_json["1"]["outputs"]) == 1
     assert len(workflow_json["1"]["outputs"]["output_1"]["connections"]) == 0
+
+    assert list(filter(lambda x: not isinstance(x, UnsupportedWorkflow), workflow.check().errors)) == []
 
 
 def test_invalid_class_type() -> None:
