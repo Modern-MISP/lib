@@ -13,4 +13,4 @@ class StandardStatusResponse(StandartResponse):
 
 
 class StandardStatusIdentifiedResponse(StandardStatusResponse):
-    id: str
+    id: int

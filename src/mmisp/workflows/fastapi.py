@@ -22,8 +22,6 @@ async def get_workflow(
 from json import dumps
 from typing import Any, Dict
 
-from json import dumps
-
 from fastapi import HTTPException
 
 from mmisp.workflows.graph import Node
@@ -31,7 +29,6 @@ from mmisp.workflows.modules import Module, Trigger
 
 from ..db.models.workflow import Workflow
 from ..workflows.legacy import GraphFactory
-from mmisp.workflows.modules import Module
 
 
 def json_dict_to_workflow_entity(input: Dict[str, Dict[str, Any]]) -> Workflow:
