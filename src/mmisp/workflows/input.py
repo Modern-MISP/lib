@@ -3,10 +3,10 @@ Data structure for the payload passed to the workflow and
 filtering mechanism associated with it.
 """
 
+import copy
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
-import copy
 
 if TYPE_CHECKING:
     from ..db.models.user import User
@@ -150,7 +150,7 @@ class Filter:
 
     !!! note
         MMSIP filter currently only support limited hash path functionality.
-    
+
         Supported features are the dot-separated paths consisting of keys and
         '{n}' indicating iterating over a list or a dictionary with numeric keys.
 
@@ -198,7 +198,7 @@ class Filter:
         elif self.operator == Operator.NOT_IN:
             return value_str not in self.value if isinstance(self.value, list) else False
         elif self.operator == Operator.ANY_VALUE:
-            return value != None
+            return value is not None
         return False
 
     def _match_token(self: Self, key: str | int, token: str) -> bool:
@@ -301,7 +301,7 @@ class Filter:
                         return_code = _recursive_delete(value, tokens.copy())
                         if return_code == "no_match":
                             return data
-                        elif return_code != "match" and return_code != None:
+                        elif return_code != "match" and return_code is not None:
                             for key, value in dict(data).items():
                                 if return_code == value:
                                     del data[key]
@@ -314,14 +314,14 @@ class Filter:
                     return_code = _recursive_delete(item, tokens.copy())
                     if return_code == "no_match":
                         return data
-                    elif return_code != "match" and return_code != None:
+                    elif return_code != "match" and return_code is not None:
                         data.remove(return_code)
 
         # split path into tokens separated by dots.
 
         tokens = path.split(".")
         return_code = _recursive_delete(data, tokens)
-        if return_code != None:
+        if return_code is not None:
             if isinstance(selection, list):
                 selection.remove(return_code)
             elif isinstance(selection, dict):
@@ -392,8 +392,7 @@ class WorkflowInput:
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.__filtered_data: list = []
-        self.__filters_applied: bool = False
+        self.__filtered_data: list | None = None
         self.user = user
         self.workflow = workflow
         self.filters: List[Filter] = []
@@ -409,9 +408,7 @@ class WorkflowInput:
         if len(self.filters) == 0:
             return self.__unfiltered_data
 
-        if not self.__filters_applied:
-            self.__filtered_data = []
-            self.__filters_applied = True
+        if self.__filtered_data is None:
             self.filter()
 
         return self.__filtered_data
@@ -419,13 +416,16 @@ class WorkflowInput:
     def filter(self: Self) -> None:
         unfiltered_data = copy.deepcopy(self.__unfiltered_data)
 
+        result = []
         for i, filter in enumerate(self.filters):
             if i == 0:
                 filter_data = filter.apply(unfiltered_data)
             else:
                 filter_data = filter.apply(filter_data[-1])
 
-            self.__filtered_data.append(filter_data)
+            result.append(filter_data)
+
+        self.__filtered_data = result
 
     def add_filter(self: Self, filter: Filter) -> None:
         """
@@ -449,3 +449,4 @@ class WorkflowInput:
         filtered portion now.
         """
         self.filters = []
+        self.filtered_data = None
