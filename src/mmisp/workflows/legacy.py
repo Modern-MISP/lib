@@ -14,12 +14,24 @@ from uuid import UUID
 
 from sqlalchemy.types import UserDefinedType
 
+from ..api_schemas.responses.check_graph_response import (
+    IsAcyclic,
+    IsAcyclicInfo,
+    MiscellaneousGraphValidationError,
+    MultipleOutputConnection,
+    PathWarnings,
+)
 from .graph import (
     Apperance,
+    ConfigurationError,
+    CyclicGraphError,
     Frame,
     Graph,
     GraphValidationResult,
+    InconsistentEdgeBetweenAdjacencyLists,
+    MissingTrigger,
     Module,
+    MultipleEdgesPerOutput,
     Node,
     NodeConnection,
     Trigger,
@@ -48,11 +60,98 @@ class GraphValidation:
         """
         Reports the results of the graph validation.
         Returns a dictionary with the results.
+        NB! The current API endpoint implementation does not allow multiple cycles to be returned, therefore only the
+        first found cycle will be returned. others are discarded. To be changed in the future when the API endpoint is
+        updated. The PathWarning system is deprecated and not used in the modern MISP, therefore in the JSON will be
+        always set that there are no PathWarnings.
 
         Arguments:
             result:     GraphValidationResult object containing the results of the graph validation.
         """
-        assert False
+        return_val: Dict[str, Any] = {}
+
+        is_acyclic = IsAcyclic(is_acyclic=True, cycles=[])
+
+        multiple_output_connection = MultipleOutputConnection(has_multiple_output_connection=False, edges={})
+
+        path_warnings = PathWarnings(has_path_warnings=False, edges=[])
+
+        misc_errors: List[MiscellaneousGraphValidationError] = []
+
+        return_val["is_acyclic"] = is_acyclic
+        return_val["multiple_output_connection"] = multiple_output_connection
+        return_val["path_warnings"] = path_warnings
+        return_val["misc_errors"] = misc_errors
+
+        for error in result.errors:
+            if isinstance(error, CyclicGraphError):
+                if not is_acyclic.is_acyclic:
+                    continue
+                is_acyclic.is_acyclic = False
+                is_acyclic.cycles = cls.__convert_cyclic_graph_error_to_api_format(error)
+                continue
+            if isinstance(error, MultipleEdgesPerOutput):
+                multiple_output_connection.has_multiple_output_connection = True
+                cls.__convert_multiple_edges_per_output_to_api_format(error, multiple_output_connection.edges)
+                continue
+            if isinstance(error, MissingTrigger):
+                misc_errors.append(cls.__convert_missing_trigger_to_api_format())
+                continue
+            if isinstance(error, ConfigurationError):
+                misc_errors.append(cls.__convert_configuration_error_to_api_format(error))
+                continue
+            if isinstance(error, InconsistentEdgeBetweenAdjacencyLists):
+                misc_errors.append(cls.__convert_inconsistent_edge_between_adjacency_lists_to_api_format(error))
+                continue
+        return return_val
+
+    @classmethod
+    def __convert_cyclic_graph_error_to_api_format(cls: Type[Self], error: CyclicGraphError) -> List[IsAcyclicInfo]:
+        result: List[IsAcyclicInfo] = []
+        for edge in error.cycle_path:
+            result.append(IsAcyclicInfo(nodeID1=edge[0].graph_id, nodeID2=edge[2].graph_id))
+        return result
+
+    @classmethod
+    def __convert_multiple_edges_per_output_to_api_format(
+        cls: Type[Self], error: MultipleEdgesPerOutput, storage: Dict[int, List[int]]
+    ) -> None:
+        if storage.get(error.affected[0].graph_id) is None:
+            storage[error.affected[0].graph_id] = []
+        for connection in error.affected[0].outputs[error.affected[1]]:
+            storage[error.affected[0].graph_id].append(connection[1].graph_id)
+
+    @classmethod
+    def __convert_missing_trigger_to_api_format(cls: Type[Self]) -> MiscellaneousGraphValidationError:
+        return MiscellaneousGraphValidationError(
+            error_id="MissingTrigger", message="The graph root node must be a trigger."
+        )
+
+    @classmethod
+    def __convert_configuration_error_to_api_format(
+        cls: Type[Self], error: ConfigurationError
+    ) -> MiscellaneousGraphValidationError:
+        return MiscellaneousGraphValidationError(
+            error_id="ConfigurationError",
+            message="Configuration error for node: " + str(error.node.graph_id) + " Context: " + error.context,
+        )
+
+    @classmethod
+    def __convert_inconsistent_edge_between_adjacency_lists_to_api_format(
+        cls: Type[Self], error: InconsistentEdgeBetweenAdjacencyLists
+    ) -> MiscellaneousGraphValidationError:
+        return MiscellaneousGraphValidationError(
+            error_id="InconsistentEdgeBetweenAdjacencyLists",
+            message="The edge with starting node "
+            + str(error.from_.graph_id)
+            + " at output port "
+            + str(error.output_port_id)
+            + " and ending node "
+            + str(error.to.graph_id)
+            + " at input port "
+            + str(error.input_port_id)
+            + " is not stored simultaneously at both the input and output adjacency lists of the input graph.",
+        )
 
 
 class GraphFactory:

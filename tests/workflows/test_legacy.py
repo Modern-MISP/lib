@@ -4,8 +4,22 @@ from typing import Any, Dict
 
 import pytest
 
-from mmisp.workflows.graph import Apperance, Node, Trigger, WorkflowGraph
-from mmisp.workflows.legacy import GraphFactory
+from mmisp.api_schemas.responses.check_graph_response import (
+    IsAcyclic,
+    IsAcyclicInfo,
+    MultipleOutputConnection,
+    PathWarnings,
+)
+from mmisp.workflows.graph import (
+    Apperance,
+    CyclicGraphError,
+    GraphValidationResult,
+    MultipleEdgesPerOutput,
+    Node,
+    Trigger,
+    WorkflowGraph,
+)
+from mmisp.workflows.legacy import GraphFactory, GraphValidation
 from mmisp.workflows.modules import ModuleAttributeCommentOperation, ModuleTagIf, Overhead
 
 
@@ -117,6 +131,43 @@ def test_symmetry(attribute_after_save_workflow: Dict[str, Any], empty_workflow:
         del workflow["1"]["data"]["saved_filters"]
         del json_from_graph["1"]["data"]["saved_filters"]
         assert workflow == json_from_graph
+
+
+def test_cycle_report() -> None:
+    class DummyNode(Node):
+        pass
+
+    a = DummyNode(inputs={}, outputs={}, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, graph_id=2)
+    result = GraphValidationResult([CyclicGraphError([(a, 1, b, 1), (b, 2, a, 1)])])
+    assert GraphValidation.report(result)["is_acyclic"] == IsAcyclic(
+        is_acyclic=False, cycles=[IsAcyclicInfo(nodeID1=1, nodeID2=2), IsAcyclicInfo(nodeID1=2, nodeID2=1)]
+    )
+
+
+def test_multiple_edges_per_output_report() -> None:
+    class DummyNode(Node):
+        pass
+
+    b = DummyNode(inputs={}, outputs={}, graph_id=2)
+    c = DummyNode(inputs={}, outputs={}, graph_id=3)
+    d = DummyNode(inputs={}, outputs={}, graph_id=4)
+    e = DummyNode(inputs={}, outputs={}, graph_id=5)
+    a = DummyNode(inputs={}, outputs={1: [(1, b), (1, c)], 2: [(1, d), (1, e)]}, graph_id=1)
+    result = GraphValidationResult([MultipleEdgesPerOutput((a, 1)), MultipleEdgesPerOutput((a, 2))])
+    assert GraphValidation.report(result)["multiple_output_connection"] == MultipleOutputConnection(
+        has_multiple_output_connection=True, edges={1: [2, 3, 4, 5]}
+    )
+
+
+def test_valid_graph_report() -> None:
+    result = GraphValidationResult([])
+    assert GraphValidation.report(result) == {
+        "is_acyclic": IsAcyclic(is_acyclic=True, cycles=[]),
+        "multiple_output_connection": MultipleOutputConnection(has_multiple_output_connection=False, edges=[]),
+        "path_warnings": PathWarnings(has_path_warnings=False, edges=[]),
+        "misc_errors": [],
+    }
 
 
 @pytest.fixture
