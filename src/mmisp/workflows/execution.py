@@ -5,6 +5,7 @@ Models related to the execution of workflows.
 from typing import List, Tuple
 
 import sqlalchemy as sa
+from jinja2 import BaseLoader, Environment
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.user import User
@@ -32,9 +33,30 @@ def as_module(node: Module | Trigger) -> Module:
 
 
 async def walk_nodes(
-    input: WorkflowInput, current_node: Module, workflow: Workflow, logger: ApplicationLogger, db: AsyncSession
+    input: WorkflowInput,
+    current_node: Module,
+    workflow: Workflow,
+    logger: ApplicationLogger,
+    db: AsyncSession,
+    jinja2_engine: Environment,
 ) -> Tuple[bool, List[str]]:
     try:
+        data = input.data
+        if isinstance(data, dict):
+
+            def _render(item: str) -> str:
+                return jinja2_engine.from_string(item).render(**data)
+
+            for config_key in current_node.template_params:
+                current_config = current_node.configuration.data
+                if config_key in current_config:
+                    value = current_config[config_key]
+                    if isinstance(value, str):
+                        current_config[config_key] = _render(value)
+                    elif isinstance(value, bool):
+                        continue
+                    else:
+                        current_config[config_key] = [_render(v) for v in value]
         result, next_node = await current_node.exec(input, db)
     except Exception as e:
         logger.log_workflow_execution_error(workflow, f"Error while executing module {current_node.id}. Error: {e}")
@@ -55,7 +77,7 @@ async def walk_nodes(
     if next_node is None:
         return True, input.user_messages
 
-    return await walk_nodes(input, next_node, workflow, logger, db)
+    return await walk_nodes(input, next_node, workflow, logger, db, jinja2_engine)
 
 
 class UnsupportedModules(Exception):
@@ -112,7 +134,7 @@ async def execute_workflow(
     if not next_step:
         return True, []
 
-    if not all(x.supported for x in graph.nodes.values()):
+    if any(not x.supported for x in graph.nodes.values()):
         raise UnsupportedModules()
 
     try:
@@ -129,7 +151,7 @@ async def execute_workflow(
 
     await db.execute(sa.update(Workflow).where(Workflow.id == workflow.id).values({"counter": Workflow.counter + 1}))
 
-    result = await walk_nodes(input, as_module(next_step[0][1]), workflow, logger, db)
+    result = await walk_nodes(input, as_module(next_step[0][1]), workflow, logger, db, Environment(loader=BaseLoader()))
 
     if result[0]:
         outcome = "success"

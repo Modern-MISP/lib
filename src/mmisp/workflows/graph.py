@@ -7,7 +7,7 @@ is implemented.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Self, Tuple, Union
 from uuid import UUID
 
@@ -400,6 +400,11 @@ class Module(WorkflowNode):
     configuration: "ModuleConfiguration"
     """
     Values for the params required by this module.
+    """
+
+    template_params: List[str] = field(default_factory=lambda: [])
+    """
+    List containing all params that are jinja2 templates.
     """
 
     on_demand_filter: Optional["Filter"]

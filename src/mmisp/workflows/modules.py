@@ -4,7 +4,7 @@ i.e. triggers and modules and implementations for modules
 that were bundled with legacy MISP.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Generic, List, Self, Type, TypeVar
 
@@ -113,7 +113,7 @@ class ModuleConfiguration:
     together with the module.
     """
 
-    data: Dict[str, Any]
+    data: Dict[str, List[str] | str | bool]
     """
     The dictionary containing values for the parameters a module
     needs.
@@ -432,6 +432,7 @@ class ModuleAttributeCommentOperation(ModuleAction):
     icon: str = "edit"
     on_demand_filtering_enabled: bool = True
     supported: bool = False
+    template_params: List[str] = field(default_factory=lambda: ["comment"])
 
 
 @module_node
@@ -729,6 +730,7 @@ class ModuleSendMail(ModuleAction):
     )
     icon: str = "envelope"
     supported: bool = False
+    template_params: List[str] = field(default_factory=lambda: ["mail_template_subject", "mail_template_body"])
 
 
 @module_node
@@ -753,6 +755,7 @@ class ModuleStopExecution(ModuleAction):
     description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
     n_outputs: int = 0
+    template_params: List[str] = field(default_factory=lambda: ["message"])
 
 
 @module_node
@@ -811,6 +814,7 @@ class ModuleTelegramSendAlert(ModuleAction):
     version: str = "0.1"
     description: str = "Send a message alert to a Telegram channel"
     supported: bool = False
+    template_params: List[str] = field(default_factory=lambda: ["message_body_template"])
 
 
 @module_node
@@ -821,3 +825,4 @@ class ModuleWebhook(ModuleAction):
     version: str = "0.7"
     description: str = "Allow to perform custom callbacks to the provided URL"
     supported: bool = False
+    template_params: List[str] = field(default_factory=lambda: ["url", "payload", "headers"])

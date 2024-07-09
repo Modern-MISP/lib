@@ -6,13 +6,13 @@ filtering mechanism associated with it.
 import copy
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
+from typing import TYPE_CHECKING, Dict, List, Self, Type, Any
 
 if TYPE_CHECKING:
     from ..db.models.user import User
     from ..db.models.workflow import Workflow
 
-RoamingData = Dict[str, Any]
+RoamingData = Dict[str, str | List[str]]
 
 
 class Operator(Enum):

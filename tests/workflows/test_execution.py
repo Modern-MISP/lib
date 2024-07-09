@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Self, Tuple
 from unittest.mock import AsyncMock, Mock
 
@@ -115,6 +115,49 @@ async def test_execute_unsupported(wf: Workflow) -> None:
         pytest.fail()
     except Exception as e:
         assert isinstance(e, UnsupportedModules)
+
+
+@pytest.mark.asyncio
+async def test_jinja2(wf: Workflow, module_jinja2: Dict[int, Module]) -> None:
+    db = AsyncMock()
+    user = Mock()
+    logger = Mock()
+
+    wf.data.nodes[1] = module_jinja2
+    del wf.data.nodes[2]
+
+    # To anyone debugging this test:
+    # exceptions are already handled in `walk_nodes()`. The easiest way
+    # to get assertion errors from `MockupModule` is by adding `raise e`
+    # to the `except` clause that wraps the jinja2 invocations.
+    assert (await execute_workflow(wf, user, {"whom": "Misp"}, db, logger))[0]
+
+
+@pytest.fixture
+def module_jinja2(trigger: Trigger) -> List[Module]:
+    @dataclass
+    class MockupModule(ModuleAction):
+        id: str = "demo"
+        name: str = "Demo :: Dumb Module"
+        description: str = "..."
+        icon: str = "none"
+        template_params: List[str] = field(default_factory=lambda: ["foo"])
+
+        async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Self | None]:
+            assert self.configuration.data["foo"] == "Hello Misp"
+            return True, None
+
+    m1 = MockupModule(
+        graph_id=2,
+        inputs={0: [(0, trigger)]},
+        outputs={},
+        configuration=ModuleConfiguration({"foo": "Hello {{whom}}"}),
+        on_demand_filter=None,
+        apperance=Apperance((0, 0), False, "mock", None),
+    )
+    trigger.outputs[0] = [(0, m1)]
+
+    return m1
 
 
 @pytest.fixture
