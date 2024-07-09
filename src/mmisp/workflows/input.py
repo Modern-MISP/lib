@@ -147,13 +147,14 @@ class Filter:
     [CakePHP hash path](https://book.cakephp.org/3/en/core-libraries/hash.html)
     since existing legacy MISP filters are using that format
     as well.
-    MMSIP filter currently only support limited hash path functionality.
-    
-    **NOTE**
-    Supported features are the dot-separated paths consisting of keys and
-    '{n}' indicating iterating over a list or a dictionary with numeric keys.
 
-    Additional hash path functionality such as Matchers could be added to MMISP later.
+    !!! note
+        MMSIP filter currently only support limited hash path functionality.
+    
+        Supported features are the dot-separated paths consisting of keys and
+        '{n}' indicating iterating over a list or a dictionary with numeric keys.
+
+        Additional hash path functionality such as Matchers could be added to MMISP later.
     """
 
     path: str

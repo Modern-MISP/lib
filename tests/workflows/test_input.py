@@ -19,8 +19,6 @@ def test_match_attribute_tag_names_with_equals():
 
     assert response == None
 
-    input.data
-
     attribute_1 = input.data[0][0]
     attribute_2 = input.data[0][1]
 
