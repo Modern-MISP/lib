@@ -16,11 +16,11 @@ Base = declarative_base()
 
 
 class DatabaseSessionManager:
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, db_url: str = config.DATABASE_URL) -> None:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: sessionmaker | None = None
 
-        self._url = make_url(config.DATABASE_URL)
+        self._url = make_url(db_url)
 
     def init(self: Self) -> None:
         if config.DEBUG:
@@ -76,7 +76,8 @@ class DatabaseSessionManager:
         if engine is None:
             engine = self._engine
         assert engine is not None
-        await engine.run_sync(Base.metadata.drop_all)  # type:ignore[attr-defined]
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)  # type:ignore[attr-defined]
 
 
 async def get_db() -> AsyncIterator[Session]:
