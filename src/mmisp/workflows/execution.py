@@ -16,7 +16,7 @@ from .input import WorkflowInput
 from .modules import ModuleLogic
 
 
-def as_trigger(node: Module | Trigger) -> Trigger:
+def _as_trigger(node: Module | Trigger) -> Trigger:
     match node:
         case Trigger() as t:
             return t
@@ -24,7 +24,7 @@ def as_trigger(node: Module | Trigger) -> Trigger:
             raise ValueError("Expected node to be a Trigger!")
 
 
-def as_module(node: Module | Trigger) -> Module:
+def _as_module(node: Module | Trigger) -> Module:
     match node:
         case Module() as t:
             return t
@@ -40,6 +40,23 @@ async def walk_nodes(
     db: AsyncSession,
     jinja2_engine: Environment,
 ) -> Tuple[bool, List[str]]:
+    """
+    Recursive graph walker implementation starting at a given node.
+    Used by the workflow execution itself, but can also be used to resume
+    workflow execution, e.g. for concurrent modules that schedule jobs
+    with the successor nodes.
+
+    Arguments:
+        input:          Workflow payload for `current_node`.
+        current_node:   Node to resume execution with.
+        workflow:       Workflow entity. Used for logging.
+        logger:         Application logger to write debug messages and errors
+            from the execution.
+        db:             Database session.
+        jinja2_engine:  Instantiated templating engine to substitute placeholders
+            in module configuration with values from the payload.
+    """
+
     try:
         data = input.data
         if isinstance(data, dict):
@@ -122,7 +139,7 @@ async def execute_workflow(
         return False, []
 
     graph = workflow.data
-    trigger = as_trigger(graph.root)
+    trigger = _as_trigger(graph.root)
 
     if trigger.disabled:
         return True, []
@@ -153,7 +170,9 @@ async def execute_workflow(
 
     await db.execute(sa.update(Workflow).where(Workflow.id == workflow.id).values({"counter": Workflow.counter + 1}))
 
-    result = await walk_nodes(input, as_module(next_step[0][1]), workflow, logger, db, Environment(loader=BaseLoader()))
+    result = await walk_nodes(
+        input, _as_module(next_step[0][1]), workflow, logger, db, Environment(loader=BaseLoader())
+    )
 
     if result[0]:
         outcome = "success"
