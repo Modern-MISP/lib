@@ -38,6 +38,8 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert graph.root is graph.nodes[1]
     assert isinstance(graph.root, Trigger)
 
+    assert graph.root.graph_id == 1
+
     # ONLY one trigger
     assert all(not isinstance(node, Trigger) for node in list(graph.nodes)[1:])
 
@@ -52,6 +54,7 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert isinstance(first_node, ModuleAttributeCommentOperation)
 
     assert first_node.configuration.data["comment"] == "just a test :D"
+    assert first_node.graph_id == 2
 
     assert len(first_node.outputs) == 1
     next_node = first_node.outputs[1][0][1]
