@@ -77,6 +77,8 @@ async def walk_nodes(
     if next_node is None:
         return True, input.user_messages
 
+    # At this stage we don't do any cycle detection, but assume that only
+    # valid graphs w/o cycles in it were saved by the API.
     return await walk_nodes(input, next_node, workflow, logger, db, jinja2_engine)
 
 
