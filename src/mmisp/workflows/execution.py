@@ -32,6 +32,10 @@ def _as_module(node: Module | Trigger) -> Module:
             raise ValueError("Expected node to be a Module!")
 
 
+async def _increase_workflow_execution_count(db: AsyncSession, workflow_id: int) -> None:
+    await db.execute(sa.update(Workflow).where(Workflow.id == workflow_id).values({"counter": Workflow.counter + 1}))
+
+
 async def walk_nodes(
     input: WorkflowInput,
     current_node: Module,
@@ -168,7 +172,7 @@ async def execute_workflow(
         workflow=workflow,
     )
 
-    await db.execute(sa.update(Workflow).where(Workflow.id == workflow.id).values({"counter": Workflow.counter + 1}))
+    await _increase_workflow_execution_count(db, workflow.id)
 
     result = await walk_nodes(
         input, _as_module(next_step[0][1]), workflow, logger, db, Environment(loader=BaseLoader())

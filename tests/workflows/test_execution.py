@@ -1,17 +1,19 @@
 import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Self, Tuple
+from typing import AsyncGenerator, Dict, List, Self, Tuple
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+import pytest_asyncio
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.workflow import Workflow
 from mmisp.lib.logging import ApplicationLogger
-from mmisp.workflows.execution import UnsupportedModules, execute_workflow
+from mmisp.workflows.execution import UnsupportedModules, _increase_workflow_execution_count, execute_workflow
 from mmisp.workflows.graph import Apperance, Module, Trigger, WorkflowGraph
 from mmisp.workflows.input import WorkflowInput
-from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead
+from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead, trigger_node
 
 
 @pytest.mark.asyncio
@@ -115,6 +117,57 @@ async def test_execute_unsupported(wf: Workflow) -> None:
         pytest.fail()
     except Exception as e:
         assert isinstance(e, UnsupportedModules)
+
+
+@pytest.mark.asyncio
+async def test_increase_workflow_number(wf_in_db: Workflow, db: AsyncSession) -> None:
+    await _increase_workflow_execution_count(db, wf_in_db.id)
+    workflow = (await db.execute(select(Workflow).filter(Workflow.id == 26))).scalars().one()
+    assert workflow.counter == 1
+
+    await _increase_workflow_execution_count(db, wf_in_db.id)
+    workflow = (await db.execute(select(Workflow).filter(Workflow.id == 26))).scalars().one()
+    assert workflow.counter == 2
+
+
+@pytest_asyncio.fixture
+async def wf_in_db(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
+    @trigger_node
+    @dataclass(kw_only=True, eq=False)
+    class FakeTrigger(Trigger):
+        id: str = "fake"
+        name: str = "Fake"
+        version: str = "0.1"
+        scope: str = "fake"
+        blocking: bool = False
+        description: str = "Fake"
+        overhead: Overhead = Overhead.LOW
+
+    trigger = FakeTrigger(
+        graph_id=1,
+        inputs={},
+        outputs={},
+        apperance=Apperance((0, 0), False, "", None),
+    )
+
+    wf = Workflow(
+        id=26,
+        uuid=str(uuid.uuid4()),
+        name="Demo workflow",
+        description="",
+        timestamp=0,
+        enabled=True,
+        trigger_id="demo",
+        debug_enabled=True,
+        data=WorkflowGraph(
+            nodes={1: trigger},
+            root=trigger,
+            frames=[],
+        ),
+    )
+    db.add(wf)
+    yield wf
+    await db.delete(wf)
 
 
 @pytest.mark.asyncio
