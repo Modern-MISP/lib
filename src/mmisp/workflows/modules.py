@@ -246,6 +246,7 @@ class TriggerEnrichmentBeforeQuery(Trigger):
     icon: str = "asterisk"
     overhead: Overhead = Overhead.LOW
     blocking: bool = True
+    supported: bool = False
 
 
 @trigger_node
