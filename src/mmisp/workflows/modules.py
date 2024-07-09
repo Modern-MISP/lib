@@ -6,9 +6,17 @@ that were bundled with legacy MISP.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Generic, List, Self, Type, TypeVar
+from typing import Any, Dict, Generic, List, Self, Sequence, Type, TypeVar
 
-from .graph import Module, Node, Trigger
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from ..db.models.event import Event, EventTag
+from ..db.models.organisation import Organisation
+from ..db.models.tag import Tag
+from ..db.models.user import User
+from .graph import Module, Node, Trigger, VerbatimWorkflowInput
+from .input import RoamingData
 
 
 class ModuleParamType(Enum):
@@ -287,6 +295,64 @@ class TriggerEventAfterSave(Trigger):
     blocking: bool = False
     overhead: Overhead = Overhead.HIGH
 
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Event)
+
+        orgc = await db.get(Organisation, input.orgc_id)
+        tags: Sequence[Tag] = (
+            (
+                await db.execute(
+                    select(Tag).join(EventTag).filter(EventTag.tag_id == Tag.id).filter(EventTag.event_id == input.id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        return {
+            "Event": {
+                "id": input.id,
+                "org_id": input.org_id,
+                "distribution": input.distribution,
+                "info": input.info,
+                "orgc_id": input.orgc_id,
+                "uuid": input.uuid,
+                # this actually is a datetime.date when querying from SQLAlchemy,
+                # no idea why mypy doesn't get it 🙄
+                "date": input.date.isoformat(),  # type:ignore[attr-defined]
+                "published": input.published,
+                "analysis": input.analysis,
+                "attribute_count": input.attribute_count,
+                "timestamp": input.timestamp,
+                "sharing_group_id": input.sharing_group_id,
+                "proposal_email_lock": input.proposal_email_lock,
+                "locked": input.locked,
+                "threat_level_id": input.threat_level_id,
+                "publish_timestamp": input.publish_timestamp,
+                "sighting_timestamp": input.sighting_timestamp,
+                "disable_correlation": input.disable_correlation,
+                "extends_uuid": input.extends_uuid,
+                # "event_creator_email": input.event_creator_email,
+                "Orgc": {
+                    "id": orgc.id,
+                    "uuid": str(orgc.uuid),
+                    "name": orgc.name,
+                }
+                if orgc is not None
+                else None,
+                "Tag": [
+                    {
+                        "id": tag.id,
+                        "name": tag.name,
+                        "colour": tag.colour,
+                        "exportable": tag.exportable,
+                    }
+                    for tag in tags
+                ],
+            },
+            "_AttributeFlattened": [],
+        }
+
 
 @trigger_node
 @dataclass(kw_only=True, eq=False)
@@ -374,6 +440,22 @@ class TriggerSightingAfterSave(Trigger):
     overhead: Overhead = Overhead.MEDIUM
 
 
+def _normalize_user(input: VerbatimWorkflowInput) -> RoamingData:
+    assert isinstance(input, User)
+    return {
+        "id": input.id,
+        "last_login": input.last_login,
+        "date_modified": input.date_modified,
+        "role_id": input.role_id,
+        "invited_by": input.invited_by,
+        "disabled": input.disabled,
+        "current_login": input.current_login,
+        "email": input.email,
+        "org_id": input.org_id,
+        "date_created": input.date_created,
+    }
+
+
 @trigger_node
 @dataclass(kw_only=True, eq=False)
 class TriggerUserAfterSave(Trigger):
@@ -384,6 +466,9 @@ class TriggerUserAfterSave(Trigger):
     icon: str = "user-edit"
     blocking: bool = False
     overhead: Overhead = Overhead.LOW
+
+    async def normalize_data(self: Self, _: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        return _normalize_user(input)
 
 
 @trigger_node
@@ -396,6 +481,9 @@ class TriggerUserBeforeSave(Trigger):
     icon: str = "user-plus"
     blocking: bool = True
     overhead: Overhead = Overhead.LOW
+
+    async def normalize_data(self: Self, _: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        return _normalize_user(input)
 
 
 @module_node
