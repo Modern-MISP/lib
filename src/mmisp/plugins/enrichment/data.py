@@ -21,10 +21,10 @@ class NewEventTag(BaseModel):
     """The relationship type between the event and tag."""
 
     @root_validator
-    @classmethod
-    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> None:
+    def check_tag_id_or_new_tag_provided(cls: type[Self], values: dict) -> dict:
         if not values["tag_id"] or values["tag"]:
             raise ValueError("At least one of the values tag_id or tag is required.")
+        return values
 
 
 class NewAttributeTag(BaseModel):
@@ -43,9 +43,10 @@ class NewAttributeTag(BaseModel):
 
     @root_validator
     @classmethod
-    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> None:
+    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> dict:
         if not values["tag_id"] or values["tag"]:
             raise ValueError("At least one of the values tag_id or tag is required.")
+        return values
 
 
 class NewAttribute(BaseModel):
