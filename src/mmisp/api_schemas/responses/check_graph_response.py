@@ -107,6 +107,23 @@ class PathWarnings(BaseModel):
     edges: List[PathWarningsInfo]
 
 
+class MiscellaneousGraphValidationError(BaseModel):
+    """
+    Validation errors that do no fit in the legacy MISP json response format for Graph Validation will be returned as
+    errors in this format.
+    """
+
+    error_id: str
+    """
+    The type of error that this instance represents.
+    """
+
+    message: str
+    """
+    The error message of this instance.
+    """
+
+
 class CheckGraphResponse(BaseModel):
     """
     Response schema from the API for checking a graph.
@@ -147,20 +164,4 @@ class CheckGraphResponse(BaseModel):
     is_acyclic: IsAcyclic
     multiple_output_connection: MultipleOutputConnection
     path_warnings: PathWarnings
-
-
-class MiscellaneousGraphValidationError(BaseModel):
-    """
-    Validation errors that do no fit in the legacy MISP json response format for Graph Validation will be returned as
-    errors in this format.
-    """
-
-    error_id: str
-    """
-    The type of error that this instance represents.
-    """
-
-    message: str
-    """
-    The error message of this instance.
-    """
+    misc_errors: List[MiscellaneousGraphValidationError]

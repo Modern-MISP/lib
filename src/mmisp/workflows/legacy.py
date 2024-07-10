@@ -15,6 +15,7 @@ from uuid import UUID
 from sqlalchemy.types import UserDefinedType
 
 from ..api_schemas.responses.check_graph_response import (
+    CheckGraphResponse,
     IsAcyclic,
     IsAcyclicInfo,
     MiscellaneousGraphValidationError,
@@ -56,10 +57,10 @@ class GraphValidation:
     """
 
     @classmethod
-    def report(cls: Type[Self], result: GraphValidationResult) -> Dict[str, Any]:
+    def report(cls: Type[Self], result: GraphValidationResult) -> CheckGraphResponse:
         """
         Reports the results of the graph validation.
-        Returns a dictionary with the results.
+        Returns a CheckGraphResponse object containing all the results.
         NB! The current API endpoint implementation does not allow multiple cycles to be returned, therefore only the
         first found cycle will be returned. others are discarded. To be changed in the future when the API endpoint is
         updated. The PathWarning system is deprecated and not used in the modern MISP, therefore in the JSON will be
@@ -68,20 +69,17 @@ class GraphValidation:
         Arguments:
             result:     GraphValidationResult object containing the results of the graph validation.
         """
-        return_val: Dict[str, Any] = {}
-
         is_acyclic = IsAcyclic(is_acyclic=True, cycles=[])
-
         multiple_output_connection = MultipleOutputConnection(has_multiple_output_connection=False, edges={})
-
         path_warnings = PathWarnings(has_path_warnings=False, edges=[])
-
         misc_errors: List[MiscellaneousGraphValidationError] = []
 
-        return_val["is_acyclic"] = is_acyclic
-        return_val["multiple_output_connection"] = multiple_output_connection
-        return_val["path_warnings"] = path_warnings
-        return_val["misc_errors"] = misc_errors
+        return_val = CheckGraphResponse(
+            is_acyclic=is_acyclic,
+            multiple_output_connection=multiple_output_connection,
+            path_warnings=path_warnings,
+            misc_errors=misc_errors,
+        )
 
         for error in result.errors:
             if isinstance(error, CyclicGraphError):

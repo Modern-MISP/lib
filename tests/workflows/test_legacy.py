@@ -5,6 +5,7 @@ from typing import Any, Dict
 import pytest
 
 from mmisp.api_schemas.responses.check_graph_response import (
+    CheckGraphResponse,
     IsAcyclic,
     IsAcyclicInfo,
     MultipleOutputConnection,
@@ -140,7 +141,7 @@ def test_cycle_report() -> None:
     a = DummyNode(inputs={}, outputs={}, graph_id=1)
     b = DummyNode(inputs={}, outputs={}, graph_id=2)
     result = GraphValidationResult([CyclicGraphError([(a, 1, b, 1), (b, 2, a, 1)])])
-    assert GraphValidation.report(result)["is_acyclic"] == IsAcyclic(
+    assert GraphValidation.report(result).is_acyclic == IsAcyclic(
         is_acyclic=False, cycles=[IsAcyclicInfo(nodeID1=1, nodeID2=2), IsAcyclicInfo(nodeID1=2, nodeID2=1)]
     )
 
@@ -155,19 +156,19 @@ def test_multiple_edges_per_output_report() -> None:
     e = DummyNode(inputs={}, outputs={}, graph_id=5)
     a = DummyNode(inputs={}, outputs={1: [(1, b), (1, c)], 2: [(1, d), (1, e)]}, graph_id=1)
     result = GraphValidationResult([MultipleEdgesPerOutput((a, 1)), MultipleEdgesPerOutput((a, 2))])
-    assert GraphValidation.report(result)["multiple_output_connection"] == MultipleOutputConnection(
+    assert GraphValidation.report(result).multiple_output_connection == MultipleOutputConnection(
         has_multiple_output_connection=True, edges={1: [2, 3, 4, 5]}
     )
 
 
 def test_valid_graph_report() -> None:
     result = GraphValidationResult([])
-    assert GraphValidation.report(result) == {
-        "is_acyclic": IsAcyclic(is_acyclic=True, cycles=[]),
-        "multiple_output_connection": MultipleOutputConnection(has_multiple_output_connection=False, edges=[]),
-        "path_warnings": PathWarnings(has_path_warnings=False, edges=[]),
-        "misc_errors": [],
-    }
+    assert GraphValidation.report(result) == CheckGraphResponse(
+        is_acyclic=IsAcyclic(is_acyclic=True, cycles=[]),
+        multiple_output_connection=MultipleOutputConnection(has_multiple_output_connection=False, edges=[]),
+        path_warnings=PathWarnings(has_path_warnings=False, edges=[]),
+        misc_errors=[],
+    )
 
 
 @pytest.fixture
