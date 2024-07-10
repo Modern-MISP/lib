@@ -6,7 +6,7 @@ filtering mechanism associated with it.
 import copy
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Self, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Self, Type
 
 if TYPE_CHECKING:
     from ..db.models.user import User
@@ -25,6 +25,7 @@ class Operator(Enum):
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     ANY_VALUE = "any_value"
+    ANY_VALUE_FROM = "in_or"
 
     @classmethod
     def from_str(cls: Type[Self], input: str) -> Self:
@@ -136,11 +137,13 @@ class Filter:
     `not_equal` would result in
 
     ```python
-    [
-        {
-            "bar": "lalala"
-        }
-    ]
+    {
+        "foo": [
+            {
+                "bar": "lalala"
+            }
+        ]
+    }
     ```
 
     Path must be a
@@ -187,6 +190,11 @@ class Filter:
             True if the value matches the filter, False otherwise.
         """
 
+        if self.operator == Operator.ANY_VALUE_FROM:
+            if not isinstance(self.value, list) or not isinstance(value, list):
+                return False
+            return any(x in value for x in self.value)
+
         value_str = str(value)
 
         if self.operator == Operator.EQUALS:
@@ -194,149 +202,83 @@ class Filter:
         elif self.operator == Operator.NOT_EQUALS:
             return value_str != self.value
         elif self.operator == Operator.IN:
-            return value_str in self.value if isinstance(self.value, list) else False
+            return self.value in value if isinstance(value, list) else False
         elif self.operator == Operator.NOT_IN:
-            return value_str not in self.value if isinstance(self.value, list) else False
+            return self.value not in value if isinstance(value, list) else False
         elif self.operator == Operator.ANY_VALUE:
             return value is not None
         return False
 
-    def _match_token(self: Self, key: str | int, token: str) -> bool:
-        # check if numeric key
-        if token == "{n}":
-            return isinstance(key, int) or key.isdigit()
-        else:
-            # check for exact key in dict.
-            return key == token
+    def apply(self: Self, data: RoamingData | List[RoamingData]) -> None:
+        selector = self.selector.split(".")
 
-    def _extract_selection(self: Self, data: RoamingData | List[RoamingData]) -> List[RoamingData]:
-        """
-        Extracts values from a nested dictionary based selector (cakePHP hash path).
-        Returns a list of extracted values.
+        self.__deep_insert(data, selector, self.__get_matching_items(self.__extract_path(selector, data)))
 
-        Args:
-            data (dict or list): The input data from which to extract values.
-            path (str): The path string specifying which values to extract.
-
-        """
-
-        path = self.selector
-        results = []
-
-        def _recursive_extract(data: RoamingData | List[RoamingData], tokens: List[str]) -> None:
-            """
-            Recursive helper method for extracting values based on tokens.
-            """
-
-            if not tokens and not isinstance(data, list):
-                results.append(data)
-                return
-            elif not tokens and isinstance(data, list):
-                raise InvalidSelectionError("Path does not lead to a valid selection.")
-
-            token = tokens.pop(0)
-            match = False
-
-            if isinstance(data, dict):
-                for key, value in data.items():
-                    if self._match_token(key, token):
-                        match = True
-                        _recursive_extract(value, tokens.copy())
-
-                if not match:
-                    raise InvalidSelectionError("Path does not lead to a valid selection.")
-            elif isinstance(data, list) and token == "{n}":
-                for item in data:
-                    _recursive_extract(item, tokens.copy())
-
-            else:
-                raise InvalidSelectionError("Path does not lead to a valid selection.")
-
-        tokens = path.split(".")
-
-        _recursive_extract(data, tokens)
-
-        if len(results) == 1 and (isinstance(results[0], list)):
-            return results[0]
-        return results
-
-    def _remove_not_matching_data(
-        self: Self, selection: RoamingData | List[RoamingData], data: RoamingData | List[RoamingData], path: str
+    def __deep_insert(
+        self: Self, target: RoamingData | List[RoamingData], path: List[Any], data: List[Any] | Literal[False]
     ) -> None:
-        """
-        removes values from dictionary on  given cakePHP hash path that dont match
-        the filter values and the filter operator
+        token = path.pop(0)
+        if token == "{n}":
+            # When having a "wildcard" for each list key, the stuff below
+            # is inserted into each list element.
+            assert isinstance(target, list) and isinstance(data, list)
+            for i, _ in enumerate(target):
+                self.__deep_insert(target, [i] + path, data)
+        elif path == []:
+            if data is False:
+                # If the extraction failed, we insert the key as done in
+                # legacy MISP, but set it to False.
+                assert isinstance(token, str)
+                target[token] = False  # type:ignore[call-overload]
+            elif isinstance(data, list):
+                # Here it gets a little hairy:
+                # this section will be reached if
+                # * the extraction of `selection` worked, but
+                #   `__get_matching_items` found no matches, i.e. `data`
+                #   is [].
+                # * the final portion of the hashpath is not `{n}` (e.g.
+                #   `Event._AttributeFlattened.{n}.Tag`): then, the "final"
+                #   `data` is always the value below `Tag` here.
+                target[token] = data[0] if data != [] else []
+            else:
+                target[token] = data
+        elif path == ["{n}"]:
+            # Reassigning variables in Python isn't equal to a pointer
+            # assignment. Hence, we cannot do `target = data` in the next
+            # step and assign the list to the dictionary key here already.
+            assert data is not False
+            target[token] = data
+        else:
+            self.__deep_insert(target[token], path, data)
 
-        Args:
-            data (dict or list): The input data from which to extract values.
-            path (str): The path string specifying which values to extract.
+    def __extract_path(self: Self, path: List[str], data: Any) -> List[Any] | Literal[False]:
+        if path == []:
+            return [data]
 
-        """
+        if path[0] == "{n}" and isinstance(data, list):
+            results = []
+            for el in data:
+                extracted = self.__extract_path(path[1:], el)
+                if extracted:
+                    results.extend(extracted)
+            return results
 
-        def _recursive_delete(data: RoamingData | list, tokens: list) -> Any:
-            """
-            Recursive helper method for deleting non matching values from the dictionary.
-            If a non-matching value is found in the last recursion layer, this is returned
-            to the layer before that with the status "no_match". This layer then returns the
-            current data object for the 3rd last recursion layer to remove the non-matching value
-            from the dictionary.
-            """
+        if isinstance(data, dict) and path[0] in data:
+            return self.__extract_path(path[1:], data[path[0]])
 
-            if not tokens:
-                # path destination and last recursion layer
-                # compare the found value in the dict with the given value from the filter
-                # using the operator from the filter.
-                if self.match_value(data):
-                    return "match"
-                return "no_match"
+        return False
 
-            token = tokens.pop(0)
+    def __get_matching_items(self: Self, data: List[Any] | Literal[False]) -> List[Any] | Literal[False]:
+        if not data:
+            return False
 
-            if isinstance(data, dict):
-                key_found = False
-                # go through every key, value pair in dict and match the current token from the path
-                for key, value in dict(data).items():
-                    if self._match_token(key, token):
-                        key_found = True
-                        return_code = _recursive_delete(value, tokens.copy())
-                        if return_code == "no_match":
-                            return data
-                        elif return_code != "match" and return_code is not None:
-                            for key, value in dict(data).items():
-                                if return_code == value:
-                                    del data[key]
+        result = []
+        for item in data:
+            to_check = self.__extract_path(self.path.split("."), item)
+            if to_check and any(self.match_value(elem) for elem in to_check):
+                result.append(item)
 
-                if self.operator == Operator.ANY_VALUE and not key_found:
-                    return data
-
-            elif isinstance(data, list) and token == "{n}":
-                for item in list(data):
-                    return_code = _recursive_delete(item, tokens.copy())
-                    if return_code == "no_match":
-                        return data
-                    elif return_code != "match" and return_code is not None:
-                        data.remove(return_code)
-
-        # split path into tokens separated by dots.
-
-        tokens = path.split(".")
-        return_code = _recursive_delete(data, tokens)
-        if return_code is not None:
-            if isinstance(selection, list):
-                selection.remove(return_code)
-            elif isinstance(selection, dict):
-                for key, value in dict(selection).items():
-                    if return_code == value:
-                        del selection[key]
-
-    def apply(self: Self, data: RoamingData | List[RoamingData]) -> List[RoamingData]:
-        selection = self._extract_selection(data)
-        selection_copy = selection.copy()
-
-        for item in selection_copy:
-            self._remove_not_matching_data(selection, item, self.path)
-
-        return selection
+        return result
 
     def validate(self: Self) -> None:
         # check selection
@@ -353,9 +295,8 @@ class Filter:
             raise InvalidOperationError("invalid operator")
 
         # check value
-        if self.operator in [Operator.IN, Operator.NOT_IN]:
-            if not isinstance(self.value, list):
-                raise InvalidValueError("incorrect type")
+        if self.operator == Operator.ANY_VALUE_FROM and not isinstance(self.value, list):
+            raise InvalidValueError("incorrect type")
 
         elif self.operator == Operator.ANY_VALUE:
             if self.value != "":
@@ -392,10 +333,10 @@ class WorkflowInput:
 
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
-        self.__filtered_data: list | None = None
+        self.__filtered_data: RoamingData | List[RoamingData] | None = None
         self.user = user
         self.workflow = workflow
-        self.filters: List[Filter] = []
+        self.filters: Dict[str, Filter] = {}
 
     @property
     def data(self: Self) -> RoamingData | List[RoamingData] | None:
@@ -405,7 +346,7 @@ class WorkflowInput:
         using [`WorkflowInput.add_filter`][mmisp.workflows.input.WorkflowInput.add_filter].
         """
 
-        if len(self.filters) == 0:
+        if self.filters == {}:
             return self.__unfiltered_data
 
         if self.__filtered_data is None:
@@ -414,20 +355,13 @@ class WorkflowInput:
         return self.__filtered_data
 
     def filter(self: Self) -> None:
-        unfiltered_data = copy.deepcopy(self.__unfiltered_data)
-
-        result = []
-        for i, filter in enumerate(self.filters):
-            if i == 0:
-                filter_data = filter.apply(unfiltered_data)
-            else:
-                filter_data = filter.apply(filter_data[-1])
-
-            result.append(filter_data)
+        result = copy.deepcopy(self.__unfiltered_data)
+        for filter in self.filters.values():
+            filter.apply(result)
 
         self.__filtered_data = result
 
-    def add_filter(self: Self, filter: Filter) -> None:
+    def add_filter(self: Self, label: str, filter: Filter) -> None:
         """
         Adds another [`Filter`][mmisp.workflows.input.Filter]
         to the workflow input.
@@ -438,7 +372,11 @@ class WorkflowInput:
 
         filter.validate()
 
-        self.filters.append(filter)
+        self.filters[label] = filter
+        self.__filtered_data = None
+
+    def reset_single_filter(self: Self, label: str) -> None:
+        del self.filters[label]
         self.filtered_data = None
 
     def reset_filters(self: Self) -> None:
@@ -448,5 +386,5 @@ class WorkflowInput:
         will contain all of the data it has instead of a
         filtered portion now.
         """
-        self.filters = []
+        self.filters = {}
         self.filtered_data = None

@@ -1,6 +1,7 @@
+import pytest
+
 from mmisp.workflows.input import (
     Filter,
-    FilterError,
     InvalidOperationError,
     InvalidPathError,
     InvalidSelectionError,
@@ -10,52 +11,62 @@ from mmisp.workflows.input import (
 )
 
 
-def test_match_attribute_tag_names_with_equals():
+def test_match_attribute_tag_names_with_equals() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "NCT tag")
 
-    response = input.add_filter(fil)
+    input.add_filter("A", fil)
 
-    assert response == None
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 1
 
-    attribute_1 = input.data[0][0]
-    attribute_2 = input.data[0][1]
-
-    attribute_1_tags = attribute_1["Tag"]
-    attribute_2_tags = attribute_2["Tag"]
-
-    assert isinstance(input.data, list)
-    assert len(input.data) == 1
-
-    assert isinstance(attribute_1_tags, list)
-    assert len(attribute_1_tags) == 1
-
-    assert isinstance(attribute_2_tags, list)
-    assert len(attribute_2_tags) == 0
-
-    assert attribute_1_tags[0] == {"id": 4, "name": "NCT tag", "exportable": True}
+    assert len(result[0]["Tag"]) == 2
+    assert result[0]["Tag"] == [
+        {"id": 127, "name": "gr tag", "exportable": True},
+        {"id": 4, "name": "NCT tag", "exportable": True},
+    ]
 
 
-def test_match_attribute_type_not_equals():
+def test_match_attribute_type_not_equals() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "wow")
 
-    response = input.add_filter(fil)
+    input.add_filter("A", fil)
 
-    assert response == None
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 1
+    assert result[0]["id"] == 33
 
-    assert isinstance(input.data, list)
-    assert len(input.data) == 1
 
-    assert isinstance(input.data[0], list)
-    assert len(input.data[0]) == 1
+def test_match_all_retained() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "lalala")
 
-    assert input.data[0] == [
+    input.add_filter("A", fil)
+
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 2
+    assert [x["id"] for x in result] == [33, 35]
+
+
+def test_check_attribute_ids_with_any_value_from_operator() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    fil = Filter("Event._AttributeFlattened.{n}", "list", Operator.ANY_VALUE_FROM, [1, 7])
+
+    input.add_filter("A", fil)
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert result == [
         {
             "id": 33,
             "type": "ip-src",
+            "deeper": {
+                "foo": "bar",
+            },
+            "list": [1, 2, 3],
             "Tag": [
                 {"id": 127, "name": "gr tag", "exportable": True},
                 {"id": 4, "name": "NCT tag", "exportable": True},
@@ -64,226 +75,284 @@ def test_match_attribute_type_not_equals():
     ]
 
 
-def test_check_attribute_ids_with_in_operator():
-    data = load_data()
-    input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.id", Operator.IN, ["127", "5"])
-
-    response = input.add_filter(fil)
-
-    assert response == None
-
-    assert len(input.data) == 1
-    assert isinstance(input.data[0], list)
-    assert len(input.data[0]) == 2
-
-    attribute_1 = input.data[0][0]
-    attribute_2 = input.data[0][1]
-
-    assert len(attribute_1["Tag"]) == 1
-    assert len(attribute_2["Tag"]) == 1
-
-    assert attribute_1["Tag"][0] == {"id": 127, "name": "gr tag", "exportable": True}
-    assert attribute_2["Tag"][0] == {"id": 5, "name": "BTS tag", "exportable": False}
-
-
-def test_empty_path():
+def test_empty_path() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened", "", Operator.EQUALS, "test")
 
     try:
-        input.add_filter(fil)
+        input.add_filter("A", fil)
+        pytest.fail()
     except InvalidPathError:
-        assert 1
-        return
-
-    assert 0
+        pass
 
 
-def test_invalid_value():
+def test_invalid_value() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.IN, "test")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.ANY_VALUE_FROM, "test")
 
     try:
-        input.add_filter(fil)
+        input.add_filter("A", fil)
+        pytest.fail()
     except InvalidValueError:
-        assert 1
-        return
-
-    assert 0
+        pass
 
 
-def test_any_value():
+def test_any_value() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event.Tag.{n}", "exportable", Operator.ANY_VALUE, "")
 
-    response = input.add_filter(fil)
-
-    assert response == None
-    assert len(input.data) == 1
-    assert len(input.data[0]) == 1
-    assert input.data[0][0] == {"id": 1, "name": "other_tag", "exportable": False}
+    input.add_filter("A", fil)
+    result = input.data["Event"]["Tag"]
+    assert len(result) == 1
+    assert result[0] == {"id": 1, "name": "other_tag", "exportable": False}
 
 
-def test_any_value2():
+def test_any_value2() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event.Attribute.{n}", "object_relation", Operator.ANY_VALUE, "")
 
-    response = input.add_filter(fil)
+    input.add_filter("A", fil)
 
-    assert response == None
+    result = input.data["Event"]["Attribute"]
 
-    assert len(input.data) == 1
-    assert isinstance(input.data[0], list)
-    assert len(input.data[0]) == 0
+    assert len(result) == 0
 
 
-def test_not_in():
+def test_not_in() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "id", Operator.NOT_IN, ["35"])
+    fil = Filter("Event._AttributeFlattened.{n}", "list", Operator.NOT_IN, 5)
 
-    response = input.add_filter(fil)
+    input.add_filter("A", fil)
+    result = input.data["Event"]["_AttributeFlattened"]
 
-    assert response == None
+    assert result == [
+        {
+            "id": 33,
+            "type": "ip-src",
+            "deeper": {
+                "foo": "bar",
+            },
+            "list": [1, 2, 3],
+            "Tag": [
+                {"id": 127, "name": "gr tag", "exportable": True},
+                {"id": 4, "name": "NCT tag", "exportable": True},
+            ],
+        }
+    ]
 
-    assert len(input.data) == 1
-    assert len(input.data[0]) == 1
-    assert input.data[0][0] == {
-        "id": 33,
-        "type": "ip-src",
-        "Tag": [
-            {"id": 127, "name": "gr tag", "exportable": True},
-            {"id": 4, "name": "NCT tag", "exportable": True},
-        ],
-    }
 
-
-def test_empty_selection():
+def test_empty_selection() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("", "id", Operator.NOT_IN, ["35"])
 
     try:
-        input.add_filter(fil)
+        input.add_filter("A", fil)
+        pytest.fail()
     except InvalidSelectionError:
-        assert 1
-        return
-
-    assert 0
+        pass
 
 
-def test_invalid_selection2():
-    data = load_data()
-    input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened", "id", Operator.NOT_IN, ["35"])
-
-    try:
-        input.add_filter(fil)
-        input.data
-    except InvalidSelectionError:
-        assert 1
-        return
-    assert 0
-
-
-def test_delete_all_tags():
+def test_delete_all_tags() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.EQUALS, "test")
 
-    response = input.add_filter(fil)
+    input.add_filter("A", fil)
 
-    assert response == None
-
-    attribute_1 = input.data[0][0]
-    attribute_2 = input.data[0][1]
-
-    attribute_1_tags = attribute_1["Tag"]
-    attribute_2_tags = attribute_2["Tag"]
-
-    assert isinstance(input.data, list)
-    assert len(input.data) == 1
-
-    assert attribute_1_tags == []
-    assert attribute_2_tags == []
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert result == []
 
 
-def test_multiple_filters():
+def test_multiple_filters() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     filter1 = Filter("Event._AttributeFlattened.{n}", "type", Operator.NOT_EQUALS, "ip-src")
 
-    response = input.add_filter(filter1)
+    input.add_filter("A", filter1)
 
-    assert response == None
+    filter2 = Filter("Event.Tag.{n}", "id", Operator.EQUALS, "1")
 
-    filter2 = Filter("Tag.{n}", "id", Operator.EQUALS, "3")
+    input.add_filter("B", filter2)
 
-    response = input.add_filter(filter2)
+    result = input.data
+    flattened = result["Event"]["_AttributeFlattened"]
 
-    assert response == None
+    assert len(flattened) == 1
+    assert flattened[0]["id"] == 35
 
-    assert len(input.data) == 2
-    assert input.data[0] == [
-        {
-            "id": 35,
-            "type": "wow",
-            "Tag": [
-                {"id": 333, "name": "IVE tag", "exportable": True},
-                {"id": 5, "name": "BTS tag", "exportable": False},
-            ],
-        },
-    ]
-
-    assert input.data[1] == []
+    tag = result["Event"]["Tag"]
+    assert len(tag) == 1
+    assert tag[0]["id"] == 1
 
 
-def test_invalid_selection():
+def test_invalid_selection() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     filter = Filter("Event.wrongSelection", "id", Operator.EQUALS, "test")
 
-    try:
-        input.add_filter(filter)
-        test = input.data
-    except InvalidSelectionError:
-        assert 1
-        return
+    input.add_filter("A", filter)
+    assert "wrongSelection" in input.data["Event"]
 
-    assert 0
+    # yes, this will actually be inserted:
+    # https://github.com/MISP/MISP/blob/ee281d5cd1bc7f88a6236ce444cc91ee498335d6/app/Lib/Tools/WorkflowGraphTool.php#L317-L323
+    assert not input.data["Event"]["wrongSelection"]
 
 
-def test_multiple_selection_locations():
+def test_multiple_selection_locations() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     filter = Filter("Event._AttributeFlattened.{n}.Tag.{n}", "name", Operator.NOT_EQUALS, "gr tag")
-    input.add_filter(filter)
+    input.add_filter("A", filter)
 
-    assert len(input.data[0]) == 3
-    assert input.data[0] == [
-        {"id": 4, "name": "NCT tag", "exportable": True},
-        {"id": 333, "name": "IVE tag", "exportable": True},
-        {"id": 5, "name": "BTS tag", "exportable": False},
-    ]
+    result = input.data["Event"]["_AttributeFlattened"]
+
+    assert len(result) == 2
 
 
-def test_invalid_operator():
+def test_multiple_selection_locations_broken_cakephp_behavior() -> None:
+    """
+    Intuitively, one might expect that this gives a single attribute in
+    _AttributeFlattened. However, we explicitly mimic the broken CakePHP behavior
+    here (from
+    https://github.com/MISP/MISP/blob/ee281d5cd1bc7f88a6236ce444cc91ee498335d6/app/Lib/Tools/WorkflowGraphTool.php#L311-L323)
+
+    * Multiple `{n}` result in a single, flattened list:
+
+        > Hash::extract($data, "Event._AttributeFlattened.{n}.Tag.{n}")
+        = [
+            [
+              "id" => 127,
+              "name" => "gr tag",
+              "exportable" => true,
+            ],
+            [
+              "id" => 4,
+              "name" => "NCT tag",
+              "exportable" => true,
+            ],
+            [
+              "id" => 333,
+              "name" => "IVE tag",
+              "exportable" => true,
+            ],
+            [
+              "id" => 5,
+              "name" => "BTS tag",
+              "exportable" => false,
+            ],
+          ]
+
+    * All items failing the condition are filtered out. I.e.
+      only the tag with ID 127 is kept in.
+
+    * Then, the filtered data will be written into the selection path,
+      `Event._AttributeFlattened.{n}.Tag.{n}` which means into both attributes:
+
+        > Hash::insert(
+            [ "Attribute" => [
+              ["id" => 1, "Tag" => [ ] ],
+              ["id" => 2, "Tag" => [ ] ],
+            ] ],
+            "Attribute.{n}.Tag", [ "id" => 127 ]
+          )
+        = [
+            "Attribute" => [
+              [
+                "id" => 1,
+                "Tag" => [
+                  "id" => 127,
+                ],
+              ],
+              [
+                "id" => 2,
+                "Tag" => [
+                  "id" => 127,
+                ],
+              ],
+            ],
+          ]
+    """
+
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter = Filter("Event._AttributeFlattened.{n}.Tag.{n}", "name", Operator.EQUALS, "gr tag")
+    input.add_filter("A", filter)
+
+    result = input.data["Event"]["_AttributeFlattened"]
+
+    assert len(result) == 2
+
+    assert result[0]["Tag"][0]["id"] == 127
+    assert len(result[0]["Tag"]) == 1
+    assert result[1]["Tag"][0]["id"] == 127
+
+
+def test_no_list_filter() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    filter = Filter("Event", "id", Operator.EQUALS, "1")
+
+    input.add_filter("A", filter)
+    assert input.data["Event"]["id"] == 1
+
+
+def test_no_list_filter2() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    input.add_filter("A", Filter("Event", "id", Operator.EQUALS, "2"))
+    assert input.data["Event"] == []
+
+
+def test_invalid_operator() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
     filter = Filter("Event._AttributeFlattened", "id", "equals", "3")
 
     try:
-        input.add_filter(filter)
+        input.add_filter("A", filter)
+        pytest.fail()
     except InvalidOperationError:
-        assert 1
-        return
+        pass
 
-    assert 0
+
+def test_no_trailing_list() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    input.add_filter("A", Filter("Event._AttributeFlattened.{n}.deeper", "foo", Operator.EQUALS, "bar"))
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 2
+    assert result[0]["id"] == 33
+
+    # Yes, this behavior is absolutely stupid. But it's how `Hash::insert` from
+    # CakePHP/legacy MISP works and this testcase makes sure that compatibility
+    # won't be broken by accident.
+    assert result[0]["deeper"]["foo"] == "bar"
+    assert result[1]["deeper"]["foo"] == "bar"
+
+
+def test_list_wildcard_in_path() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    input.add_filter("A", Filter("Event._AttributeFlattened", "{n}.deeper.foo", Operator.EQUALS, "bar"))
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 2
+    assert result[0]["id"] == 33
+
+
+def test_list_wildcard_in_path_wrong_condition() -> None:
+    data = load_data()
+    input = WorkflowInput(data, None, None)
+    # Same as `test_list_wildcard_in_path`, but the condition
+    # is now `False`, hence `_AttributeFlattened` is now emptied.
+    input.add_filter("A", Filter("Event._AttributeFlattened", "{n}.deeper.foo", Operator.NOT_EQUALS, "bar"))
+    result = input.data["Event"]["_AttributeFlattened"]
+    assert len(result) == 0
 
 
 def load_data() -> dict:
@@ -301,6 +370,10 @@ def load_data() -> dict:
                 {
                     "id": 33,
                     "type": "ip-src",
+                    "deeper": {
+                        "foo": "bar",
+                    },
+                    "list": [1, 2, 3],
                     "Tag": [
                         {"id": 127, "name": "gr tag", "exportable": True},
                         {"id": 4, "name": "NCT tag", "exportable": True},
@@ -309,6 +382,7 @@ def load_data() -> dict:
                 {
                     "id": 35,
                     "type": "wow",
+                    "list": [4, 5, 6],
                     "Tag": [
                         {"id": 333, "name": "IVE tag", "exportable": True},
                         {"id": 5, "name": "BTS tag", "exportable": False},

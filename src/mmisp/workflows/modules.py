@@ -6,6 +6,7 @@ that were bundled with legacy MISP.
 
 from dataclasses import dataclass, field
 from enum import Enum
+from json import dumps
 from typing import Any, Dict, Generic, List, Self, Sequence, Type, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +17,7 @@ from ..db.models.organisation import Organisation
 from ..db.models.tag import Tag
 from ..db.models.user import User
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
-from .input import RoamingData
+from .input import Filter, Operator, RoamingData, WorkflowInput
 
 
 class ModuleParamType(Enum):
@@ -144,11 +145,13 @@ class ModuleConfiguration:
             errors += [f"Unspecified keys found in configuration: {extraneous}"]
 
         for key, config in structure.items():
+            # Values can be optional or mutually exclusive with other values.
+            # Let modules figure out what to do if some keys are missing.
+            # As long as the stuff that's actually set is fine, we're good.
             if not (value := self.data.get(key)):
-                errors += [f"Missing configured key {key}"]
                 continue
 
-            if config.kind in (ModuleParamType.SELECT, ModuleParamType.PICKER) and value not in config.options.keys():
+            if config.kind == ModuleParamType.SELECT and value not in config.options.get("options", {}).keys():
                 errors += [f"Param {key} has an invalid value"]
 
             if config.kind == ModuleParamType.CHECKBOX and not isinstance(value, bool):
@@ -612,9 +615,17 @@ class ModuleDistributionIf(ModuleLogic):
     supported: bool = False
 
 
+class ModuleFilter(ModuleLogic):
+    labels = ["A", "B", "C", "D", "E", "F"]
+
+    def _filtering_labels(self: Self) -> Dict[str, str]:
+        labels = {k: f"Label {k}" for k in self.labels}
+        return labels
+
+
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleGenericFilterData(ModuleLogic):
+class ModuleGenericFilterData(ModuleFilter):
     """
     Configure a filter on the workflow payload. Every
     subsequent module will only see the filtered version
@@ -630,10 +641,82 @@ class ModuleGenericFilterData(ModuleLogic):
     )
     icon: str = "filter"
 
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.params = {
+            "filtering-label": ModuleParam(
+                id="filtering-label",
+                label="Filtering label",
+                kind=ModuleParamType.SELECT,
+                options={"options": self._filtering_labels(), "default": self.labels[0]},
+            ),
+            "selector": ModuleParam(
+                id="selector",
+                label="Data selector",
+                kind=ModuleParamType.HASHPATH,
+                options={"placeholder": "Event._AttributeFlattened.{n}", "hashpath": {"is_sub_selector": False}},
+            ),
+            "value": ModuleParam(
+                id="value",
+                label="Value",
+                kind=ModuleParamType.INPUT,
+                options={
+                    "placeholder": "tlp:red",
+                    "display_on": {
+                        "operator": ["in", "not_in", "equals", "not_equals"],
+                    },
+                },
+            ),
+            "value_list": ModuleParam(
+                id="value_list",
+                label="Value list",
+                kind=ModuleParamType.PICKER,
+                options={
+                    "picker_create_new": True,
+                    "placeholder": dumps(["ip-src", "ip-dst"]),
+                    "display_on": {"operator": ["in_or"]},
+                },
+            ),
+            "operator": ModuleParam(
+                id="operator",
+                label="Operator",
+                kind=ModuleParamType.SELECT,
+                options={"default": Operator.IN.value, "options": {k.value: k.value for k in Operator}},
+            ),
+            "hash_path": ModuleParam(
+                id="hash_path",
+                label="Hash path",
+                kind=ModuleParamType.HASHPATH,
+                options={"placeholder": "Tag.name", "hashpath": {"is_sub_selector": False}},
+            ),
+        }
+
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> bool:
+        config = self.configuration.data
+
+        operator = Operator.from_str(str(config["operator"]))
+        if operator == Operator.ANY_VALUE_FROM:
+            value = self.configuration.data["value_list"]
+            assert isinstance(value, list)
+        else:
+            value = self.configuration.data["value"]
+            assert isinstance(value, str)
+
+        payload.add_filter(
+            str(config["filtering-label"]),
+            Filter(
+                selector=str(config["selector"]),
+                path=str(config["hash_path"]),
+                value=value,
+                operator=operator,
+            ),
+        )
+
+        return True
+
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleGenericFilterReset(ModuleLogic):
+class ModuleGenericFilterReset(ModuleFilter):
     """
     Resets all filters declared for the workflow payload.
     """
@@ -642,6 +725,27 @@ class ModuleGenericFilterReset(ModuleLogic):
     name: str = "Filter :: Remove filter"
     description: str = "Reset filtering"
     icon: str = "redo-alt"
+
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        labels = self._filtering_labels()
+        labels["all"] = "All filters"
+        self.params = {
+            "filtering-label": ModuleParam(
+                id="filtering-label",
+                kind=ModuleParamType.SELECT,
+                options={"options": labels},
+                jinja_supported=False,
+                label="Filtering Label to remove",
+            )
+        }
+
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> bool:
+        if (label := self.configuration.data["filtering-label"]) == "all":
+            payload.reset_filters()
+        else:
+            assert isinstance(label, str)
+            payload.reset_single_filter(label)
+        return True
 
 
 @module_node

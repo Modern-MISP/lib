@@ -432,6 +432,8 @@ class Module(WorkflowNode):
 
     blocking: bool = False
 
+    params: None | dict = None
+
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
         """
         Initializes the parameters for a module. Done in a method
@@ -453,7 +455,7 @@ class Module(WorkflowNode):
         It's expected that the attribute
         `params` will be set by this method.
         """
-        return hasattr(self, "params")
+        return hasattr(self, "params") and isinstance(self.params, dict)
 
     async def exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
         """
@@ -489,12 +491,27 @@ class Module(WorkflowNode):
         if not result:
             return (False, None)
 
-        next_step = next(iter(self.outputs.values()))[0][1]
+        default_output = next(iter(self.outputs.values()))
+        if default_output == []:
+            return (result, None)
+
+        next_step = default_output[0][1]
         assert not isinstance(next_step, Trigger)
         return (result, next_step)
 
     async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
         return False
+
+    def check(self: Self) -> GraphValidationResult:
+        results = super().check()
+        assert self.is_initialized_for_visual_editor()
+        # Ignore the type error here, mypy doesn't realize that is_initialized_for_visual_editor
+        # checks for that already.
+        errors = self.configuration.validate(self.params)  # type:ignore[arg-type]
+        if errors != []:
+            for e in errors:
+                results.errors.append(ConfigurationError(self, e))
+        return results
 
 
 VerbatimWorkflowInput = Union["RoamingData", "Base"]

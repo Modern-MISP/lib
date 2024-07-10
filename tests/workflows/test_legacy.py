@@ -13,11 +13,13 @@ from mmisp.api_schemas.responses.check_graph_response import (
 )
 from mmisp.workflows.graph import (
     Apperance,
+    ConfigurationError,
     CyclicGraphError,
     GraphValidationResult,
     MultipleEdgesPerOutput,
     Node,
     Trigger,
+    UnsupportedWorkflow,
     WorkflowGraph,
 )
 from mmisp.workflows.legacy import GraphFactory, GraphValidation
@@ -67,9 +69,23 @@ def test_decode_basic(attribute_after_save_workflow: Dict[str, Any]) -> None:
     assert next_node.id == "tag-if"
     assert next_node.apperance.cssClass == "block-type-if block-type-logic expect-misp-core-format disabled"
 
-    # There are unsupported modules in the fixture data, but other than that,
+    # Pretend that params exist to allow running `check()` that
+    # validates module configuration as well by default.
+    for mod in graph.nodes.values():
+        mod.params = {}
+
+    # There are unsupported modules (and also unimplemented ones missing required
+    # configuration params) in the fixture data, but other than that,
     # ensure that the workflows built here are fine.
-    assert list(filter(lambda x: not isinstance(x, UnsupportedWorkflow), graph.check().errors)) == []
+    assert (
+        list(
+            filter(
+                lambda x: not isinstance(x, UnsupportedWorkflow) and not isinstance(x, ConfigurationError),
+                graph.check().errors,
+            )
+        )
+        == []
+    )
 
 
 def test_simple_workflow_to_dict() -> None:

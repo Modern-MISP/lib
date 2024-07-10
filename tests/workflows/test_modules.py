@@ -1,9 +1,19 @@
+from unittest.mock import Mock
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.event import Event
 from mmisp.workflows.graph import Apperance
-from mmisp.workflows.modules import ModuleConfiguration, ModuleParam, ModuleParamType, TriggerEventAfterSave
+from mmisp.workflows.input import Filter, Operator, WorkflowInput
+from mmisp.workflows.modules import (
+    ModuleConfiguration,
+    ModuleGenericFilterData,
+    ModuleGenericFilterReset,
+    ModuleParam,
+    ModuleParamType,
+    TriggerEventAfterSave,
+)
 
 
 def test_extraneous_keys() -> None:
@@ -15,28 +25,19 @@ def test_extraneous_keys() -> None:
     assert "Unspecified keys found in configuration: {'foo'}" in errors
 
 
-def test_missing_key() -> None:
-    cfg = ModuleConfiguration(data={})
-    errors = cfg.validate({"foo": ModuleParam("foo", "Foo", ModuleParamType.INPUT, {})})
-
-    assert len(errors) == 1
-    assert "Missing configured key foo" in errors
-
-
 def test_errors() -> None:
     cfg = ModuleConfiguration(data={"foo": 1, "bar": 2, "baz": 3, "fizzbuzz": True})
     errors = cfg.validate(
         {
             "foo": ModuleParam("foo", "Foo", ModuleParamType.CHECKBOX, {}),
-            "bar": ModuleParam("bar", "Bar", ModuleParamType.PICKER, {"a": "b"}),
-            "baz": ModuleParam("baz", "Baz", ModuleParamType.SELECT, {"a": "b"}),
+            "bar": ModuleParam("bar", "Bar", ModuleParamType.PICKER, {}),
+            "baz": ModuleParam("baz", "Baz", ModuleParamType.SELECT, {"options": {"a": "b"}}),
             "fizzbuzz": ModuleParam("fizzbuzz", "Fizz Buzz", ModuleParamType.CHECKBOX, {}),
         }
     )
 
-    assert len(errors) == 3
+    assert len(errors) == 2
 
-    assert "Param bar has an invalid value" in errors
     assert "Param baz has an invalid value" in errors
     assert "Param foo is expected to be a boolean" in errors
 
@@ -67,3 +68,62 @@ async def test_event_normalize(event: Event, db: AsyncSession) -> None:
     }
 
     assert result["Event"]["date"] == "2024-02-13"
+
+
+@pytest.mark.asyncio()
+async def test_add_filter() -> None:
+    instance = ModuleGenericFilterData(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(
+            data={
+                "filtering-label": "A",
+                "selector": "Event.{n}.Tag.{n}",
+                "value": "BTS tag",
+                "hash_path": "name",
+                "operator": Operator.EQUALS.value,
+            }
+        ),
+        params={},
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"Tag": [{"name": "BTS tag"}, {"name": "Fnord"}]}]}, Mock(), Mock())
+
+    await instance.exec(input, Mock())
+
+    assert len(input.data["Event"][0]["Tag"]) == 1
+
+
+@pytest.mark.asyncio()
+async def test_rm_all_filters() -> None:
+    instance = ModuleGenericFilterReset(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={"filtering-label": "all"}),
+        params={},
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"Tag": [{"name": "BTS tag"}, {"name": "Fnord"}]}]}, Mock(), Mock())
+    input.add_filter("A", Filter("Event.{n}.Tag.{n}", "name", Operator.EQUALS, "BTS tag"))
+    assert len(input.data["Event"][0]["Tag"]) == 1
+    input.add_filter("B", Filter("Event.{n}.Tag.{n}", "name", Operator.NOT_EQUALS, "BTS tag"))
+
+    assert len(input.data["Event"][0]["Tag"]) == 0
+
+    await instance.exec(input, Mock())
+
+    assert len(input.data["Event"][0]["Tag"]) == 2
