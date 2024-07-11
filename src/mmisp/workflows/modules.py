@@ -478,7 +478,7 @@ class TriggerUserBeforeSave(Trigger):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleIfGeneric(ModuleAction):
+class ModuleIfGeneric(ModuleLogic):
     id: str = "generic-if"
     n_outputs: int = 2
     name: str = "IF :: Generic"
@@ -533,10 +533,18 @@ class ModuleTagIf(ModuleLogic):
 @dataclass(kw_only=True, eq=False)
 class ModuleStopWorkflow(ModuleAction):
     id: str = "stop-execution"
+    n_outputs: int = 0
     name: str = "Stop execution"
     version: str = "0.2"
     description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
+
+    async def exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
+        payload.user_messages.append(
+            "A stop execution module was reached causing the workflow execution to be stopped."
+            + " If this is a blocking workflow the default MISP behaviour will be blocked."
+        )
+        return False, None
 
 
 @module_node
