@@ -11,13 +11,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
-from mmisp.api.auth import encode_token
-from mmisp.api.main import init_app
 from mmisp.db.config import config
 from mmisp.db.database import Base
-from mmisp.db.models.event import EventTag
-from mmisp.db.models.galaxy_cluster import GalaxyCluster
-from mmisp.db.models.sharing_group import SharingGroupOrg, SharingGroupServer
 from mmisp.util.crypto import hash_secret
 from tests.generators.model_generators.auth_key_generator import generate_auth_key
 from tests.generators.model_generators.server_generator import generate_server
@@ -36,17 +31,6 @@ from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
 
-
-@pytest.fixture(autouse=True)
-def app():
-    with ExitStack():
-        yield init_app()
-
-
-@pytest.fixture
-def client(app):
-    with TestClient(app) as c:
-        yield c
 
 
 @pytest.fixture(scope="session")
@@ -274,20 +258,6 @@ def instance_two_owner_org_admin_user(db, instance_two_owner_org, instance_two_s
     db.commit()
 
 
-@pytest.fixture
-def site_admin_user_token(site_admin_user):
-    return encode_token(site_admin_user.id)
-
-
-@pytest.fixture
-def instance_owner_org_admin_user_token(instance_owner_org_admin_user):
-    return encode_token(instance_owner_org_admin_user.id)
-
-
-@pytest.fixture
-def instance_org_two_admin_user_token(instance_org_two_admin_user):
-    return encode_token(instance_org_two_admin_user.id)
-
 
 @pytest.fixture
 def organisation(db):
@@ -423,27 +393,6 @@ def sharing_group2(db, instance_org_two):
 
 
 @pytest.fixture
-def sharing_group_org(db, sharing_group, instance_owner_org):
-    sharing_group_org = SharingGroupOrg(sharing_group_id=sharing_group.id, org_id=instance_owner_org.id)
-    db.add(sharing_group_org)
-    db.commit()
-    yield sharing_group_org
-    db.delete(sharing_group_org)
-    db.commit()
-
-
-@pytest.fixture
-def sharing_group_org_two(db, sharing_group, instance_org_two):
-    ic(instance_org_two)
-    sharing_group_org = SharingGroupOrg(sharing_group_id=sharing_group.id, org_id=instance_org_two.id)
-    db.add(sharing_group_org)
-    db.commit()
-    yield sharing_group_org
-    db.delete(sharing_group_org)
-    db.commit()
-
-
-@pytest.fixture
 def server(db, instance_owner_org):
     server = generate_server()
     server.org_id = instance_owner_org.id
@@ -453,32 +402,6 @@ def server(db, instance_owner_org):
     yield server
 
     db.delete(server)
-    db.commit()
-
-
-@pytest.fixture
-def sharing_group_server(db, sharing_group, server):
-    sharing_group_server = SharingGroupServer(sharing_group_id=sharing_group.id, server_id=server.id)
-
-    db.add(sharing_group_server)
-    db.commit()
-
-    yield sharing_group_server
-
-    db.delete(sharing_group_server)
-    db.commit()
-
-
-@pytest.fixture
-def sharing_group_server_all_orgs(db, server, sharing_group):
-    sharing_group_server = SharingGroupServer(sharing_group_id=sharing_group.id, server_id=server.id, all_orgs=True)
-
-    db.add(sharing_group_server)
-    db.commit()
-
-    yield sharing_group_server
-
-    db.delete(sharing_group_server)
     db.commit()
 
 
@@ -493,42 +416,6 @@ def galaxy(db):
     yield galaxy
 
     db.delete(galaxy)
-    db.commit()
-
-
-@pytest.fixture
-def galaxy_cluster(db, tag, galaxy):
-    galaxy_cluster = GalaxyCluster(
-        collection_uuid="uuid",
-        type="test type",
-        value="test",
-        tag_name=tag.name,
-        description="test",
-        galaxy_id=galaxy.id,
-        authors="admin",
-    )
-
-    db.add(galaxy_cluster)
-    db.commit()
-    db.refresh(galaxy_cluster)
-
-    yield galaxy_cluster
-
-    db.delete(galaxy_cluster)
-    db.commit()
-
-
-@pytest.fixture
-def eventtag(db, event, tag):
-    eventtag = EventTag(event_id=event.id, tag_id=tag.id, local=False)
-
-    db.add(eventtag)
-    db.commit()
-    db.refresh(eventtag)
-
-    yield eventtag
-
-    db.delete(eventtag)
     db.commit()
 
 
