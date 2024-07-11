@@ -17,6 +17,7 @@ async def setup_db() -> str:
     await sessionmanager.close()
     return "Database setup"
 
+
 async def create_user(email: str, password: str, organisation: str | int, role: int | str = "user") -> str:
     """create-user <email> <password> <organisation> [-r <role>]"""
     sessionmanager.init()
@@ -154,9 +155,6 @@ async def delete_user(email: str) -> str:
 
 
 if __name__ == "__main__":
-    #db : Session = asyncio.run(init_command_line_tool())
-    #sessionmanager.init()
-    #asyncio.run(init_command_line_tool())
 
     fire.Fire(
         {
