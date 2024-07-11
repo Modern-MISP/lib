@@ -52,7 +52,13 @@ class PasswordLoginBody(BaseModel):
     email: str
     password: str
 
+
+class SetPasswordBody(BaseModel):
+    password: str
+
+
 class ChangePasswordBody(BaseModel):
+    email: str
     password: str
     oldPassword: str | None = None
 
