@@ -33,7 +33,6 @@ async def add_role_if_not_exist(session: AsyncSession, role: Role):
     role_db = await session.execute(query)
     role_db = role_db.scalar_one_or_none()
     if role_db is None:
-        print("test")
         session.add(role)
         await session.commit()
 
