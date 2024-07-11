@@ -2,7 +2,7 @@ import fire
 
 from mmisp.db.database import sessionmanager
 
-import user, organisation, setup
+from mmisp.commandline_tool import user, organisation, setup
 
 
 # This is a simple command line tool that uses the fire library to create a command line tool for creating users
