@@ -38,6 +38,7 @@ dev = [
   "pytest-cov==4.1.0",
   "respx==0.20.2",
   "mysql-connector-python==8.3.0",
+  "icecream",
 ]
 
 [tool.setuptools.package-data]
