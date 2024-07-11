@@ -14,8 +14,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from mmisp.db.config import config
 from mmisp.db.database import Base
 from mmisp.util.crypto import hash_secret
-from tests.generators.model_generators.auth_key_generator import generate_auth_key
-from tests.generators.model_generators.server_generator import generate_server
+from .generators.model_generators.auth_key_generator import generate_auth_key
+from .generators.model_generators.server_generator import generate_server
 
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.event_generator import generate_event
