@@ -130,6 +130,7 @@ async def test_rm_all_filters() -> None:
 
     assert len(input.data["Event"][0]["Tag"]) == 2
 
+
 @pytest.mark.asyncio()
 async def test_publish_event() -> None:
     instance = ModulePublishEvent(
@@ -146,7 +147,7 @@ async def test_publish_event() -> None:
     assert instance.check().errors == []
 
     input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
-    
+
     mock_db = AsyncMock()
     mock_db.get.return_value = Event()
 
@@ -155,6 +156,7 @@ async def test_publish_event() -> None:
     mock_db.get.assert_called_once_with(Event, "1")
     assert mock_db.commit.call_count == 1
     assert mock_db.refresh.call_count == 1
+
 
 @pytest.mark.asyncio()
 async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
@@ -172,9 +174,9 @@ async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
     assert instance.check().errors == []
 
     input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
-    
+
     event = await db.get(Event, "1")
-    
+
     assert not getattr(event, "published")
     assert getattr(event, "publish_timestamp") == 0
 
@@ -184,4 +186,3 @@ async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
 
     assert getattr(event, "published")
     assert getattr(event, "publish_timestamp") > 0
-
