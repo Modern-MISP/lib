@@ -7,7 +7,7 @@ that were bundled with legacy MISP.
 from dataclasses import dataclass, field
 from enum import Enum
 from json import dumps
-from typing import Any, Dict, Generic, List, Self, Type, TypeVar
+from typing import Any, Dict, Generic, List, Self, Sequence, Tuple, Type, TypeVar, Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
