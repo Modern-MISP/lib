@@ -553,7 +553,7 @@ class ModuleStopWorkflow(ModuleAction):
 
     async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
         config = self.configuration.data
-        stop_message_template = Template(config["message"])
+        stop_message_template = Template(str(config["message"]))
         payload.user_messages.append(stop_message_template.render(payload.data))
         return False, None
 
