@@ -1,3 +1,4 @@
+from typing import AsyncGenerator
 from unittest.mock import Mock, AsyncMock
 
 import pytest
@@ -156,7 +157,7 @@ async def test_publish_event() -> None:
     assert mock_db.refresh.call_count == 1
 
 @pytest.mark.asyncio()
-async def test_publish_with_db(db, event) -> None:
+async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
     instance = ModulePublishEvent(
         inputs={},
         outputs={1: []},
