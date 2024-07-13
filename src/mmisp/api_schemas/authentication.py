@@ -30,6 +30,17 @@ class IdentityProviderEditBody(BaseModel):
     client_secret: str | None = None
     scope: str | None = None
 
+class GetIdentityProviderResponse(BaseModel):
+    id: str
+    name: str
+    org_id: str
+    active: bool
+    base_url: str
+    client_id: str
+    client_secret: str
+    scope: str | None = None
+
+
 
 class IdentityProviderInfo(BaseModel):
     id: str
