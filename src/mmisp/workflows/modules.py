@@ -9,6 +9,7 @@ from enum import Enum
 from json import dumps
 from typing import Any, Dict, Generic, List, Self, Sequence, Tuple, Type, TypeVar, Union
 
+from jinja2 import Template
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.attribute import Attribute
@@ -539,11 +540,21 @@ class ModuleStopWorkflow(ModuleAction):
     description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
 
-    async def exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
-        payload.user_messages.append(
-            "A stop execution module was reached causing the workflow execution to be stopped."
-            + " If this is a blocking workflow the default MISP behaviour will be blocked."
-        )
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.params = {
+            "message": ModuleParam(
+                id="message",
+                label="Stop+message",
+                kind=ModuleParamType.INPUT,
+                options={"default": "Execution+stopped", "placeholder": "Execution+stopped"},
+                jinja_supported=True,
+            )
+        }
+
+    async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
+        config = self.configuration.data
+        stop_message_template = Template(config["message"])
+        payload.user_messages.append(stop_message_template.render(payload.data))
         return False, None
 
 
