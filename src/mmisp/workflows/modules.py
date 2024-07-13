@@ -895,7 +895,7 @@ class ModulePublishEvent(ModuleAction):
 
     async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
         
-        event_id = payload.data["Event"][0]["id"]
+        event_id = payload.data["Event"][0]["id"] # type: ignore
 
         if not event_id:
             return False

@@ -155,4 +155,32 @@ async def test_publish_event() -> None:
     assert mock_db.commit.call_count == 1
     assert mock_db.refresh.call_count == 1
 
+@pytest.mark.asyncio()
+async def test_publish_with_db(db, event) -> None:
+    instance = ModulePublishEvent(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={}),
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
     
+    event = await db.get(Event, "1")
+    
+    assert not getattr(event, "published")
+    assert getattr(event, "publish_timestamp") == 0
+
+    await instance.exec(input, db)
+
+    event = await db.get(Event, "1")
+
+    assert getattr(event, "published")
+    assert getattr(event, "publish_timestamp") > 0
+
