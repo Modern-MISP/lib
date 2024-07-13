@@ -18,6 +18,7 @@ from ..db.models.tag import Tag
 from ..db.models.user import User
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
 from .input import Filter, Operator, RoamingData, WorkflowInput
+from ..lib.actions import publish_event
 
 
 class ModuleParamType(Enum):
@@ -888,6 +889,19 @@ class ModulePublishEvent(ModuleAction):
     version: str = "0.1"
     description: str = "Publish an Event in the context of the workflow"
     icon: str = "upload"
+
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.params = {}
+
+    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
+        
+        event_id = payload.data["Event"][0]["id"]
+
+        if not event_id:
+            return False
+        
+        result = await publish_event(db, str(event_id))
+        return result
 
 
 @module_node

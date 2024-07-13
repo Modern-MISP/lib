@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from mmisp.workflows.modules import (
     ModuleGenericFilterReset,
     ModuleParam,
     ModuleParamType,
+    ModulePublishEvent,
     TriggerEventAfterSave,
 )
 
@@ -127,3 +128,31 @@ async def test_rm_all_filters() -> None:
     await instance.exec(input, Mock())
 
     assert len(input.data["Event"][0]["Tag"]) == 2
+
+@pytest.mark.asyncio()
+async def test_publish_event() -> None:
+    instance = ModulePublishEvent(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={}),
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    
+    mock_db = AsyncMock()
+    mock_db.get.return_value = Event()
+
+    await instance.exec(input, mock_db)
+
+    mock_db.get.assert_called_once_with(Event, "1")
+    assert mock_db.commit.call_count == 1
+    assert mock_db.refresh.call_count == 1
+
+    
