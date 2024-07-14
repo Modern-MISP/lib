@@ -18,7 +18,7 @@ from ..db.models.tag import Tag
 from ..db.models.user import User
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
 from .input import Filter, Operator, RoamingData, WorkflowInput
-from ..lib.actions import publish_event
+from ..lib.actions import action_publish_event
 
 
 class ModuleParamType(Enum):
@@ -896,7 +896,7 @@ class ModulePublishEvent(ModuleAction):
     async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
         try:
             event_id = str(payload.data["Event"][0]["id"])  # type: ignore
-        except KeyError or TypeError:
+        except KeyError or TypeError: # type: ignore[truthy-function]
             return False
 
         if not event_id or not event_id.isdigit():
@@ -907,7 +907,7 @@ class ModulePublishEvent(ModuleAction):
         if not event:
             return False
 
-        await publish_event(db, event)
+        await action_publish_event(db, event)
 
         return True
 

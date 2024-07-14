@@ -5,7 +5,7 @@ from mmisp.db.database import Session
 from mmisp.db.models.event import Event
 
 
-async def publish_event(db: AsyncSession, event: Event) -> None:
+async def action_publish_event(db: AsyncSession, event: Event) -> None:
     setattr(event, "published", True)
     setattr(event, "publish_timestamp", timegm(gmtime()))
 
