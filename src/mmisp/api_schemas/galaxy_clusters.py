@@ -5,7 +5,8 @@ from mmisp.api_schemas.events.add_edit_get_event_response import AddEditGetEvent
 from mmisp.api_schemas.events.get_all_events_response import GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.organisations.organisation import Organisation
 
-from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement
+from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement, GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.organisations import GetOrganisationResponse
 
 class GetGalaxyClusterResponse(BaseModel):
     id: str | None = None
@@ -29,7 +30,11 @@ class GetGalaxyClusterResponse(BaseModel):
     extends_version: str
     published: bool
     deleted: bool
+    Galaxy: GetAllSearchGalaxiesAttributes
     GalaxyElement: list[ExportGalaxyGalaxyElement]
+    Org: GetOrganisationResponse
+    Orgc: GetOrganisationResponse
+
 
 
 class ExportGalaxyClusterResponse(BaseModel):
