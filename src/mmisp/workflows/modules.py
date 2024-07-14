@@ -896,7 +896,7 @@ class ModulePublishEvent(ModuleAction):
     async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
         try:
             event_id = str(payload.data["Event"][0]["id"])  # type: ignore
-        except KeyError or TypeError: # type: ignore[truthy-function]
+        except KeyError or TypeError:  # type: ignore[truthy-function]
             return False
 
         if not event_id or not event_id.isdigit():
