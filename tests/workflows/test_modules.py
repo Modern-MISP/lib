@@ -1,3 +1,4 @@
+from datetime import date
 from typing import AsyncGenerator
 from unittest.mock import Mock, AsyncMock
 
@@ -174,13 +175,139 @@ async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
     assert instance.check().errors == []
 
     input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
-
     event = await db.get(Event, "1")
 
     assert not getattr(event, "published")
     assert getattr(event, "publish_timestamp") == 0
 
-    await instance.exec(input, db)
+    result = await instance.exec(input, db)
+
+    assert result == (True, None)
+
+    event = await db.get(Event, "1")
+
+    assert getattr(event, "published")
+    assert getattr(event, "publish_timestamp") > 0
+
+
+@pytest.mark.asyncio()
+async def test_publish_not_existing_event(db: AsyncSession, event: AsyncGenerator) -> None:
+    instance = ModulePublishEvent(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={}),
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"id": 55, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    event = await db.get(Event, "55")
+
+    assert event is None
+
+    result = await instance.exec(input, db)
+
+    assert result == (False, None)
+
+
+@pytest.mark.asyncio()
+async def test_publish_already_published_event(db: AsyncSession, event: AsyncGenerator) -> None:
+    instance = ModulePublishEvent(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={}),
+    )
+
+    event = Event(
+        id=3,
+        org_id=1,
+        orgc_id=1,
+        user_id=1,
+        published=True,
+        publish_timestamp=17,
+        sharing_group_id=1,
+        threat_level_id=1,
+        info="test event",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+    )
+    db.add(event)
+    db.commit()
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"id": 3, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    event = await db.get(Event, "3")
+
+    assert getattr(event, "published")
+    assert getattr(event, "publish_timestamp") == 17
+
+    result = await instance.exec(input, db)
+
+    assert result == (True, None)
+
+    event = await db.get(Event, "3")
+
+    assert getattr(event, "published")
+    assert getattr(event, "publish_timestamp") > 3
+
+    await db.delete(event)
+    await db.commit()
+
+
+@pytest.mark.asyncio()
+async def test_publish_event_output_node(db: AsyncSession, event: AsyncGenerator) -> None:
+    outputNode = ModuleGenericFilterData(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(
+            data={
+                "filtering-label": "A",
+                "selector": "Event.{n}.Tag.{n}",
+                "value": "BTS tag",
+                "hash_path": "name",
+                "operator": Operator.EQUALS.value,
+            }
+        ),
+        params={},
+    )
+
+    instance = ModulePublishEvent(
+        inputs={},
+        outputs={1: [(1, outputNode)]},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={}),
+    )
+
+    await instance.initialize_for_visual_editor(Mock())
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    event = await db.get(Event, "1")
+
+    assert not getattr(event, "published")
+    assert getattr(event, "publish_timestamp") == 0
+
+    result = await instance.exec(input, db)
+
+    assert result[0]
+    assert result[1] is outputNode
 
     event = await db.get(Event, "1")
 

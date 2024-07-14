@@ -894,13 +894,22 @@ class ModulePublishEvent(ModuleAction):
         self.params = {}
 
     async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> bool:
-        event_id = payload.data["Event"][0]["id"]  # type: ignore
-
-        if not event_id:
+        try:
+            event_id = str(payload.data["Event"][0]["id"])  # type: ignore
+        except KeyError or TypeError:
             return False
 
-        result = await publish_event(db, str(event_id))
-        return result
+        if not event_id or not event_id.isdigit():
+            return False
+
+        event = await db.get(Event, event_id)
+
+        if not event:
+            return False
+
+        await publish_event(db, event)
+
+        return True
 
 
 @module_node
