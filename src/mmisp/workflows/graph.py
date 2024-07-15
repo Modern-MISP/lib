@@ -769,7 +769,7 @@ class WorkflowGraph(Graph):
     node and no trigger anywhere else.
     """
 
-    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
+    def check(self: Self) -> GraphValidationResult:
         result = super().check()
         if not isinstance(self.root, Trigger):
             result.errors.append(MissingTrigger())
@@ -794,7 +794,7 @@ class BlueprintGraph(Graph):
     [`BlueprintGraph.check`][mmisp.workflows.graph.BlueprintGraph.check] method.
     """
 
-    def check(self: Self, with_warnings: bool = False) -> GraphValidationResult:
+    def check(self: Self) -> GraphValidationResult:
         """
         Custom check method for blueprint graph.
         """

@@ -36,6 +36,7 @@ from .graph import (
     Node,
     NodeConnection,
     Trigger,
+    UnsupportedWorkflow,
     WorkflowGraph,
 )
 from .input import Filter, Operator
@@ -74,13 +75,6 @@ class GraphValidation:
         path_warnings = PathWarnings(has_path_warnings=False, edges=[])
         misc_errors: List[MiscellaneousGraphValidationError] = []
 
-        return_val = CheckGraphResponse(
-            is_acyclic=is_acyclic,
-            multiple_output_connection=multiple_output_connection,
-            path_warnings=path_warnings,
-            misc_errors=misc_errors,
-        )
-
         for error in result.errors:
             if isinstance(error, CyclicGraphError):
                 if not is_acyclic.is_acyclic:
@@ -101,6 +95,21 @@ class GraphValidation:
             if isinstance(error, InconsistentEdgeBetweenAdjacencyLists):
                 misc_errors.append(cls.__convert_inconsistent_edge_between_adjacency_lists_to_api_format(error))
                 continue
+            if isinstance(error, UnsupportedWorkflow):
+                misc_errors.append(
+                    MiscellaneousGraphValidationError(
+                        error_id="UnsupportedWorkflow", message=f"Workflow with module {error.module} is not supported!"
+                    )
+                )
+                continue
+
+        return_val = CheckGraphResponse(
+            is_acyclic=is_acyclic,
+            multiple_output_connection=multiple_output_connection,
+            path_warnings=path_warnings,
+            misc_errors=misc_errors,
+        )
+
         return return_val
 
     @classmethod
