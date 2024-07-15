@@ -69,3 +69,10 @@ class Role(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RoleUsersResponse(BaseModel):
+    id: int
+    name: str
+    perm_auth: bool
+    perm_site_admin: bool

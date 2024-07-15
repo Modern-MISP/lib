@@ -50,3 +50,8 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class OrganisationUsersResponse(BaseModel):
+    id: int
+    name: str

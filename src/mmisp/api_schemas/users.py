@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.organisations import Organisation
-from mmisp.api_schemas.roles import Role
+from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
+from mmisp.api_schemas.roles import Role, RoleUsersResponse
 
 
 class User(BaseModel):
@@ -97,22 +97,44 @@ class AddUserResponse(BaseModel):
 
 class GetAllUsersUser(BaseModel):
     id: int
-    organisation: int
-    role: int
-    nids: int
-    name: str
+    org_id: int
+    server_id: int
     email: str
-    last_login: int
-    created: int
+    autoalert: bool
+    auth_key: str | None
+    invited_by: int
+    gpg_key: str | None
+    certif_public: str | None
+    nids_sid: int
+    termsaccepted: bool
+    newsread: int | None
+    role_id: int
+    change_pw: bool
+    contactalert: bool
+    disabled: bool
+    expiration: int | None
+    current_login: int | None
+    last_login: int | None
+    last_api_access: int | None
+    force_logout: bool
+    date_created: int
+    date_modified: int | None
+    last_pw_change: int | None
+    """new contents bellow"""
+    name: str
     totp: bool | None
     contact: bool
     notification: bool
-    gpg_key: str | None
-    terms: bool
+
+
+class GetAllUsersElement(BaseModel):
+    User: GetAllUsersUser
+    Role: RoleUsersResponse
+    Organisation: OrganisationUsersResponse
 
 
 class GetAllUsersResponse(BaseModel):
-    users: list[GetAllUsersUser]
+    users: list[GetAllUsersElement]
 
 
 class UserWithName(BaseModel):
