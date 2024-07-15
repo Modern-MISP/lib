@@ -33,9 +33,7 @@ async def create(session: AsyncSession, email: str, password: str, org: str | in
     user_setting = UserSetting()
     user_setting.user_id = user.id
     user_setting.setting="user_name"
-    user_setting.value=json.dumps({"name": str(user.email)})[0],
-    print(user_setting.value[0])
-    print(type(user_setting.value))
+    user_setting.value=json.dumps({"name": str(user.email)})
     session.add(user_setting)
     await session.commit()
 
