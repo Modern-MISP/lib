@@ -102,6 +102,13 @@ async def set_role(session: AsyncSession, email: str, role: str | int):
 async def delete_user(session: AsyncSession, email: str):
     if not await check_if_email_exists(session, email):
         raise fire.core.FireError("User with email does not exist")
+
+    query = select(UserSetting).where(UserSetting.user_id == User.id)
+    user_setting = await session.execute(query)
+    user_setting = user_setting.scalars()
+    for setting in user_setting:
+        await session.delete(setting)
+
     query = select(User).where(User.email == email)
     user = await session.execute(query)
     user = user.scalar_one_or_none()
