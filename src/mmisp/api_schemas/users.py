@@ -95,6 +95,22 @@ class AddUserResponse(BaseModel):
     id: str
 
 
+class GetUser(BaseModel):
+    id: int
+    organisation: int
+    role: int
+    nids: int
+    name: str
+    email: str
+    last_login: int
+    created: int
+    totp: bool | None
+    contact: bool
+    notification: bool
+    gpg_key: str | None
+    terms: bool
+
+
 class GetAllUsersUser(BaseModel):
     id: int
     org_id: int
