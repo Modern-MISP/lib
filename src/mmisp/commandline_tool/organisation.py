@@ -17,7 +17,6 @@ async def create(session: AsyncSession, name: str | None, admin_email: int | str
 
     await set_attributes(session, organisation, name, admin_email, description, type, nationality, sector,
                          contacts_email, local, restricted_domain, landingpage)
-
     session.add(organisation)
     await session.commit()
 
@@ -61,7 +60,6 @@ async def set_attributes(session: AsyncSession, organisation: Organisation, name
     if name is not None:
         organisation.name = name
     if admin_user is not None:
-        print("admin_email")
         if isinstance(admin_user, str):
             admin_user = await session.execute(select(User).where(User.email == admin_user))
         else:
@@ -72,28 +70,20 @@ async def set_attributes(session: AsyncSession, organisation: Organisation, name
             raise fire.core.FireError("User does not exist")
         organisation.created_by = admin_user.id
     if description is not None:
-        print("description")
         organisation.description = description
     if type is not None:
-        print("type")
         organisation.type = type
     if nationality is not None:
-        print("nationality")
         organisation.nationality = nationality
     if sector is not None:
-        print("sector")
         organisation.sector = sector
     if contacts_email is not None:
-        print("contacts_email")
         organisation.contacts = contacts_email
     if local is not None:
-        print("local")
         organisation.local = local
     if restricted_domain is not None:
-        print("restricted_domain")
         organisation.restricted_to_domain = restricted_domain
     if landingpage is not None:
-        print("landingpage")
         organisation.landingpage = landingpage
 
 
