@@ -3,10 +3,11 @@ import fire
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from mmisp.db.models.organisation import Organisation
+from mmisp.db.models.user import User
 
 organisation_fields = []
 
-async def create(session: AsyncSession, name: str | None, admin_email: str | None, description: str | None,
+async def create(session: AsyncSession, name: str | None, admin_email: int | str | None, description: str | None,
                  type: str | None, nationality: str | None, sector: str | None, contacts_email: str | None,
                  local: bool | None, restricted_domain: str| None, landingpage: str| None):
     organisation = Organisation()
@@ -14,7 +15,7 @@ async def create(session: AsyncSession, name: str | None, admin_email: str | Non
     if await check_if_organsiastion_exists(session, name):
         raise fire.core.FireError("Organisation with name already exists")
 
-    await set_attributes(organisation, name, admin_email, description, type, nationality, sector,
+    await set_attributes(session, organisation, name, admin_email, description, type, nationality, sector,
                          contacts_email, local, restricted_domain, landingpage)
 
     session.add(organisation)
@@ -34,7 +35,7 @@ async def check_if_organsiastion_exists(session: AsyncSession, name: str | int) 
 
 
 async def edit_organisation(session: AsyncSession, organisation: str | int, new_name: str | None,
-                            admin_email: str | None, description: str | None, type: str | None, nationality: str | None,
+                            admin_email: int | str | None, description: str | None, type: str | None, nationality: str | None,
                             sector: str | None, contacts_email: str | None, local: bool | None,
                             restricted_domain: str| None, landingpage: str| None):
     if isinstance(organisation, str):
@@ -47,20 +48,29 @@ async def edit_organisation(session: AsyncSession, organisation: str | int, new_
     if organisation is None:
         raise fire.core.FireError("Organisation does not exist")
 
-    await set_attributes(organisation, new_name, admin_email, description, type, nationality, sector,
+    await set_attributes(session, organisation, new_name, admin_email, description, type, nationality, sector,
                          contacts_email, local, restricted_domain, landingpage)
 
     await session.commit()
 
 
-async def set_attributes(organisation: Organisation, name: str | None, admin_email: str | None, description: str | None,
-                 type: str | None, nationality: str | None, sector: str | None, contacts_email: str | None,
-                 local: bool | None, restricted_domain: str| None, landingpage: str| None):
+async def set_attributes(session: AsyncSession, organisation: Organisation, name: str | None,
+                         admin_user: int | str | None, description: str | None, type: str | None,
+                         nationality: str | None, sector: str | None, contacts_email: str | None, local: bool | None,
+                         restricted_domain: str| None, landingpage: str| None):
     if name is not None:
         organisation.name = name
-    if admin_email is not None:
+    if admin_user is not None:
         print("admin_email")
-        organisation.created_by = admin_email
+        if isinstance(admin_user, str):
+            admin_user = await session.execute(select(User).where(User.email == admin_user))
+        else:
+            admin_user = await session.execute(select(User).where(User.id == admin_user))
+
+        admin_user = admin_user.scalar_one_or_none()
+        if admin_user is None:
+            raise fire.core.FireError("User does not exist")
+        organisation.created_by = admin_user.id
     if description is not None:
         print("description")
         organisation.description = description

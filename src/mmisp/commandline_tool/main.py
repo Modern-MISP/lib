@@ -32,7 +32,7 @@ async def create_user(email: str, password: str, organisation: str | int, role: 
 
 async def create_organisation(
     name: str,
-    admin_email: str | None = None,
+    admin_email: int | str | None = None,
     description: str | None = None,
     type: str | None = None,
     nationality: str | None = None,
@@ -42,8 +42,9 @@ async def create_organisation(
     restricted_domain: str | None = None,
     landingpage: str | None = None,
 ) -> str:
-    """create-organisation <name> <admin_email> <description> <type> <nationality> <sector> <contacts_email> <local>
-    <restricted_domain> <landingpage>"""
+    """create-organisation <name> [-admin_email <admin_email>] [- description <description>] [-type <type>] 
+    [-nationality <nationality>] [<sector>] [<contacts_email>] [-local <local>] 
+    [- restricted_domain <restricted_domain>] [-landigpage <landingpage>]"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -93,8 +94,8 @@ async def change_role(email: str, role: str | int) -> str:
 
 async def edit_organisation(
     org: str | int,
-    new_name: str | None = None,
-    admin_email: str | None = None,
+    new_name:  str | None = None,
+    admin_email: int |str | None = None,
     description: str | None = None,
     type: str | None = None,
     nationality: str | None = None,

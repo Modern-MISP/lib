@@ -14,10 +14,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from mmisp.db.config import config
 from mmisp.db.database import Base
 from mmisp.util.crypto import hash_secret
-from .generators.model_generators.auth_key_generator import generate_auth_key
-from .generators.model_generators.server_generator import generate_server
 
 from .generators.model_generators.attribute_generator import generate_attribute
+from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
 from .generators.model_generators.organisation_generator import generate_organisation
@@ -26,11 +25,11 @@ from .generators.model_generators.role_generator import (
     generate_read_only_role,
     generate_site_admin_role,
 )
+from .generators.model_generators.server_generator import generate_server
 from .generators.model_generators.sharing_group_generator import generate_sharing_group
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
-
 
 
 @pytest.fixture(scope="session")
