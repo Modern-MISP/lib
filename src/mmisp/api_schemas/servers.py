@@ -20,6 +20,27 @@ class AddServer(BaseModel):
     self_signed: bool
     skip_proxy: bool
 
+class EditServer(BaseModel):
+    name: str
+    url: str
+    priority: int
+    authkey: str
+    remote_org_id: int
+    internal: bool
+    push: bool
+    pull: bool
+    pull_rules: str
+    push_rules: str
+    push_galaxy_clusters: bool
+    caching_enabled: bool
+    unpublish_event: bool
+    publish_without_email: bool
+    self_signed: bool
+    skip_proxy: bool
+
+    class Config:
+        orm_mode = True
+
 
 class AddServerResponse(BaseModel):
     id: str

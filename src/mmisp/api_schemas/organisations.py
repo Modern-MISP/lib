@@ -51,7 +51,38 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
     class Config:
         orm_mode = True
 
-
 class OrganisationUsersResponse(BaseModel):
     id: int
     name: str
+
+class AddOrganisation(BaseModel):
+    id: str
+    name: str
+    description: str | None = None
+    type: str
+    nationality: str | None = None
+    sector: str | None = None
+    created_by: str
+    contacts: str | None = None
+    local: bool
+    """organisation gains access to the local instance, otherwise treated as external"""
+    restricted_to_domain: str | None = None
+    landingpage: str | None = None
+
+    class Config:
+        orm_mode = True
+
+class EditOrganisation(BaseModel):
+    name: str
+    description: str | None = None
+    type: str
+    nationality: str | None = None
+    sector: str | None = None
+    contacts: str | None = None
+    local: bool
+    """organisation gains access to the local instance, otherwise treated as external"""
+    restricted_to_domain: str | None = None
+    landingpage: str | None = None
+
+    class Config:
+        orm_mode = True
