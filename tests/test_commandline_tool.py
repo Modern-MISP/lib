@@ -74,7 +74,7 @@ def test_edit_organisation(db,organisation, site_admin_user) -> None:
     new_sector = time_now
     new_contacts_email = time_now
     new_local = False
-    new_restricted_domain = False
+    new_restricted_domain = "{}"
     new_landingpage = time_now
     asyncio.run(main.edit_organisation(organisation.name, new_name, new_admin_email, new_description, new_type,
                                        new_nationality, new_sector, new_contacts_email, new_local,
@@ -88,7 +88,7 @@ def test_edit_organisation(db,organisation, site_admin_user) -> None:
     assert organisation.sector == new_sector
     assert organisation.contacts == new_contacts_email
     assert bool(organisation.local) is new_local
-    assert bool(organisation.restricted_to_domain) is new_restricted_domain
+    assert str(organisation.restricted_to_domain) == new_restricted_domain
     assert organisation.landingpage == new_landingpage
 
 def test_delete_organisation(db, organisation) -> None:
