@@ -19,9 +19,13 @@ async def get_workflow(
 ```
 """
 
+from json import dumps
 from typing import Any, Dict
 
 from fastapi import HTTPException
+
+from mmisp.workflows.graph import Node
+from mmisp.workflows.modules import Module, Trigger
 
 from ..db.models.workflow import Workflow
 from ..workflows.legacy import GraphFactory
@@ -66,3 +70,73 @@ def workflow_entity_to_json_dict(workflow: Workflow) -> Dict[str, Dict[str, Any]
             "listening_triggers": [graph_json[next(iter(graph_json))]["data"]],
         }
     }
+
+
+def module_entity_to_json_dict(module: Module | Trigger) -> Dict[str, Any]:
+    if isinstance(module, Module):
+        assert module.is_initialized_for_visual_editor()
+    return {
+        "version": module.version,
+        "blocking": module.blocking,
+        "id": module.id,
+        "name": module.name,
+        "description": module.description,
+        "icon": module.icon,
+        "inputs": module.n_inputs,
+        "outputs": module.n_outputs,
+        "support_filters": __get_support_filters(module),
+        "expect_misp_core_format": False,
+        # ignoring the type error here: we already made sure that the
+        # module is initialized and thus params is a dict.
+        "params": list(module.params.values()) if hasattr(module, "params") else [],  # type:ignore[union-attr]
+        "is_misp_module": False,
+        "is_custom": False,
+        "icon_class": "",
+        "multiple_output_connection": module.enable_multiple_edges_per_output,
+        "saved_filters": [],  # FIXME: idk what that is :(
+        "module_type": "action",
+        "disabled": False,  # FIXME: not implemented!
+    }
+
+
+def trigger_entity_to_json_dict(trigger: Trigger, workflow: Dict[str, Any], disabled: bool) -> Dict[str, Any]:
+    return {
+        "id": trigger.id,
+        "scope": trigger.scope,
+        "name": trigger.name,
+        "description": trigger.description,
+        "icon": trigger.icon,
+        "inputs": trigger.n_inputs,
+        "outputs": trigger.n_outputs,
+        "blocking": trigger.blocking,
+        "misp_core_format": False,
+        "trigger_overhead": trigger.overhead,
+        "trigger_overhead_message": trigger.overhead_message,
+        "is_misp_module": False,
+        "is_custom": False,
+        "expect_misp_core_format": False,
+        "version": trigger.version,
+        "icon_class": "",
+        "multiple_output_connection": trigger.enable_multiple_edges_per_output,
+        "support_filters": __get_support_filters(trigger),
+        "saved_filters": [],
+        "params": __get_config(trigger),
+        "module_type": "trigger",
+        "html_template": "trigger",
+        "disabled": disabled,
+        "Workflow": workflow,
+    }
+
+
+def __get_config(node: Node) -> str:
+    config = "[]"  # FIXME: is list
+    if hasattr(node, "configuration"):
+        config = dumps(node.configuration.data)
+    return config
+
+
+def __get_support_filters(node: Node) -> bool:
+    support_filters = False
+    if hasattr(node, "on_demand_filtering_enabled"):
+        support_filters = node.on_demand_filtering_enabled
+    return support_filters

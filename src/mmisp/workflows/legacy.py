@@ -512,7 +512,7 @@ class JSONGraphType(UserDefinedType):
         """
         return "LONGTEXT"
 
-    def bind_processor(self: Self, dialect: Any):  # ignore:type[override] # noqa: ANN201
+    def bind_processor(self: Self, dialect: Any):  # noqa: ANN201
         """
         Method for processing data before storing it in the database.
 
@@ -521,7 +521,7 @@ class JSONGraphType(UserDefinedType):
         """
         return lambda value: json.dumps(GraphFactory.graph2jsondict(value))
 
-    def result_processor(self: Self, dialect: Any, coltype: Any):  # ignore:type[override] # noqa: ANN201
+    def result_processor(self: Self, dialect: Any, coltype: Any):  # noqa: ANN201
         """
         Defines how to process data retrieved from the database.
         Converts the JSON string stored in the database back into a graph object

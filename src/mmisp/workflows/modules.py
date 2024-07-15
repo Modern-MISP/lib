@@ -971,6 +971,7 @@ class ModuleStopExecution(ModuleAction):
     icon: str = "ban"
     n_outputs: int = 0
     template_params: List[str] = field(default_factory=lambda: ["message"])
+    blocking: bool = True
 
 
 @module_node

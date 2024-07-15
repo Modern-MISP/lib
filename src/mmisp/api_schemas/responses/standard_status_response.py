@@ -1,12 +1,15 @@
 from pydantic import BaseModel
 
 
-class StandardStatusResponse(BaseModel):
-    saved: bool
-    success: bool
+class StandartResponse(BaseModel):
     name: str
     message: str
     url: str
+
+
+class StandardStatusResponse(StandartResponse):
+    saved: bool
+    success: bool
 
 
 class StandardStatusIdentifiedResponse(StandardStatusResponse):

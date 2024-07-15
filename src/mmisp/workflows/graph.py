@@ -431,6 +431,23 @@ class Module(WorkflowNode):
     """
 
     blocking: bool = False
+    """
+    Whether or not the module is blocking, i.e. can abort the
+    workflow if it fails. If it's not blocking and fails,
+    execution continues.
+    """
+
+    description: str = ""
+    """
+    Human-readable description of the node.
+    Must be here because Modules and triggers have a description.
+    """
+
+    icon: str = "envelope"
+    """
+    Frontend icon.
+    Must be here because Modules and triggers have a description.
+    """
 
     params: None | dict = None
 
@@ -446,6 +463,7 @@ class Module(WorkflowNode):
         Arguments:
             db: SQLAlchemy session
         """
+        self.params = {}
 
     def is_initialized_for_visual_editor(self: Self) -> bool:
         """
@@ -536,7 +554,7 @@ class Trigger(WorkflowNode):
     Scope the trigger operates on. E.g. `event` or `attribute`.
     """
 
-    description: str
+    description: str = ""
     """
     Human-readable description of when the trigger gets executed.
     """
@@ -739,7 +757,7 @@ class Graph(ABC):
         Arguments:
             db: SQLAlchemy DB session.
         """
-        for node in self.nodes:
+        for node in self.nodes.values():
             if isinstance(node, Module):
                 await node.initialize_for_visual_editor(db)
                 assert node.is_initialized_for_visual_editor()

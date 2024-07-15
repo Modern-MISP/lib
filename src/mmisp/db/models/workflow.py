@@ -26,7 +26,7 @@ class Workflow(Base):
 
     __tablename__ = "workflows"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
     uuid: Mapped[str] = mapped_column(String(40), default=uuid, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(191), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(191), nullable=False)
