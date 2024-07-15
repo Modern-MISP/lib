@@ -89,7 +89,7 @@ def test_edit_organisation(db,organisation, site_admin_user) -> None:
     assert organisation.sector == new_sector
     assert organisation.contacts == new_contacts_email
     assert bool(organisation.local) is new_local
-    assert str(organisation.restricted_to_domain) == new_restricted_domain
+    assert str(organisation.restricted_to_domain) is new_restricted_domain
     assert organisation.landingpage == new_landingpage
 
 def test_delete_organisation(db, organisation) -> None:
