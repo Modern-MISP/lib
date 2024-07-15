@@ -1,4 +1,5 @@
 import fire
+import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -7,6 +8,7 @@ from mmisp.util.crypto import hash_secret
 from mmisp.db.models.role import Role
 from mmisp.db.models.user import User
 from mmisp.db.models.organisation import Organisation
+from mmisp.db.models.user_setting import UserSetting
 
 
 async def create(session: AsyncSession, email: str, password: str, org: str | int, role: str | int):
@@ -25,6 +27,14 @@ async def create(session: AsyncSession, email: str, password: str, org: str | in
     user.change_pw = True
 
     session.add(user)
+    await session.commit()
+    session.refresh(user)
+
+    user_setting = UserSetting()
+    user_setting.user_id = user.id
+    user_setting.setting="user_name"
+    user_setting.value=json.dumps({"name": str(user.email)}),
+    session.add(user_setting)
     await session.commit()
 
 

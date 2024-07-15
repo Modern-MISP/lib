@@ -41,6 +41,7 @@ class User(BaseModel):
     last_pw_change: str | None = None
     """time in seconds"""
 
+
 class Config:
     orm_mode = True
 
@@ -106,7 +107,7 @@ class GetAllUsersUser(BaseModel):
     totp: bool | None
     contact: bool
     notification: bool
-    gpg_key: str
+    gpg_key: str | None
     terms: bool
 
 
