@@ -490,6 +490,55 @@ class ModuleIfGeneric(ModuleLogic):
     icon: str = "code-branch"
     html_template: str = "if"
 
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.params = {
+            "value": ModuleParam(
+                id="value",
+                label="Value",
+                kind=ModuleParamType.INPUT,
+                options={
+                    "placeholder": "tlp:red",
+                    "display_on": {"operator": ["in", "not_in", "equals", "not_equals"]},
+                },
+            ),
+            "value_list": ModuleParam(
+                id="value_list",
+                label="Value+list",
+                kind=ModuleParamType.PICKER,
+                options={
+                    "picker_create_new": True,
+                    "placeholder": "['ip-src',+'ip-dst']",
+                    "display_on": {"operator": "in_or"},
+                },
+            ),
+            "operator": ModuleParam(
+                id="operator",
+                label="Operator",
+                kind=ModuleParamType.SELECT,
+                options={
+                    "default": "in",
+                    "options": {
+                        "in": "In",
+                        "not_in": "Not+in",
+                        "equals": "Equals",
+                        "not_equals": "Not+equals",
+                        "any_value": "Any+value",
+                        "in_or": "Any+value+from",
+                    },
+                },
+            ),
+            "hash_path": ModuleParam(
+                id="hash_path",
+                label="Hash+path",
+                kind=ModuleParamType.HASHPATH,
+                options={"placeholder": "Attribute.{n}.Tag"},
+            ),
+        }
+
+    async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
+        self.configuration.data
+        pass
+
 
 @module_node
 @dataclass(kw_only=True, eq=False)
@@ -531,21 +580,23 @@ class ModuleTagIf(ModuleLogic):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleStopWorkflow(ModuleAction):
+class ModuleStopExecution(ModuleAction):
     id: str = "stop-execution"
     n_outputs: int = 0
+    template_params: List[str] = field(default_factory=lambda: ["message"])
     name: str = "Stop execution"
     version: str = "0.2"
     description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
     icon: str = "ban"
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.configuration.data["message"] = "Execution+stopped"
         self.params = {
             "message": ModuleParam(
                 id="message",
                 label="Stop+message",
                 kind=ModuleParamType.INPUT,
-                options={"default": "Execution+stopped", "placeholder": "Execution+stopped"},
+                options={"placeholder": "Execution+stopped"},
                 jinja_supported=True,
             )
         }
@@ -964,19 +1015,6 @@ class ModuleSplunkHecExport(ModuleAction):
         "of requests, it's recommanded to put this module after a `concurrent_task` logic module."
     )
     supported: bool = False
-
-
-@module_node
-@dataclass(kw_only=True, eq=False)
-class ModuleStopExecution(ModuleAction):
-    id: str = "stop-execution"
-    name: str = "Stop execution"
-    version: str = "0.2"
-    description: str = "Essentially stops the execution for blocking workflows. Do nothing for non-blocking ones"
-    icon: str = "ban"
-    n_outputs: int = 0
-    template_params: List[str] = field(default_factory=lambda: ["message"])
-    blocking: bool = True
 
 
 @module_node
