@@ -147,7 +147,7 @@ async def test_publish_event() -> None:
 
     assert instance.check().errors == []
 
-    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    input = WorkflowInput({"Event": {"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
 
     mock_db = AsyncMock()
     mock_db.get.return_value = Event()
@@ -170,11 +170,11 @@ async def test_publish_with_db(db: AsyncSession, event: AsyncGenerator) -> None:
         configuration=ModuleConfiguration(data={}),
     )
 
-    await instance.initialize_for_visual_editor(Mock())
+    await instance.initialize_for_visual_editor(db)
 
     assert instance.check().errors == []
 
-    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    input = WorkflowInput({"Event": {"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
     event = await db.get(Event, "1")
 
     assert not getattr(event, "published")
@@ -201,11 +201,11 @@ async def test_publish_not_existing_event(db: AsyncSession, event: AsyncGenerato
         configuration=ModuleConfiguration(data={}),
     )
 
-    await instance.initialize_for_visual_editor(Mock())
+    await instance.initialize_for_visual_editor(db)
 
     assert instance.check().errors == []
 
-    input = WorkflowInput({"Event": [{"id": 55, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    input = WorkflowInput({"Event": {"id": 55, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
     event = await db.get(Event, "55")
 
     assert event is None
@@ -242,11 +242,11 @@ async def test_publish_already_published_event(db: AsyncSession, event: AsyncGen
     db.add(event)
     db.commit()
 
-    await instance.initialize_for_visual_editor(Mock())
+    await instance.initialize_for_visual_editor(db)
 
     assert instance.check().errors == []
 
-    input = WorkflowInput({"Event": [{"id": 3, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    input = WorkflowInput({"Event": {"id": 3, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
     event = await db.get(Event, "3")
 
     assert getattr(event, "published")
@@ -294,11 +294,11 @@ async def test_publish_event_output_node(db: AsyncSession, event: AsyncGenerator
         configuration=ModuleConfiguration(data={}),
     )
 
-    await instance.initialize_for_visual_editor(Mock())
+    await instance.initialize_for_visual_editor(db)
 
     assert instance.check().errors == []
 
-    input = WorkflowInput({"Event": [{"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}]}, Mock(), Mock())
+    input = WorkflowInput({"Event": {"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
     event = await db.get(Event, "1")
 
     assert not getattr(event, "published")
