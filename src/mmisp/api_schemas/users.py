@@ -46,13 +46,6 @@ class Config:
     orm_mode = True
 
 
-class UsersViewMeResponse(BaseModel):
-    User: User
-    Role: Role
-    UserSetting: list = []
-    Organisation: Organisation
-
-
 class UserAttributesBody(BaseModel):
     org_id: str | None = None
     email: str | None = None
@@ -95,23 +88,7 @@ class AddUserResponse(BaseModel):
     id: str
 
 
-class GetUser(BaseModel):
-    id: int
-    organisation: int
-    role: int
-    nids: int
-    name: str
-    email: str
-    last_login: int
-    created: int
-    totp: bool | None
-    contact: bool
-    notification: bool
-    gpg_key: str | None
-    terms: bool
-
-
-class GetAllUsersUser(BaseModel):
+class GetUsersUser(BaseModel):
     id: int
     org_id: int
     server_id: int
@@ -143,14 +120,14 @@ class GetAllUsersUser(BaseModel):
     notification: bool
 
 
-class GetAllUsersElement(BaseModel):
-    User: GetAllUsersUser
+class GetUsersElement(BaseModel):
+    User: GetUsersUser
     Role: RoleUsersResponse
     Organisation: OrganisationUsersResponse
 
 
 class GetAllUsersResponse(BaseModel):
-    users: list[GetAllUsersElement]
+    users: list[GetUsersElement]
 
 
 class UserWithName(BaseModel):

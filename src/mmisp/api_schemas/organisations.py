@@ -30,7 +30,7 @@ class GetOrganisationResponse(BaseModel):
     date_created: datetime
     date_modified: datetime
     description: str | None = None
-    type: str
+    type: str | None = None
     nationality: str | None = None
     sector: str | None = None
     created_by: str
