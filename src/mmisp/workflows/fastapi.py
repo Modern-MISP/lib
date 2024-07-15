@@ -28,6 +28,7 @@ from mmisp.workflows.graph import Node
 from mmisp.workflows.modules import Module, Trigger
 
 from ..db.models.workflow import Workflow
+from mmisp.db.models.log import Log
 from ..workflows.legacy import GraphFactory
 
 
@@ -140,3 +141,21 @@ def __get_support_filters(node: Node) -> bool:
     if hasattr(node, "on_demand_filtering_enabled"):
         support_filters = node.on_demand_filtering_enabled
     return support_filters
+
+def log_to_json_dict(log: Log) -> Dict[str, Any]:
+    return {
+        "Log": {
+            "id": log.id,
+            "title": log.title,
+            "created": log.created,
+            "model": log.model,
+            "model_id": log.model_id,
+            "action": log.action,
+            "user_id": log.user_id,
+            "change": log.change,
+            "email": log.email,
+            "org": log.org,
+            "description": log.description,
+            "ip": log.ip,
+        }
+    }
