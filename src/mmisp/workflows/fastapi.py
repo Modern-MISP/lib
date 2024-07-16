@@ -24,11 +24,11 @@ from typing import Any, Dict
 
 from fastapi import HTTPException
 
+from mmisp.db.models.log import Log
 from mmisp.workflows.graph import Node
 from mmisp.workflows.modules import Module, Trigger
 
 from ..db.models.workflow import Workflow
-from mmisp.db.models.log import Log
 from ..workflows.legacy import GraphFactory
 
 
@@ -55,7 +55,7 @@ def json_dict_to_workflow_entity(input: Dict[str, Dict[str, Any]]) -> Workflow:
 
 
 def workflow_entity_to_json_dict(workflow: Workflow) -> Dict[str, Dict[str, Any]]:
-    graph_json = GraphFactory.graph2jsondict(workflow.data)
+    graph_json = GraphFactory.graph2jsondict(workflow.data) # type:ignore [arg-type]
     return {
         "Workflow": {
             "id": workflow.id,
