@@ -173,7 +173,7 @@ class AddEditGetEventGalaxy(BaseModel):
 class AddEditGetEventOrg(BaseModel):
     id: str
     name: str
-    uuid: str
+    uuid: str | None = None
     local: bool | None = None
 
 
@@ -297,7 +297,7 @@ class AddEditGetEventResponse(BaseModel):
 class GetAllEventsOrg(BaseModel):
     id: str
     name: str
-    uuid: str
+    uuid: str | None = None
 
 
 class UnpublishEventResponse(BaseModel):
