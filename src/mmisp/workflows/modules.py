@@ -7,18 +7,21 @@ that were bundled with legacy MISP.
 from dataclasses import dataclass, field
 from enum import Enum
 from json import dumps
-from typing import Any, Dict, Generic, List, Self, Sequence, Type, TypeVar
+from typing import Any, Dict, Generic, List, Self, Type, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
-from ..db.models.event import Event, EventTag
-from ..db.models.organisation import Organisation
-from ..db.models.tag import Tag
+from ..db.models.attribute import Attribute
+from ..db.models.event import Event
 from ..db.models.user import User
 from ..lib.actions import action_publish_event
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
 from .input import Filter, Operator, RoamingData, WorkflowInput
+from .misp_core_format import (
+    attribute_to_misp_core_format,
+    event_with_orgc_to_core_format,
+    tags_for_event_in_core_format,
+)
 
 
 class ModuleParamType(Enum):
@@ -247,6 +250,10 @@ class TriggerAttributeAfterSave(Trigger):
     blocking: bool = False
     overhead: Overhead = Overhead.HIGH
 
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Attribute)
+        return await attribute_to_misp_core_format(db, input)
+
 
 @trigger_node
 @dataclass(kw_only=True, eq=False)
@@ -302,60 +309,11 @@ class TriggerEventAfterSave(Trigger):
     async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
         assert isinstance(input, Event)
 
-        orgc = await db.get(Organisation, input.orgc_id)
-        tags: Sequence[Tag] = (
-            (
-                await db.execute(
-                    select(Tag).join(EventTag).filter(EventTag.tag_id == Tag.id).filter(EventTag.event_id == input.id)
-                )
-            )
-            .scalars()
-            .all()
-        )
+        result = await event_with_orgc_to_core_format(db, input)
+        result["Event"]["Tag"] = await tags_for_event_in_core_format(db, input.id)
+        result["_AttributeFlattened"] = []
 
-        return {
-            "Event": {
-                "id": input.id,
-                "org_id": input.org_id,
-                "distribution": input.distribution,
-                "info": input.info,
-                "orgc_id": input.orgc_id,
-                "uuid": input.uuid,
-                # this actually is a datetime.date when querying from SQLAlchemy,
-                # no idea why mypy doesn't get it 🙄
-                "date": input.date.isoformat(),  # type:ignore[attr-defined]
-                "published": input.published,
-                "analysis": input.analysis,
-                "attribute_count": input.attribute_count,
-                "timestamp": input.timestamp,
-                "sharing_group_id": input.sharing_group_id,
-                "proposal_email_lock": input.proposal_email_lock,
-                "locked": input.locked,
-                "threat_level_id": input.threat_level_id,
-                "publish_timestamp": input.publish_timestamp,
-                "sighting_timestamp": input.sighting_timestamp,
-                "disable_correlation": input.disable_correlation,
-                "extends_uuid": input.extends_uuid,
-                # "event_creator_email": input.event_creator_email,
-                "Orgc": {
-                    "id": orgc.id,
-                    "uuid": str(orgc.uuid),
-                    "name": orgc.name,
-                }
-                if orgc is not None
-                else None,
-                "Tag": [
-                    {
-                        "id": tag.id,
-                        "name": tag.name,
-                        "colour": tag.colour,
-                        "exportable": tag.exportable,
-                    }
-                    for tag in tags
-                ],
-            },
-            "_AttributeFlattened": [],
-        }
+        return result
 
 
 @trigger_node

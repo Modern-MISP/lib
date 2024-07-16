@@ -55,7 +55,7 @@ async def test_event_normalize(event: Event, db: AsyncSession) -> None:
     )
 
     result = await trigger.normalize_data(db, event)
-    assert result["Event"]["id"] == 1
+    assert result["Event"]["id"] == "1"
     assert result["Event"]["Tag"] == [
         {
             "id": 1,
@@ -65,7 +65,7 @@ async def test_event_normalize(event: Event, db: AsyncSession) -> None:
         }
     ]
     assert result["Event"]["Orgc"] == {
-        "id": 1,
+        "id": "1",
         "uuid": "9a92b6c9-fdea-46e7-86b7-6bd475ce638a",
         "name": "Foo",
     }
@@ -240,7 +240,7 @@ async def test_publish_already_published_event(db: AsyncSession, event: AsyncGen
         analysis=1,
     )
     db.add(event)
-    db.commit()
+    await db.commit()
 
     await instance.initialize_for_visual_editor(db)
 
