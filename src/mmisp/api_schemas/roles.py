@@ -101,7 +101,7 @@ class RoleUsersResponse(BaseModel):
     perm_publish_kafka: bool | None = None
     perm_decaying: bool | None = None
     enforce_rate_limit: bool | None = None
-    rate_limit_count: int | None = None
+    rate_limit_count: str | None = None  # number as string
     perm_galaxy_editor: bool | None = None
     perm_warninglist: bool | None = None
     perm_view_feed_correlations: bool | None = None

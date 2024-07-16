@@ -163,7 +163,7 @@ class GetUsersUser(BaseModel):
     """new contents bellow"""
     name: str
     contact: bool
-    notification: bool
+    notification: bool 
 
 
 class GetUsersElement(BaseModel):
