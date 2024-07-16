@@ -95,18 +95,20 @@ async def tags_for_event_in_core_format(db: AsyncSession, event_id: int) -> list
 async def event_after_save_new_to_core_format(db: AsyncSession, event: Event) -> dict:
     user_email = (await db.execute(select(User.email).filter(User.id == event.user_id))).scalars().first()
     event_dict = await event_to_misp_core_format(db, event)
-    event_dict["Attribute"] = []
-    event_dict["ShadowAttribute"] = []
-    event_dict["Object"] = []
-    event_dict["EventTag"] = []
-    event_dict["EventReport"] = []
-    event_dict["CryptographicKey"] = []
-    event_dict["Galaxy"] = []
-    event_dict["Orgc"] = await org_from_id(db, event.orgc_id)
-    event_dict["Org"] = await org_from_id(db, event.org_id)
-    event_dict["RelatedEvent"] = []
-    event_dict["Sighting"] = []
-    event_dict["User"] = {"email": user_email}
+
+    event_data = event_dict["Event"]
+    event_data["Attribute"] = []
+    event_data["ShadowAttribute"] = []
+    event_data["Object"] = []
+    event_data["EventTag"] = []
+    event_data["EventReport"] = []
+    event_data["CryptographicKey"] = []
+    event_data["Galaxy"] = []
+    event_data["Orgc"] = await org_from_id(db, event.orgc_id)
+    event_data["Org"] = await org_from_id(db, event.org_id)
+    event_data["RelatedEvent"] = []
+    event_data["Sighting"] = []
+    event_data["User"] = {"email": user_email}
 
     return event_dict
 

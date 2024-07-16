@@ -31,7 +31,7 @@ async def test_event_after_save(db: AsyncSession, event: Event) -> None:
     result = await event_after_save_new_to_core_format(db, event)
 
     assert result["Event"]["id"] == "1"
-    assert result["User"]["email"] == "admin@admin.test"
+    assert result["Event"]["User"]["email"] == "admin@admin.test"
 
 
 @pytest_asyncio.fixture
