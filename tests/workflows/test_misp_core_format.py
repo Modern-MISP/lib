@@ -15,15 +15,15 @@ from mmisp.workflows.misp_core_format import attribute_to_misp_core_format, even
 async def test_attribute_normalize(db: AsyncSession, attribute: Attribute) -> None:
     result = await attribute_to_misp_core_format(db, attribute)
 
-    assert result["Attribute"]["id"] == "23"
+    assert result["Event"]["Attribute"][0]["id"] == "23"
     assert result["Event"]["id"] == "1"
-    assert len(result["Attribute"]["Sighting"]) == 2
-    assert result["Attribute"]["value"] == "1abcdefghijkl"
+    assert len(result["Event"]["Attribute"][0]["Sighting"]) == 2
+    assert result["Event"]["Attribute"][0]["value"] == "1abcdefghijkl"
 
-    assert result["Attribute"]["Sighting"][0]["id"] == 23
-    assert result["Attribute"]["Sighting"][0]["Organisation"]["name"] == "Bar"
-    assert result["Attribute"]["Sighting"][1]["id"] == 24
-    assert result["Attribute"]["Sighting"][1]["Organisation"]["name"] == "Foo"
+    assert result["Event"]["Attribute"][0]["Sighting"][0]["id"] == 23
+    assert result["Event"]["Attribute"][0]["Sighting"][0]["Organisation"]["name"] == "Bar"
+    assert result["Event"]["Attribute"][0]["Sighting"][1]["id"] == 24
+    assert result["Event"]["Attribute"][0]["Sighting"][1]["Organisation"]["name"] == "Foo"
 
 
 @pytest.mark.asyncio

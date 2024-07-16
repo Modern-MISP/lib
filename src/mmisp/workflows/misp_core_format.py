@@ -27,47 +27,53 @@ async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute) 
         )
     ).all()
 
-    return {
-        "Attribute": {
-            "id": str(attribute.id),
-            "event_id": str(attribute.event_id),
-            "object_id": str(attribute.object_id),
-            "object_relation": attribute.object_relation,
-            "category": attribute.category,
-            "type": attribute.type,
-            "to_ids": attribute.to_ids,
-            "uuid": attribute.uuid,
-            "timestamp": str(attribute.timestamp),  # yes, this is actually a string
-            "distribution": str(attribute.distribution),
-            "sharing_group_id": str(attribute.sharing_group_id),
-            "comment": attribute.comment,
-            "deleted": attribute.deleted,
-            "disable_correlation": attribute.disable_correlation,
-            "first_seen": attribute.first_seen,
-            "last_seen": attribute.last_seen,
-            "value": attribute.value,
-            "Sighting": [
-                {
-                    "id": sighting.id,
-                    "attribute_id": sighting.attribute_id,
-                    "event_id": sighting.event_id,
-                    "org_id": sighting.org_id,
-                    "date_sighting": str(sighting.date_sighting),
-                    "uuid": sighting.uuid,
-                    "source": sighting.source,
-                    "type": str(sighting.type),
-                    "attribute_uuid": attribute.uuid,
-                    "Organisation": {
-                        "id": organisation.id,
-                        "uuid": organisation.uuid,
-                        "name": organisation.name,
-                    },
-                }
-                for sighting, organisation in sightings
-            ],
-        },
+    attribute_data = {
+        "id": str(attribute.id),
+        "event_id": str(attribute.event_id),
+        "object_id": str(attribute.object_id),
+        "object_relation": attribute.object_relation,
+        "category": attribute.category,
+        "type": attribute.type,
+        "to_ids": attribute.to_ids,
+        "uuid": attribute.uuid,
+        "timestamp": str(attribute.timestamp),  # yes, this is actually a string
+        "distribution": str(attribute.distribution),
+        "sharing_group_id": str(attribute.sharing_group_id),
+        "comment": attribute.comment,
+        "deleted": attribute.deleted,
+        "disable_correlation": attribute.disable_correlation,
+        "first_seen": attribute.first_seen,
+        "last_seen": attribute.last_seen,
+        "value": attribute.value,
+        "Sighting": [
+            {
+                "id": sighting.id,
+                "attribute_id": sighting.attribute_id,
+                "event_id": sighting.event_id,
+                "org_id": sighting.org_id,
+                "date_sighting": str(sighting.date_sighting),
+                "uuid": sighting.uuid,
+                "source": sighting.source,
+                "type": str(sighting.type),
+                "attribute_uuid": attribute.uuid,
+                "Organisation": {
+                    "id": organisation.id,
+                    "uuid": organisation.uuid,
+                    "name": organisation.name,
+                },
+            }
+            for sighting, organisation in sightings
+        ],
+    }
+
+    result = {
         "Event": event_data,
     }
+
+    result["Event"]["Attribute"] = [attribute_data]
+    result["Event"]["_AttributeFlattened"] = [attribute_data]
+
+    return result
 
 
 async def tags_for_event_in_core_format(db: AsyncSession, event_id: int) -> list:
