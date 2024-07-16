@@ -356,6 +356,10 @@ class TriggerEventPublish(Trigger):
     blocking: bool = True
     overhead: Overhead = Overhead.LOW
 
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Event)
+        return await event_to_misp_core_format(db, input)
+
 
 @trigger_node
 @dataclass(kw_only=True, eq=False)
