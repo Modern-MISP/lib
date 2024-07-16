@@ -384,6 +384,7 @@ class TriggerObjectAfterSave(Trigger):
     icon: str = "cubes"
     blocking: bool = False
     overhead: Overhead = Overhead.HIGH
+    supported: bool = False
 
 
 @trigger_node
