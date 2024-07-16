@@ -68,6 +68,7 @@ async def test_event_normalize(event: Event, db: AsyncSession) -> None:
         "id": "1",
         "uuid": "9a92b6c9-fdea-46e7-86b7-6bd475ce638a",
         "name": "Foo",
+        "local": False,
     }
 
     assert result["Event"]["date"] == "2024-02-13"

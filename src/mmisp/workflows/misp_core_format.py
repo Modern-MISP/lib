@@ -1,5 +1,6 @@
-from typing import Sequence, Tuple
+from typing import Sequence
 
+from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -8,12 +9,14 @@ from ..db.models.event import Event, EventTag
 from ..db.models.organisation import Organisation
 from ..db.models.sighting import Sighting
 from ..db.models.tag import Tag
+from ..db.models.user import User
 
 
 async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute) -> dict:
     event = (await db.execute(select(Event).filter(Event.id == attribute.event_id))).scalars().first()
-    event_data = (await event_with_orgc_to_core_format(db, event))["Event"]
-    sightings: Sequence[Tuple[Sighting, Organisation]] = (
+    assert event is not None
+    event_data = (await event_to_misp_core_format(db, event))["Event"]
+    sightings: Sequence[Row[tuple[Sighting, Organisation]]] = (
         await db.execute(
             select(Sighting, Organisation)
             .join(Attribute)
@@ -89,9 +92,26 @@ async def tags_for_event_in_core_format(db: AsyncSession, event_id: int) -> list
     ]
 
 
-async def event_with_orgc_to_core_format(db: AsyncSession, event: Event) -> dict:
-    orgc = await db.get(Organisation, event.orgc_id)
+async def event_after_save_new_to_core_format(db: AsyncSession, event: Event) -> dict:
+    user_email = (await db.execute(select(User.email).filter(User.id == event.user_id))).scalars().first()
+    event_dict = await event_to_misp_core_format(db, event)
+    event_dict["Attribute"] = []
+    event_dict["ShadowAttribute"] = []
+    event_dict["Object"] = []
+    event_dict["EventTag"] = []
+    event_dict["EventReport"] = []
+    event_dict["CryptographicKey"] = []
+    event_dict["Galaxy"] = []
+    event_dict["Orgc"] = await org_from_id(db, event.orgc_id)
+    event_dict["Org"] = await org_from_id(db, event.org_id)
+    event_dict["RelatedEvent"] = []
+    event_dict["Sighting"] = []
+    event_dict["User"] = {"email": user_email}
 
+    return event_dict
+
+
+async def event_to_misp_core_format(db: AsyncSession, event: Event) -> dict:
     return {
         "Event": {
             "id": str(event.id),
@@ -116,12 +136,19 @@ async def event_with_orgc_to_core_format(db: AsyncSession, event: Event) -> dict
             "disable_correlation": event.disable_correlation,
             "extends_uuid": event.extends_uuid,
             # "event_creator_email": event.event_creator_email,
-            "Orgc": {
-                "id": str(orgc.id),
-                "uuid": str(orgc.uuid),
-                "name": orgc.name,
-            }
-            if orgc is not None
-            else None,
         }
+    }
+
+
+async def org_from_id(db: AsyncSession, org: int) -> dict:
+    orgc = await db.get(Organisation, org)
+    return {
+        "Orgc": {
+            "id": str(orgc.id),
+            "uuid": str(orgc.uuid),
+            "name": orgc.name,
+            "local": orgc.local,
+        }
+        if orgc is not None
+        else None,
     }

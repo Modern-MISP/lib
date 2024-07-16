@@ -8,7 +8,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.event import Event
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.sighting import Sighting
-from mmisp.workflows.misp_core_format import attribute_to_misp_core_format
+from mmisp.workflows.misp_core_format import attribute_to_misp_core_format, event_after_save_new_to_core_format
 
 
 @pytest.mark.asyncio
@@ -24,6 +24,14 @@ async def test_attribute_normalize(db: AsyncSession, attribute: Attribute) -> No
     assert result["Attribute"]["Sighting"][0]["Organisation"]["name"] == "Bar"
     assert result["Attribute"]["Sighting"][1]["id"] == 24
     assert result["Attribute"]["Sighting"][1]["Organisation"]["name"] == "Foo"
+
+
+@pytest.mark.asyncio
+async def test_event_after_save(db: AsyncSession, event: Event) -> None:
+    result = await event_after_save_new_to_core_format(db, event)
+
+    assert result["Event"]["id"] == "1"
+    assert result["User"]["email"] == "admin@admin.test"
 
 
 @pytest_asyncio.fixture

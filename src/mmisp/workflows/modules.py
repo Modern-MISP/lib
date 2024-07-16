@@ -19,7 +19,9 @@ from .graph import Module, Node, Trigger, VerbatimWorkflowInput
 from .input import Filter, Operator, RoamingData, WorkflowInput
 from .misp_core_format import (
     attribute_to_misp_core_format,
-    event_with_orgc_to_core_format,
+    event_after_save_new_to_core_format,
+    event_to_misp_core_format,
+    org_from_id,
     tags_for_event_in_core_format,
 )
 
@@ -282,6 +284,10 @@ class TriggerEventAfterSaveNewFromPull(Trigger):
     blocking: bool = False
     overhead: Overhead = Overhead.LOW
 
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Event)
+        return await event_after_save_new_to_core_format(db, input)
+
 
 @trigger_node
 @dataclass(kw_only=True, eq=False)
@@ -293,6 +299,10 @@ class TriggerEventAfterSaveNew(Trigger):
     icon: str = "envelope"
     blocking: bool = False
     overhead: Overhead = Overhead.LOW
+
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Event)
+        return await event_after_save_new_to_core_format(db, input)
 
 
 @trigger_node
@@ -309,8 +319,9 @@ class TriggerEventAfterSave(Trigger):
     async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
         assert isinstance(input, Event)
 
-        result = await event_with_orgc_to_core_format(db, input)
+        result = await event_to_misp_core_format(db, input)
         result["Event"]["Tag"] = await tags_for_event_in_core_format(db, input.id)
+        result["Event"]["Orgc"] = (await org_from_id(db, input.orgc_id))["Orgc"]
         result["_AttributeFlattened"] = []
 
         return result
@@ -328,6 +339,10 @@ class TriggerEventBeforeSave(Trigger):
     icon: str = "envelope"
     blocking: bool = True
     overhead: Overhead = Overhead.HIGH
+
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Event)
+        return await event_to_misp_core_format(db, input)
 
 
 @trigger_node

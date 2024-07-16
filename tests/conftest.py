@@ -9,6 +9,7 @@ from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.event import Event, EventTag
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.tag import Tag
+from mmisp.db.models.user import User
 
 
 @pytest_asyncio.fixture
@@ -25,6 +26,8 @@ async def event(db: AsyncSession) -> AsyncGenerator[Event, None]:
         landingpage="",
     )
     db.add(orgc)
+    us = User(id=1, email="admin@admin.test", password="hunter2", org_id=1)
+    db.add(us)
     tag = Tag(
         id=1,
         name="Test",
@@ -57,6 +60,7 @@ async def event(db: AsyncSession) -> AsyncGenerator[Event, None]:
     await db.delete(eventtag)
     await db.delete(event)
     await db.delete(tag)
+    await db.delete(us)
     await db.delete(orgc)
     await db.commit()
 
