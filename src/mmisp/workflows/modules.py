@@ -421,6 +421,11 @@ class TriggerSightingAfterSave(Trigger):
     blocking: bool = False
     overhead: Overhead = Overhead.MEDIUM
 
+    async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+        assert isinstance(input, Attribute)
+        # Apparently, this only has associated attribute w/o sightings in the payload?
+        return await attribute_to_misp_core_format(db, input, with_sightings=False)
+
 
 def _normalize_user(input: VerbatimWorkflowInput) -> RoamingData:
     assert isinstance(input, User)

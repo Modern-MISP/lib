@@ -12,7 +12,7 @@ from ..db.models.tag import Tag
 from ..db.models.user import User
 
 
-async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute) -> dict:
+async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute, with_sightings: bool = True) -> dict:
     event = (await db.execute(select(Event).filter(Event.id == attribute.event_id))).scalars().first()
     assert event is not None
     event_data = (await event_to_misp_core_format(db, event))["Event"]
@@ -45,7 +45,10 @@ async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute) 
         "first_seen": attribute.first_seen,
         "last_seen": attribute.last_seen,
         "value": attribute.value,
-        "Sighting": [
+    }
+
+    if with_sightings:
+        attribute_data["Sighting"] = [
             {
                 "id": sighting.id,
                 "attribute_id": sighting.attribute_id,
@@ -63,8 +66,7 @@ async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute) 
                 },
             }
             for sighting, organisation in sightings
-        ],
-    }
+        ]
 
     result = {
         "Event": event_data,
