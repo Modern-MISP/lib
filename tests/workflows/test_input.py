@@ -8,6 +8,9 @@ from mmisp.workflows.input import (
     InvalidValueError,
     Operator,
     WorkflowInput,
+    evaluate_condition,
+    extract_path,
+    get_path,
 )
 
 
@@ -353,6 +356,52 @@ def test_list_wildcard_in_path_wrong_condition() -> None:
     input.add_filter("A", Filter("Event._AttributeFlattened", "{n}.deeper.foo", Operator.NOT_EQUALS, "bar"))
     result = input.data["Event"]["_AttributeFlattened"]
     assert len(result) == 0
+
+
+def test_extract_path() -> None:
+    path = ["{n}", "vehicle", "car", "engine"]
+    data = [
+        {"vehicle": {"car": {"engine": "V12", "tires": "4"}, "motorcycle": {"engine": "V4", "tires": "3"}}},
+        {"vehicle": {"yacht": {"engine": "V24", "max_speed": "80 knots"}}},
+        {"vehicle": {"car": {"engine": "V8", "max_speed": "280km/h"}}},
+    ]
+    assert extract_path(path, data) == ["V12", "V8"]
+    assert extract_path(path, data[1:2]) == []
+
+
+def test_get_path() -> None:
+    path = ["vehicle", "motorcycle", "tires"]
+    data = {"vehicle": {"car": {"engine": "V12", "tires": "4"}, "motorcycle": {"engine": "V4", "tires": "3"}}}
+    assert get_path(path, data) == "3"
+    assert get_path(path[1:], data) is None
+
+
+def test_evaluate_condition_in_and_not_in() -> None:
+    value = "cat"
+    data = ["dog", "mice", "cat"]
+    assert evaluate_condition(value, "in", data)
+    assert not evaluate_condition(value, "not_in", data)
+    assert not evaluate_condition(value, "in", data[:2])
+    assert evaluate_condition(value, "not_in", data[:2])
+    assert not evaluate_condition(value, "in", {})
+    assert not evaluate_condition(value, "not_in", {})
+
+
+def test_equals_and_not_equals() -> None:
+    assert not evaluate_condition("cat", "equals", "dog")
+    assert evaluate_condition("cat", "not_equals", "dog")
+    assert evaluate_condition("cat", "equals", "cat")
+    assert not evaluate_condition("cat", "not_equals", "cat")
+    assert not evaluate_condition("cat", "equals", ["cat"])
+    assert not evaluate_condition("cat", "not_equals", ["cat"])
+
+
+def test_in_or() -> None:
+    value = ["car", "motorcycle"]
+    data = ["cat", "dog", "motorcycle"]
+    assert evaluate_condition(value, "in_or", data)
+    assert not evaluate_condition(value, "in_or", data[:2])
+    assert not evaluate_condition("cat", "in_or", data)
 
 
 def load_data() -> dict:

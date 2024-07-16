@@ -6,12 +6,13 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.event import Event
-from mmisp.workflows.graph import Apperance
+from mmisp.workflows.graph import Apperance, Node
 from mmisp.workflows.input import Filter, Operator, WorkflowInput
 from mmisp.workflows.modules import (
     ModuleConfiguration,
     ModuleGenericFilterData,
     ModuleGenericFilterReset,
+    ModuleIfGeneric,
     ModuleParam,
     ModuleParamType,
     ModulePublishEvent,
@@ -43,6 +44,32 @@ def test_errors() -> None:
 
     assert "Param baz has an invalid value" in errors
     assert "Param foo is expected to be a boolean" in errors
+
+
+@pytest.mark.asyncio
+async def test_if_generic() -> None:
+    module = ModuleIfGeneric(
+        inputs={}, outputs={}, graph_id=1, apperance=None, configuration=ModuleConfiguration({}), on_demand_filter=None
+    )
+    module_yes = Node(inputs={}, outputs={}, graph_id=1)
+    module_no = Node(inputs={}, outputs={}, graph_id=1)
+    module.outputs[1] = [(1, module_yes)]
+    module.outputs[2] = [(1, module_no)]
+    module.configuration.data["value"] = "V12"
+    module.configuration.data["operator"] = "in"
+    module.configuration.data["hash_path"] = "storages.{n}.vehicle.car.engine"
+    input_data = {
+        "storages": [
+            {"vehicle": {"car": {"engine": "V12", "tires": "4"}, "motorcycle": {"engine": "V4", "tires": "3"}}},
+            {"vehicle": {"yacht": {"engine": "V24", "max_speed": "80 knots"}}},
+            {"vehicle": {"car": {"engine": "V8", "max_speed": "280km/h"}}},
+        ]
+    }
+    next_node = await module.exec(WorkflowInput(data=input_data, user=None, workflow=None), None)
+    assert next_node[1] == module_yes
+    module.configuration.data["value"] = "V10"
+    next_node = await module.exec(WorkflowInput(data=input_data, user=None, workflow=None), None)
+    assert next_node[1] == module_no
 
 
 @pytest.mark.asyncio

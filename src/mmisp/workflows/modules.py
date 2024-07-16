@@ -491,6 +491,7 @@ class ModuleIfGeneric(ModuleLogic):
     html_template: str = "if"
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.configuration.data["operator"] = "in"
         self.params = {
             "value": ModuleParam(
                 id="value",
@@ -516,7 +517,6 @@ class ModuleIfGeneric(ModuleLogic):
                 label="Operator",
                 kind=ModuleParamType.SELECT,
                 options={
-                    "default": "in",
                     "options": {
                         "in": "In",
                         "not_in": "Not+in",
@@ -536,8 +536,33 @@ class ModuleIfGeneric(ModuleLogic):
         }
 
     async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
-        self.configuration.data
-        pass
+        operator = self.configuration.data["operator"]
+        hash_path = self.configuration.data["hash_path"].split(".")
+
+        if operator == "in_or":
+            value = self.configuration.data["value_list"]
+        else:
+            value = self.configuration.data["value"]
+
+        if operator == "equals" or operator == "not_equals":
+            extracted_data = get_path(hash_path, payload.data)
+        else:
+            extracted_data = extract_path(hash_path, payload.data)
+
+        if extracted_data is False:
+            extracted_data = []
+
+        if operator == "any_value":
+            decision = extracted_data != []
+        else:
+            decision = evaluate_condition(value, operator, extracted_data)
+
+        connections = self.outputs.get(1 if decision else 2)
+        if connections is None:
+            return True, None
+        if len(connections) == 0:
+            return True, None
+        return True, connections[0][1]
 
 
 @module_node

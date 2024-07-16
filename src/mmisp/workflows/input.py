@@ -86,6 +86,80 @@ class InvalidValueError(FilterError):
     message: str
 
 
+def extract_path(path: List[str], data: Any) -> List[Any]:
+    """
+    A utility method providing the Hash::extract functionality in CakePHP.
+
+    Arguments:
+        path: The hash path to extract data from.
+        data: The container to extract data from.
+    Returns:
+        A list of the extracted data, if data matching the hash path was found, an empty List otherwise.
+    """
+    if path == []:
+        return [data]
+
+    if path[0] == "{n}" and isinstance(data, list):
+        results = []
+        for el in data:
+            extracted = extract_path(path[1:], el)
+            if extracted:
+                results.extend(extracted)
+        return results
+
+    if isinstance(data, dict) and path[0] in data:
+        return extract_path(path[1:], data[path[0]])
+
+    return []
+
+
+def get_path(path: List[str], data: Any) -> Any:
+    """
+    A utility method providing the Hash::get functionality in CakePHP.
+
+    Arguments:
+        path: The hash path to extract data from.
+        data: The container to extract data from.
+    Returns:
+        The extracted data, if data matching the hash path was found, a None pointer otherwise.
+    """
+    if path == []:
+        return data
+    if isinstance(data, dict) and path[0] in data:
+        return get_path(path[1:], data[path[0]])
+    return None
+
+
+def evaluate_condition(value: Any | List[Any], operator: str, data: Any | List[Any]) -> bool:
+    """
+    A utility method for performing comparisons between the specified data.
+
+    Arguments:
+        value: The first operand.
+        operator: The operator to be used in the comparison.
+        data: The second operand.
+    Returns:
+        Whether the comparison holds or not.
+    """
+    match operator:
+        case "in":
+            return isinstance(data, list) and value in data
+        case "not_in":
+            return isinstance(data, list) and value not in data
+        case "equals":
+            return not isinstance(data, list) and value == data
+        case "not_equals":
+            return not isinstance(data, list) and value != data
+        case "in_or":
+            if not isinstance(value, list) or not isinstance(data, list):
+                return False
+            for to_be_searched in value:
+                if to_be_searched in data:
+                    return True
+            return False
+    return False
+
+
 @dataclass
 class Filter:
     """
@@ -212,7 +286,7 @@ class Filter:
     def apply(self: Self, data: RoamingData | List[RoamingData]) -> None:
         selector = self.selector.split(".")
 
-        self.__deep_insert(data, selector, self.__get_matching_items(self.__extract_path(selector, data)))
+        self.__deep_insert(data, selector, self.__get_matching_items(extract_path(selector, data)))
 
     def __deep_insert(
         self: Self, target: RoamingData | List[RoamingData], path: List[Any], data: List[Any] | Literal[False]
@@ -251,31 +325,14 @@ class Filter:
         else:
             self.__deep_insert(target[token], path, data)
 
-    def __extract_path(self: Self, path: List[str], data: Any) -> List[Any] | Literal[False]:
-        if path == []:
-            return [data]
-
-        if path[0] == "{n}" and isinstance(data, list):
-            results = []
-            for el in data:
-                extracted = self.__extract_path(path[1:], el)
-                if extracted:
-                    results.extend(extracted)
-            return results
-
-        if isinstance(data, dict) and path[0] in data:
-            return self.__extract_path(path[1:], data[path[0]])
-
-        return False
-
     def __get_matching_items(self: Self, data: List[Any] | Literal[False]) -> List[Any] | Literal[False]:
         if not data:
             return False
 
         result = []
         for item in data:
-            to_check = self.__extract_path(self.path.split("."), item)
-            if to_check and any(self.match_value(elem) for elem in to_check):
+            to_check = extract_path(self.path.split("."), item)
+            if any(self.match_value(elem) for elem in to_check):
                 result.append(item)
 
         return result
