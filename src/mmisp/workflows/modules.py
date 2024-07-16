@@ -396,6 +396,7 @@ class TriggerPostAfterSave(Trigger):
     icon: str = "comment"
     blocking: bool = False
     overhead: Overhead = Overhead.LOW
+    supported: bool = False
 
 
 @trigger_node
