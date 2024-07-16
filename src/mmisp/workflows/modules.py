@@ -371,6 +371,7 @@ class TriggerLogAfterSave(Trigger):
     icon: str = "file"
     blocking: bool = False
     overhead: Overhead = Overhead.HIGH
+    supported: bool = False
 
 
 @trigger_node
