@@ -74,5 +74,35 @@ class Role(BaseModel):
 class RoleUsersResponse(BaseModel):
     id: int
     name: str
+    created: datetime | None = None
+    modified: datetime | None = None
+    perm_add: bool | None = None
+    perm_modify: bool | None = None
+    perm_modify_org: bool | None = None
+    perm_publish: bool | None = None
+    perm_delegate: bool | None = None
+    perm_sync: bool | None = None
+    perm_admin: bool | None = None
+    perm_audit: bool | None = None
     perm_auth: bool
     perm_site_admin: bool
+    perm_regexp_access: bool | None = None
+    perm_tagger: bool | None = None
+    perm_template: bool | None = None
+    perm_sharing_group: bool | None = None
+    perm_tag_editor: bool | None = None
+    perm_sighting: bool | None = None
+    perm_object_template: bool | None = None
+    default_role: bool | None = None
+    memory_limit: str | None = None
+    max_execution_time: str | None = None
+    restricted_to_site_admin: bool | None = None
+    perm_publish_zmq: bool | None = None
+    perm_publish_kafka: bool | None = None
+    perm_decaying: bool | None = None
+    enforce_rate_limit: bool | None = None
+    rate_limit_count: str | None = None  # number as string
+    perm_galaxy_editor: bool | None = None
+    perm_warninglist: bool | None = None
+    perm_view_feed_correlations: bool | None = None
+

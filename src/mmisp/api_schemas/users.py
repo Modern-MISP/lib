@@ -113,17 +113,26 @@ class GetUsersUser(BaseModel):
     date_created: int
     date_modified: int | None
     last_pw_change: int | None
+    totp: bool | None
+    """detailed information bellow"""
+    hotp_counter: int | None
+    notification_daily: bool | None
+    notification_weekly: bool | None
+    notification_monthly: bool | None
+    external_auth_required: bool | None
+    external_auth_key: str | None
+    sub: str | None
     """new contents bellow"""
     name: str
-    totp: bool | None
     contact: bool
-    notification: bool
+    notification: bool 
 
 
 class GetUsersElement(BaseModel):
     User: GetUsersUser
     Role: RoleUsersResponse
     Organisation: OrganisationUsersResponse
+    UserSetting: dict | None = None
 
 
 class GetAllUsersResponse(BaseModel):
