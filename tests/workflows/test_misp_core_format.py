@@ -27,6 +27,15 @@ async def test_attribute_normalize(db: AsyncSession, attribute: Attribute) -> No
 
 
 @pytest.mark.asyncio
+async def test_attribute_normalize_no_sightings(db: AsyncSession, attribute: Attribute) -> None:
+    result = await attribute_to_misp_core_format(db, attribute, with_sightings=False)
+
+    assert result["Event"]["Attribute"][0]["id"] == "23"
+    assert result["Event"]["id"] == "1"
+    assert "Sighting" not in result["Event"]["Attribute"][0]
+
+
+@pytest.mark.asyncio
 async def test_event_after_save(db: AsyncSession, event: Event) -> None:
     result = await event_after_save_new_to_core_format(db, event)
 
