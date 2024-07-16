@@ -409,6 +409,7 @@ class TriggerShadowAttributeBeforeSave(Trigger):
     icon: str = "comment"
     blocking: bool = True
     overhead: Overhead = Overhead.MEDIUM
+    supported: bool = False
 
 
 @trigger_node
