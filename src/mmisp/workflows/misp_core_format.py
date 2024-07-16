@@ -1,6 +1,5 @@
 from typing import Sequence
 
-from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -16,7 +15,7 @@ async def attribute_to_misp_core_format(db: AsyncSession, attribute: Attribute, 
     event = (await db.execute(select(Event).filter(Event.id == attribute.event_id))).scalars().first()
     assert event is not None
     event_data = (await event_to_misp_core_format(db, event))["Event"]
-    sightings: Sequence[Row[tuple[Sighting, Organisation]]] = (
+    sightings = (
         await db.execute(
             select(Sighting, Organisation)
             .join(Attribute)
