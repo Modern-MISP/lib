@@ -685,7 +685,7 @@ class ModuleTagIf(ModuleIf):
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
         selected_tags = cast(list, self.configuration.data.get("tags", []))
-        selected_clusters = cast(list, self.configuration.data.get("configuration", []))
+        selected_clusters = cast(list, self.configuration.data.get("clusters", []))
         return True, evaluate_condition(
             selected_tags + selected_clusters,
             cast(str, self.configuration.data.get("condition")),
