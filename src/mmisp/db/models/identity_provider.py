@@ -11,7 +11,7 @@ class OIDCIdentityProvider(Base):
     __tablename__ = "oidc_identity_providers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     org_id: Mapped[int] = mapped_column(Integer, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     base_url: Mapped[str] = mapped_column(String(255), nullable=False)

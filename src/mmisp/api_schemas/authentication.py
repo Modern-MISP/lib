@@ -45,6 +45,7 @@ class GetIdentityProviderResponse(BaseModel):
 class IdentityProviderInfo(BaseModel):
     id: str
     name: str
+    url: str | None = None
 
     class Config:
         orm_mode = True
