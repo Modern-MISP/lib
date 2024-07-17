@@ -1,11 +1,12 @@
 from datetime import date
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.event import Event
+from mmisp.db.models.tag import Tag
 from mmisp.workflows.graph import Apperance, Node
 from mmisp.workflows.input import Filter, Operator, WorkflowInput
 from mmisp.workflows.modules import (
@@ -92,6 +93,17 @@ async def test_if_tag() -> None:
     }
     next_node = await module.exec(WorkflowInput(data=input_data, user=None, workflow=None), None)
     assert next_node[1] == module_yes
+
+
+@pytest.mark.asyncio
+async def test_visual_editor_config_for_tagif(tags: List[Tag], db: AsyncSession) -> None:
+    module = ModuleTagIf(
+        inputs={}, outputs={}, graph_id=1, apperance=None, configuration=ModuleConfiguration({}), on_demand_filter=None
+    )
+
+    await module.initialize_for_visual_editor(db)
+
+    assert module.params["clusters"].options["options"] == ["Foo"]
 
 
 @pytest.mark.asyncio

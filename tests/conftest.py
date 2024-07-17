@@ -1,5 +1,5 @@
 from datetime import date
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List
 
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +10,30 @@ from mmisp.db.models.event import Event, EventTag
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.tag import Tag
 from mmisp.db.models.user import User
+
+
+@pytest_asyncio.fixture
+async def tags(db: AsyncSession) -> AsyncGenerator[List[Tag], None]:
+    t1 = Tag(
+        name="Foo",
+        is_galaxy=True,
+        colour="black",
+        exportable=False,
+    )
+    t2 = Tag(
+        name="Bar",
+        is_galaxy=False,
+        colour="red",
+        exportable=False,
+    )
+
+    db.add(t1)
+    db.add(t2)
+    await db.commit()
+    yield [t1, t2]
+    await db.delete(t2)
+    await db.delete(t1)
+    await db.commit()
 
 
 @pytest_asyncio.fixture

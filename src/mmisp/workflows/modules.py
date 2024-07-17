@@ -9,10 +9,12 @@ from enum import Enum
 from json import dumps
 from typing import Any, Dict, Generic, List, Self, Tuple, Type, TypeVar, Union, cast
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.attribute import Attribute
 from ..db.models.event import Event
+from ..db.models.tag import Tag
 from ..db.models.user import User
 from ..lib.actions import action_publish_event
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
@@ -620,8 +622,13 @@ class ModuleTagIf(ModuleIf):
     html_template: str = "if"
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
-        self.configuration.data["scope"] = "event"
-        self.configuration.data["condition"] = "in_or"
+        self.configuration.data.setdefault("scope", "event")
+        self.configuration.data.setdefault("condition", "in_or")
+
+        tags_and_clusters = (await db.execute(select(Tag.name, Tag.is_galaxy))).all()
+        tags = [name for name, is_galaxy in tags_and_clusters if not is_galaxy]
+        galaxies = [name for name, is_galaxy in tags_and_clusters if is_galaxy]
+
         self.params = {
             "scope": ModuleParam(
                 id="scope",
@@ -650,7 +657,7 @@ class ModuleTagIf(ModuleIf):
                 kind=ModuleParamType.PICKER,
                 options={
                     "multiple": True,
-                    "options": {},  # TODO
+                    "options": tags,
                     "placeholder": "Pick a tag",
                 },
             ),
@@ -660,7 +667,7 @@ class ModuleTagIf(ModuleIf):
                 kind=ModuleParamType.PICKER,
                 options={
                     "multiple": True,
-                    "options": {},  # TODO
+                    "options": galaxies,
                     "placeholder": "Pick a Galaxy Cluster",
                 },
             ),
@@ -698,7 +705,7 @@ class ModuleStopExecution(ModuleAction):
     icon: str = "ban"
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
-        self.configuration.data["message"] = "Execution+stopped"
+        self.configuration.data.setdefault("message", "Execution+stopped")
         self.params = {
             "message": ModuleParam(
                 id="message",
