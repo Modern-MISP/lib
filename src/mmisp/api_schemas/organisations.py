@@ -34,11 +34,30 @@ class GetOrganisationResponse(BaseModel):
     nationality: str | None = None
     sector: str | None = None
     created_by: str
-    uuid: str
+    uuid: str | None = None
     contacts: str | None = None
     local: bool
     restricted_to_domain: str | None = None
     landingpage: str | None = None
+
+
+class GetAllOrganisationResponse(BaseModel):
+    id: str
+    name: str
+    date_created: datetime
+    date_modified: datetime
+    description: str | None = None
+    type: str | None = None
+    nationality: str | None = None
+    sector: str | None = None
+    created_by: str
+    uuid: str | None = None
+    contacts: str | None = None
+    local: bool
+    restricted_to_domain: str | None = None
+    landingpage: str | None = None
+    user_count: int
+    created_by_email: str
 
 
 class DeleteForceUpdateOrganisationResponse(BaseModel):

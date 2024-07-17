@@ -70,16 +70,17 @@ class UserAttributesBody(BaseModel):
 
 
 class AddUserBody(BaseModel):
-    org_id: str
+    authkey: str
+    contactalert: bool
+    nids_sid: int
+    org: str
     email: str
     gpgkey: str
     termsaccepted: bool
-    role_id: str
     disabled: bool
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
-    totp: str | None = None
     password: str
     name: str
 
@@ -125,7 +126,7 @@ class GetUsersUser(BaseModel):
     """new contents bellow"""
     name: str
     contact: bool
-    notification: bool 
+    notification: bool
 
 
 class GetUsersElement(BaseModel):
