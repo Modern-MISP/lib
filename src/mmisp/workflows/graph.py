@@ -571,6 +571,11 @@ class Trigger(WorkflowNode):
     for this trigger.
     """
 
+    icon: str = "envelope"
+    """
+    Frontend icon.
+    """
+
     disabled: bool = False
     """
     Whether or not the trigger is disabled, i.e. ignored when triggered.
