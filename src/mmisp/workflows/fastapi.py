@@ -146,11 +146,11 @@ def __get_support_filters(node: Node) -> bool:
 def log_to_json_dict(log: Log) -> Dict[str, Any]:
     return {
         "Log": {
-            "id": log.id,
+            "id": str(log.id),
             "title": log.title,
             "created": log.created,
             "model": log.model,
-            "model_id": log.model_id,
+            "model_id": str(log.model_id),
             "action": log.action,
             "user_id": log.user_id,
             "change": log.change,
