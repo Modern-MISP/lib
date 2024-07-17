@@ -55,7 +55,7 @@ def json_dict_to_workflow_entity(input: Dict[str, Dict[str, Any]]) -> Workflow:
 
 
 def workflow_entity_to_json_dict(workflow: Workflow) -> Dict[str, Dict[str, Any]]:
-    graph_json = GraphFactory.graph2jsondict(workflow.data) # type:ignore [arg-type]
+    graph_json = GraphFactory.graph2jsondict(workflow.data)  # type:ignore [arg-type]
     return {
         "Workflow": {
             "id": workflow.id,
@@ -141,6 +141,7 @@ def __get_support_filters(node: Node) -> bool:
     if hasattr(node, "on_demand_filtering_enabled"):
         support_filters = node.on_demand_filtering_enabled
     return support_filters
+
 
 def log_to_json_dict(log: Log) -> Dict[str, Any]:
     return {

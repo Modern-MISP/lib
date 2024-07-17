@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class LogsRequest(BaseModel):
     model: str | None = None
     action: str | None = None

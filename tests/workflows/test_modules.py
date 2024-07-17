@@ -1,6 +1,6 @@
 from datetime import date
 from typing import AsyncGenerator
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession

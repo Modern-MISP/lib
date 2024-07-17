@@ -16,9 +16,9 @@ from ..db.models.event import Event, EventTag
 from ..db.models.organisation import Organisation
 from ..db.models.tag import Tag
 from ..db.models.user import User
+from ..lib.actions import action_publish_event
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
 from .input import Filter, Operator, RoamingData, WorkflowInput
-from ..lib.actions import action_publish_event
 
 
 class ModuleParamType(Enum):

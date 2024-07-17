@@ -1,7 +1,8 @@
 from calendar import timegm
 from time import gmtime
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from mmisp.db.database import Session
+
 from mmisp.db.models.event import Event
 
 
