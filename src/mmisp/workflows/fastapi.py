@@ -58,7 +58,7 @@ def workflow_entity_to_json_dict(workflow: Workflow) -> Dict[str, Dict[str, Any]
     graph_json = GraphFactory.graph2jsondict(workflow.data)  # type:ignore [arg-type]
     return {
         "Workflow": {
-            "id": workflow.id,
+            "id": str(workflow.id),
             "uuid": workflow.uuid,
             "name": workflow.name,
             "description": workflow.description,
