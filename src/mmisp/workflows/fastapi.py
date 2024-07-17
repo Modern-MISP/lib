@@ -152,7 +152,7 @@ def log_to_json_dict(log: Log) -> Dict[str, Any]:
             "model": log.model,
             "model_id": str(log.model_id),
             "action": log.action,
-            "user_id": log.user_id,
+            "user_id": str(log.user_id),
             "change": log.change,
             "email": log.email,
             "org": log.org,
