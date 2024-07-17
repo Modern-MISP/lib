@@ -75,7 +75,6 @@ class AddUserBody(BaseModel):
     nids_sid: int
     org: str
     email: str
-    gpgkey: str
     termsaccepted: bool
     disabled: bool
     notification_daily: bool
@@ -83,6 +82,8 @@ class AddUserBody(BaseModel):
     notification_monthly: bool
     password: str
     name: str
+    """role_id newly added"""
+    role: str | None = None
 
 
 class AddUserResponse(BaseModel):
@@ -97,7 +98,7 @@ class AddUserResponse(BaseModel):
     certif_public: str | None = None
     nids_sid: int
     termsaccepted: bool
-    newsread: int
+    newsread: int | None = None
     role_id: int
     change_pw: bool
     contactalert: bool
