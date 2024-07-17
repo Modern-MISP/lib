@@ -494,15 +494,14 @@ class Module(WorkflowNode):
             payload: The workflows input for the specific module execution.
             db: Database handle for write operations.
         """
-
         assert self.n_outputs == 1, """
-            Module.exec() assumes exactly one output. If that's not the case,
-            override the method.
-        """
+                Module.exec() assumes exactly one output. If that's not the case,
+                override the method.
+            """
         assert not self.enable_multiple_edges_per_output, """
-            Module.exec() assumes each output allows only a single edge.
-            if that's not the case, override the method.
-        """
+                Module.exec() assumes each output allows only a single edge.
+                if that's not the case, override the method.
+            """
 
         result = await self._exec(payload, db)
         # execution failed, no more things to do.

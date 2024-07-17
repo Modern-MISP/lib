@@ -150,13 +150,30 @@ def evaluate_condition(value: Any | List[Any], operator: str, data: Any | List[A
             return not isinstance(data, list) and value == data
         case "not_equals":
             return not isinstance(data, list) and value != data
-        case "in_or":
+        case _:
             if not isinstance(value, list) or not isinstance(data, list):
                 return False
-            for to_be_searched in value:
-                if to_be_searched in data:
+            match operator:
+                case "in_or":
+                    for to_be_searched in value:
+                        if to_be_searched in data:
+                            return True
+                    return False
+                case "not_in_or":
+                    for to_be_searched in value:
+                        if to_be_searched in data:
+                            return False
                     return True
-            return False
+                case "in_and":
+                    for to_be_searched in value:
+                        if to_be_searched not in data:
+                            return False
+                    return True
+                case "not_in_and":
+                    for to_be_searched in value:
+                        if to_be_searched not in data:
+                            return True
+                    return False
     return False
 
 

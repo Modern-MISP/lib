@@ -7,7 +7,7 @@ that were bundled with legacy MISP.
 from dataclasses import dataclass, field
 from enum import Enum
 from json import dumps
-from typing import Any, Dict, Generic, List, Self, Sequence, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Self, Tuple, Type, TypeVar, Union, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,7 +16,7 @@ from ..db.models.event import Event
 from ..db.models.user import User
 from ..lib.actions import action_publish_event
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
-from .input import Filter, Operator, RoamingData, WorkflowInput
+from .input import Filter, Operator, RoamingData, WorkflowInput, evaluate_condition, extract_path, get_path
 from .misp_core_format import (
     attribute_to_misp_core_format,
     event_after_save_new_to_core_format,
@@ -476,9 +476,31 @@ class TriggerUserBeforeSave(Trigger):
         return _normalize_user(input)
 
 
+class ModuleIf(ModuleLogic):
+    """
+    The class on which all if/else module implementations will be based.
+    """
+
+    async def exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
+        success, condition_true = await self._exec(payload, db)
+        if not success:
+            return False, None
+        connections = cast(dict, self.outputs.get(1 if condition_true else 2))
+        if not connections:
+            return True, None
+        return True, connections[0][1]
+
+    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
+        """
+        The implementation of the if/else execution. The first return value indicates whether the execution was
+        successful, the second the decision whether to go to the yes or to the no next node.
+        """
+        return False, False
+
+
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleIfGeneric(ModuleLogic):
+class ModuleIfGeneric(ModuleIf):
     id: str = "generic-if"
     n_outputs: int = 2
     name: str = "IF :: Generic"
@@ -535,9 +557,9 @@ class ModuleIfGeneric(ModuleLogic):
             ),
         }
 
-    async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
-        operator = self.configuration.data["operator"]
-        hash_path = self.configuration.data["hash_path"].split(".")
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
+        operator = cast(str, self.configuration.data["operator"])
+        hash_path = cast(str, self.configuration.data["hash_path"]).split(".")
 
         if operator == "in_or":
             value = self.configuration.data["value_list"]
@@ -557,12 +579,7 @@ class ModuleIfGeneric(ModuleLogic):
         else:
             decision = evaluate_condition(value, operator, extracted_data)
 
-        connections = self.outputs.get(1 if decision else 2)
-        if connections is None:
-            return True, None
-        if len(connections) == 0:
-            return True, None
-        return True, connections[0][1]
+        return True, decision
 
 
 @module_node
@@ -590,7 +607,7 @@ class ModuleAttributeCommentOperation(ModuleAction):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleTagIf(ModuleLogic):
+class ModuleTagIf(ModuleIf):
     id: str = "tag-if"
     n_outputs: int = 2
     name: str = "IF :: Tag"
@@ -601,6 +618,72 @@ class ModuleTagIf(ModuleLogic):
     )
     icon: str = "code-branch"
     html_template: str = "if"
+
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.configuration.data["scope"] = "event"
+        self.configuration.data["condition"] = "in_or"
+        self.params = {
+            "scope": ModuleParam(
+                id="scope",
+                label="Scope",
+                kind=ModuleParamType.SELECT,
+                options={
+                    "options": {"event": "Event", "attribute": "Attribute", "event_attribute": "Inherited Attribute"}
+                },
+            ),
+            "condition": ModuleParam(
+                id="condition",
+                label="Condition",
+                kind=ModuleParamType.SELECT,
+                options={
+                    "options": {
+                        "in_or": "Is tagged with any (OR)",
+                        "in_and": "Is tagged with all (AND)",
+                        "not_in_or": "Is not tagged with any (OR)",
+                        "not_in_and": "Is not tagged with all (AND)",
+                    }
+                },
+            ),
+            "tags": ModuleParam(
+                id="tags",
+                label="Tags",
+                kind=ModuleParamType.PICKER,
+                options={
+                    "multiple": True,
+                    "options": {},  # TODO
+                    "placeholder": "Pick a tag",
+                },
+            ),
+            "clusters": ModuleParam(
+                id="clusters",
+                label="Galaxy Clusters",
+                kind=ModuleParamType.PICKER,
+                options={
+                    "multiple": True,
+                    "options": {},  # TODO
+                    "placeholder": "Pick a Galaxy Cluster",
+                },
+            ),
+        }
+
+    def __get_tags_from_scope(self: Self, payload: WorkflowInput, scope: str) -> List[Any]:
+        match scope:
+            case "attribute":
+                hash_path = ["Event", "_AttributeFlattened", "{n}", "Tag", "{n}", "name"]
+            case "event_attribute":
+                hash_path = ["Event", "_AttributeFlattened", "{n}", "_allTags", "{n}", "name"]
+            case "event":
+                hash_path = ["Event", "Tag", "{n}", "name"]
+        return extract_path(hash_path, payload.data)
+
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
+        selected_tags = cast(list, self.configuration.data.get("tags", []))
+        selected_clusters = cast(list, self.configuration.data.get("configuration", []))
+        return True, evaluate_condition(
+            selected_tags + selected_clusters,
+            cast(str, self.configuration.data.get("condition")),
+            self.__get_tags_from_scope(payload, cast(str, self.configuration.data.get("scope"))),
+        )
 
 
 @module_node
@@ -627,10 +710,7 @@ class ModuleStopExecution(ModuleAction):
         }
 
     async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
-        payload.user_messages.append(
-            "A stop execution module was reached causing the workflow execution to be stopped."
-            + " If this is a blocking workflow the default MISP behaviour will be blocked."
-        )
+        payload.user_messages.append(cast(str, self.configuration.data["message"]))
         return False, None
 
 
@@ -666,7 +746,7 @@ class ModuleConcurrentTask(ModuleLogic):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleCountIf(ModuleLogic):
+class ModuleCountIf(ModuleIf):
     id: str = "count-if"
     name: str = "IF :: Count"
     description: str = (
@@ -682,7 +762,7 @@ class ModuleCountIf(ModuleLogic):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleDistributionIf(ModuleLogic):
+class ModuleDistributionIf(ModuleIf):
     id: str = "distribution-if"
     name: str = "IF :: Distribution"
     version: str = "0.3"
@@ -832,7 +912,7 @@ class ModuleGenericFilterReset(ModuleFilter):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleOrganisationIf(ModuleLogic):
+class ModuleOrganisationIf(ModuleIf):
     """
     Module allowing to check if the organistaion property
     of the payload matches a condition.
@@ -853,7 +933,7 @@ class ModuleOrganisationIf(ModuleLogic):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModulePublishedIf(ModuleLogic):
+class ModulePublishedIf(ModuleIf):
     id: str = "published-if"
     name: str = "IF :: Published"
     description: str = (
@@ -869,7 +949,7 @@ class ModulePublishedIf(ModuleLogic):
 
 @module_node
 @dataclass(kw_only=True, eq=False)
-class ModuleThreatLevelIf(ModuleLogic):
+class ModuleThreatLevelIf(ModuleIf):
     id: str = "threat-level-if"
     html_template: str = "if"
     n_outputs: int = 2

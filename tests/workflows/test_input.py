@@ -396,12 +396,24 @@ def test_equals_and_not_equals() -> None:
     assert not evaluate_condition("cat", "not_equals", ["cat"])
 
 
-def test_in_or() -> None:
+def test_in_or_and_not_in_or() -> None:
     value = ["car", "motorcycle"]
     data = ["cat", "dog", "motorcycle"]
     assert evaluate_condition(value, "in_or", data)
+    assert not evaluate_condition(value, "not_in_or", data)
     assert not evaluate_condition(value, "in_or", data[:2])
+    assert evaluate_condition(value, "not_in_or", data[:2])
     assert not evaluate_condition("cat", "in_or", data)
+    assert not evaluate_condition("cat", "not_in_or", data)
+
+
+def test_in_and_and_not_in_and() -> None:
+    value = ["car", "motorcycle"]
+    data = ["car", "cat", "dog", "motorcycle"]
+    assert evaluate_condition(value, "in_and", data)
+    assert not evaluate_condition(value, "not_in_and", data)
+    assert not evaluate_condition(value, "in_and", data[:3])
+    assert evaluate_condition(value, "not_in_and", data[:3])
 
 
 def load_data() -> dict:
