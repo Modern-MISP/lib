@@ -87,6 +87,36 @@ class AddUserBody(BaseModel):
 
 class AddUserResponse(BaseModel):
     id: str
+    org_id: int
+    server_id: int
+    email: str
+    autoalert: bool
+    authkey: str
+    invited_by: int
+    gpgkey: str | None = None
+    certif_public: str | None = None
+    nids_sid: int
+    termsaccepted: bool
+    newsread: int
+    role_id: int
+    change_pw: bool
+    contactalert: bool
+    disabled: bool
+    expiration: int | None = None
+    current_login: int
+    force_logout: bool
+    date_created: int
+    date_modified: int
+    sub: str | None = None
+    external_auth_required: bool
+    external_auth_key: str | None = None
+    last_api_access: int
+    notification_daily: bool
+    notification_weekly: bool
+    notification_monthly: bool
+    totp: bool | None = None
+    hotp_counter: int | None = None
+    last_pw_change: int | None = None
 
 
 class GetUsersUser(BaseModel):
