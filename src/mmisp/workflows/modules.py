@@ -766,6 +766,58 @@ class ModuleCountIf(ModuleIf):
     html_template: str = "if"
     supported: bool = False
 
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.configuration.data.setdefault("operator", "equals")
+        self.params = {
+            "selector": ModuleParam(
+                id="selector",
+                label="Data selector to count",
+                kind=ModuleParamType.HASHPATH,
+                options={"placeholder": "Event.Tag.{n}.name", "hashpath": {"is_sub_selector": False}},
+            ),
+            "operator": ModuleParam(
+                id="operator",
+                label="Condition",
+                kind=ModuleParamType.SELECT,
+                options={
+                    "options": {
+                        "equals": "Equals to",
+                        "not_equals": "Not Equals to",
+                        "greater": "Greater than",
+                        "greater_equals": "Greater or equals than",
+                        "less": "Less than",
+                        "less_equals": "Less or equals than",
+                    }
+                },
+            ),
+            "value": ModuleParam(id="value", label="Value", kind=ModuleParamType.INPUT, options={"placeholder": "50"}),
+        }
+
+    def __evaluate_count(self: Self, amount: int, operator: str, value: int) -> bool:
+        match operator:
+            case "equals":
+                return amount == value
+            case "not_equals":
+                return amount != value
+            case "greater":
+                return amount > value
+            case "greater_equals":
+                return amount >= value
+            case "less":
+                return amount < value
+            case "less_equals":
+                return amount <= value
+        return False
+
+    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, bool]:
+        amount = len(extract_path(cast(str, self.configuration.data["selector"]).split("."), payload.data))
+        operator = cast(str, self.configuration.data["operator"])
+        try:
+            value = int(cast(str, self.configuration.data["value"]))
+        except ValueError:
+            return False, False
+        return True, self.__evaluate_count(amount, operator, value)
+
 
 @module_node
 @dataclass(kw_only=True, eq=False)
