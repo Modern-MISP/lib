@@ -1005,6 +1005,27 @@ class ModulePublishedIf(ModuleIf):
     html_template: str = "if"
     supported: bool = False
 
+    async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
+        self.configuration.data.setdefault("condition", "equals")
+        self.params = {
+            "condition": ModuleParam(
+                id="condition",
+                label="Condition",
+                kind=ModuleParamType.SELECT,
+                options={
+                    "options": {
+                        "equals": "Event is published",
+                        "not_equals": "Event is not published",
+                    }
+                },
+            )
+        }
+
+    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, bool]:
+        return True, evaluate_condition(
+            get_path(["Event", "published"], payload.data), self.configuration.data["condition"], True
+        )
+
 
 @module_node
 @dataclass(kw_only=True, eq=False)

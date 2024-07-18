@@ -17,6 +17,7 @@ from mmisp.workflows.modules import (
     ModuleIfGeneric,
     ModuleParam,
     ModuleParamType,
+    ModulePublishedIf,
     ModulePublishEvent,
     ModuleTagIf,
     TriggerEventAfterSave,
@@ -112,6 +113,21 @@ async def test_if_count() -> None:
         {"garage": [{"car": "A"}, {"car": "B"}, {"car": "C"}]},
         {"garage": [{"car": "A"}, {"car": "B"}, {"car": "C"}]},
     ]
+    next_node = await module.exec(WorkflowInput(data=input_data, user=None, workflow=None), None)
+    assert next_node[1] == module_yes
+
+
+@pytest.mark.asyncio
+async def test_if_published() -> None:
+    module = ModulePublishedIf(
+        inputs={}, outputs={}, graph_id=1, apperance=None, configuration=ModuleConfiguration({}), on_demand_filter=None
+    )
+    module_yes = Node(inputs={}, outputs={}, graph_id=1)
+    module_no = Node(inputs={}, outputs={}, graph_id=1)
+    module.outputs[1] = [(1, module_yes)]
+    module.outputs[2] = [(1, module_no)]
+    module.configuration.data["condition"] = "equals"
+    input_data = {"Event": {"published": True}}
     next_node = await module.exec(WorkflowInput(data=input_data, user=None, workflow=None), None)
     assert next_node[1] == module_yes
 
