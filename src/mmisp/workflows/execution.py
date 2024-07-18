@@ -6,8 +6,11 @@ from typing import List, Tuple
 
 import sqlalchemy as sa
 from jinja2 import BaseLoader, Environment
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..db.models.organisation import Organisation
+from ..db.models.role import Role
 from ..db.models.user import User
 from ..db.models.workflow import Workflow
 from ..lib.logging import ApplicationLogger
@@ -107,6 +110,24 @@ class UnsupportedModules(Exception):
     pass
 
 
+async def create_virtual_root_user(db: AsyncSession) -> User:
+    god_mode_role_id = (await db.execute(select(Role.id).filter(Role.perm_site_admin == 1))).scalars().first()
+    assert god_mode_role_id
+    local_org_id = (await db.execute(select(Organisation.id).filter(Organisation.local == True))).scalars().first()  # noqa
+    assert local_org_id
+
+    return User(
+        id=0,
+        email="SYSTEM",
+        role_id=god_mode_role_id,
+        org_id=local_org_id,
+    )
+
+
+async def workflow_by_trigger_id(trigger: str, db: AsyncSession) -> Workflow | None:
+    return (await db.execute(select(Workflow).filter(Workflow.trigger_id == trigger))).scalars().first()
+
+
 async def execute_workflow(
     workflow: Workflow, user: User, input: VerbatimWorkflowInput, db: AsyncSession, logger: ApplicationLogger
 ) -> Tuple[bool, List[str]]:
@@ -186,5 +207,7 @@ async def execute_workflow(
     logger.log_workflow_debug_message(
         workflow, f"Finished executing workflow for trigger `{trigger.name}` ({workflow.id}). Outcome: {outcome}"
     )
+
+    await db.commit()
 
     return result

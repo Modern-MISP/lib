@@ -8,9 +8,17 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from mmisp.db.models.organisation import Organisation
+from mmisp.db.models.role import Role
 from mmisp.db.models.workflow import Workflow
 from mmisp.lib.logging import ApplicationLogger
-from mmisp.workflows.execution import UnsupportedModules, _increase_workflow_execution_count, execute_workflow
+from mmisp.workflows.execution import (
+    UnsupportedModules,
+    _increase_workflow_execution_count,
+    create_virtual_root_user,
+    execute_workflow,
+    workflow_by_trigger_id,
+)
 from mmisp.workflows.graph import Apperance, Module, Trigger, WorkflowGraph
 from mmisp.workflows.input import WorkflowInput
 from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead, trigger_node
@@ -36,6 +44,48 @@ async def test_nothing_to_do(empty_wf: Workflow) -> None:
     # we went a little further and thus a first log message should've been received.
     assert logger.log_workflow_debug_message.called == 1
     logger.log_workflow_debug_message.assert_called_with(empty_wf, "Started executing workflow for trigger `demo` (23)")
+
+
+@pytest.mark.asyncio
+async def test_virtual_user_no_org(db: AsyncSession, role: Role) -> None:
+    try:
+        await create_virtual_root_user(db)
+        pytest.fail()
+    except AssertionError:
+        pass
+
+
+@pytest.mark.asyncio
+async def test_create_virtual_user(db: AsyncSession, role: Role, org: Organisation) -> None:
+    vu = await create_virtual_root_user(db)
+    assert vu.id == 0
+    assert vu.email == "SYSTEM"
+    assert vu.org_id == 1
+    assert vu.role_id == 1
+
+
+@pytest_asyncio.fixture
+async def role(db: AsyncSession) -> AsyncGenerator[Role, None]:
+    role = Role(id=1, name="Admin", perm_site_admin=True)
+
+    db.add(role)
+    yield role
+    await db.delete(role)
+
+
+@pytest_asyncio.fixture
+async def org(db: AsyncSession) -> AsyncGenerator[Organisation, None]:
+    org = Organisation(name="Snens", local=True, id=1, description="Foo", type="Bar", nationality="Ger", sector="idk")
+    db.add(org)
+    yield org
+    await db.delete(org)
+
+
+@pytest.mark.asyncio
+async def test_wf_by_trigger(wf_in_db: Workflow, db: AsyncSession) -> None:
+    wf = await workflow_by_trigger_id("demo", db)
+    assert wf is not None
+    assert wf.id == wf_in_db.id
 
 
 @pytest.mark.asyncio
