@@ -9,6 +9,7 @@ from mmisp.db.models.role import Role
 from mmisp.db.models.user import User
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.user_setting import UserSetting
+from mmisp.db.models.auth_key import AuthKey
 
 
 async def create(session: AsyncSession, email: str, password: str, org: str | int, role: str | int):
@@ -108,6 +109,12 @@ async def delete_user(session: AsyncSession, email: str):
     user_setting = user_setting.scalars()
     for setting in user_setting:
         await session.delete(setting)
+
+    query_authkey = select(AuthKey).where(AuthKey.user_id == User.id)
+    user_authkeys = await session.execute(query_authkey)
+    user_authkeys = user_authkeys.scalars()
+    for authkey in user_authkeys:
+        await session.delete(authkey)
 
     query = select(User).where(User.email == email)
     user = await session.execute(query)

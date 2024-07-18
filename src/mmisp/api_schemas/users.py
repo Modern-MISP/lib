@@ -47,13 +47,14 @@ class Config:
 
 
 class UserAttributesBody(BaseModel):
-    org_id: str | None = None
+    org: int | None = None
+    authkey: str | None = None
     email: str | None = None
     autoalert: bool | None = None
-    gpgkey: str | None = None
+    pgpkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool | None = None
-    role_id: str | None = None
+    role: int | None = None
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
@@ -67,6 +68,7 @@ class UserAttributesBody(BaseModel):
     totp: str | None = None
     hotp_counter: str | None = None
     name: str | None = None
+    nids_sid: int | None = None
 
 
 class AddUserBody(BaseModel):
@@ -86,7 +88,7 @@ class AddUserBody(BaseModel):
     role: str
 
 
-class AddUserResponse(BaseModel):
+class AddUserResponseData(BaseModel):
     id: str
     org_id: int
     server_id: int
@@ -118,6 +120,10 @@ class AddUserResponse(BaseModel):
     totp: bool | None = None
     hotp_counter: int | None = None
     last_pw_change: int | None = None
+
+
+class AddUserResponse(BaseModel):
+    User: AddUserResponseData
 
 
 class GetUsersUser(BaseModel):
