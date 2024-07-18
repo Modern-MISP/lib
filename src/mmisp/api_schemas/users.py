@@ -83,7 +83,7 @@ class AddUserBody(BaseModel):
     password: str
     name: str
     """role_id newly added"""
-    role: str | None = None
+    role: str
 
 
 class AddUserResponse(BaseModel):
