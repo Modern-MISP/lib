@@ -1230,9 +1230,16 @@ class ModuleTagOperation(ModuleAction):
     async def _add_tag(
         self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str
     ) -> bool:
-        event_id = payload.data["Event"]["id"]  # type ignore
+        try:
+            event_id = str(payload.data["Event"]["id"])  # type: ignore
+        except KeyError or TypeError:  # type: ignore[truthy-function]
+            return False
+
         local = True if tag_locality == "local" else False
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
+
+        if tag_id is None:
+            return False
 
         if scope == "event":
             event_tag = EventTag(event_id=event_id, tag_id=tag_id, local=local)
@@ -1249,11 +1256,22 @@ class ModuleTagOperation(ModuleAction):
     async def _remove_tag(
         self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str
     ) -> bool:
-        event_id = payload.data["Event"]["id"]  # type ignore
+        try:
+            event_id = str(payload.data["Event"]["id"])  # type: ignore
+        except KeyError or TypeError:  # type: ignore[truthy-function]
+            return False
+
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
+
+        if tag_id is None:
+            return False
+
         event_tag = (
             await db.execute(select(EventTag).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id)))
         ).scalar()
+
+        if event_tag is None:
+            return False
 
         if scope == "event":
             await db.delete(event_tag)
