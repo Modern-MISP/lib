@@ -809,7 +809,7 @@ class ModuleCountIf(ModuleIf):
                 return amount <= value
         return False
 
-    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, bool]:
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
         amount = len(extract_path(cast(str, self.configuration.data["selector"]).split("."), payload.data))
         operator = cast(str, self.configuration.data["operator"])
         try:
@@ -1021,7 +1021,7 @@ class ModulePublishedIf(ModuleIf):
             )
         }
 
-    async def _exec(self: Self, payload: "WorkflowInput", db: AsyncSession) -> Tuple[bool, bool]:
+    async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
         return True, evaluate_condition(
             get_path(["Event", "published"], payload.data), self.configuration.data["condition"], True
         )
