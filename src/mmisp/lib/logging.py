@@ -49,9 +49,10 @@ class ApplicationLogger:
             action="execute_workflow",
             model="Workflow",
             model_id=id,
-            user_id="SYSTEM",
+            user_id=0,
             email="SYSTEM",
             org="SYSTEM",
             description="",
             change="",
+            ip="",
         )

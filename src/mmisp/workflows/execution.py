@@ -198,6 +198,7 @@ async def execute_workflow(
         roaming_data = await trigger.normalize_data(db, input)
     except Exception as e:
         logger.log_workflow_execution_error(workflow, f"Error while normalizing data for trigger. Error: \n{e}")
+        await db.commit()  # Make sure logs are written into the DB
         return False, []
 
     input = WorkflowInput(
