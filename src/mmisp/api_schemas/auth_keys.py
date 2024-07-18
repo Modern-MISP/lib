@@ -65,7 +65,7 @@ class SearchGetAuthKeysResponseItem(BaseModel):
 
 
 class SearchGetAuthKeysResponse(BaseModel):
-    AuthKey: SearchGetAuthKeysResponseItemAuthKey
+    AuthKey: SearchGetAuthKeysResponseAuthKey
     User: SearchGetAuthKeysResponseItemUser
 
     class Config:
