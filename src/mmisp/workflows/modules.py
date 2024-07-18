@@ -1023,7 +1023,7 @@ class ModulePublishedIf(ModuleIf):
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
         return True, evaluate_condition(
-            get_path(["Event", "published"], payload.data), self.configuration.data["condition"], True
+            get_path(["Event", "published"], payload.data), cast(str, self.configuration.data["condition"]), True
         )
 
 
