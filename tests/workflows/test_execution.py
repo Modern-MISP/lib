@@ -8,6 +8,7 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from mmisp.db.models.admin_setting import AdminSetting
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.role import Role
 from mmisp.db.models.workflow import Workflow
@@ -79,13 +80,6 @@ async def org(db: AsyncSession) -> AsyncGenerator[Organisation, None]:
     db.add(org)
     yield org
     await db.delete(org)
-
-
-@pytest.mark.asyncio
-async def test_wf_by_trigger(wf_in_db: Workflow, db: AsyncSession) -> None:
-    wf = await workflow_by_trigger_id("demo", db)
-    assert wf is not None
-    assert wf.id == wf_in_db.id
 
 
 @pytest.mark.asyncio
@@ -178,6 +172,26 @@ async def test_increase_workflow_number(wf_in_db: Workflow, db: AsyncSession) ->
     await _increase_workflow_execution_count(db, wf_in_db.id)
     workflow = (await db.execute(select(Workflow).filter(Workflow.id == 26))).scalars().one()
     assert workflow.counter == 2
+
+
+@pytest.mark.asyncio
+async def test_wf_by_trigger(wf_in_db: Workflow, db: AsyncSession, enable_admin_setting: AdminSetting) -> None:
+    wf = await workflow_by_trigger_id("demo", db)
+    assert wf is not None
+    assert wf.id == wf_in_db.id
+
+
+@pytest.mark.asyncio
+async def test_wf_by_trigger_when_feature_disabled(wf_in_db: Workflow, db: AsyncSession) -> None:
+    assert not await workflow_by_trigger_id("demo", db)
+
+
+@pytest_asyncio.fixture
+async def enable_admin_setting(db: AsyncSession) -> AsyncGenerator[AdminSetting, None]:
+    setting = AdminSetting(setting="workflow_feature_enabled", value="True")
+    db.add(setting)
+    yield setting
+    await db.delete(setting)
 
 
 @pytest_asyncio.fixture

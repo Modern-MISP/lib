@@ -9,6 +9,7 @@ from jinja2 import BaseLoader, Environment
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..db.models.admin_setting import AdminSetting
 from ..db.models.organisation import Organisation
 from ..db.models.role import Role
 from ..db.models.user import User
@@ -125,6 +126,18 @@ async def create_virtual_root_user(db: AsyncSession) -> User:
 
 
 async def workflow_by_trigger_id(trigger: str, db: AsyncSession) -> Workflow | None:
+    if not (
+        (
+            await db.execute(
+                select(AdminSetting.id)
+                .filter(AdminSetting.setting == "workflow_feature_enabled")
+                .filter(AdminSetting.value == "True")
+            )
+        )
+        .scalars()
+        .first()
+    ):
+        return None
     return (await db.execute(select(Workflow).filter(Workflow.trigger_id == trigger))).scalars().first()
 
 
