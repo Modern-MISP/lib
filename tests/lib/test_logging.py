@@ -32,7 +32,7 @@ def test_log(workflow: Workflow) -> None:
 
     assert log_entry.model_id == 23
     assert log_entry.action == "execute_workflow"
-    assert log_entry.user_id == "SYSTEM"
+    assert log_entry.user_id == 0
     assert log_entry.title == "Something happened"
 
 
