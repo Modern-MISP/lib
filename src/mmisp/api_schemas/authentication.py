@@ -21,6 +21,11 @@ class IdentityProviderBody(BaseModel):
     scope: str | None = None
 
 
+class IdentityProviderCallbackBody(BaseModel):
+    code: str
+    redirect_uri: str
+
+
 class IdentityProviderEditBody(BaseModel):
     name: str | None = None
     org_id: str | None = None
