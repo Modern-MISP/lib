@@ -3,9 +3,10 @@ from typing import AsyncGenerator, List
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mmisp.db.models.event import Event
+from mmisp.db.models.event import Event, EventTag
 from mmisp.db.models.tag import Tag
 from mmisp.workflows.graph import Apperance, Node
 from mmisp.workflows.input import Filter, Operator, WorkflowInput
@@ -21,6 +22,7 @@ from mmisp.workflows.modules import (
     ModulePublishEvent,
     ModuleTagIf,
     TriggerEventAfterSave,
+    ModuleTagOperation
 )
 
 
@@ -410,3 +412,92 @@ async def test_publish_event_output_node(db: AsyncSession, event: AsyncGenerator
 
     assert getattr(event, "published")
     assert getattr(event, "publish_timestamp") > 0
+
+
+@pytest.mark.asyncio()
+async def test_add_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
+    
+    
+
+    instance = ModuleTagOperation(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={
+            "scope": "event",
+            "action": "add_tag",
+            "tag_locality": "local",
+            "tags": "Bar"
+
+        })
+    )
+
+    await instance.initialize_for_visual_editor(db)
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": {"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
+
+    all_event_tags = (await db.execute(select(EventTag))).scalars().all()
+    assert len(all_event_tags) == 1
+
+    result = await instance.exec(input, db)
+    assert result
+
+    all_event_tags = (await db.execute(select(EventTag))).scalars().all()
+    assert len(all_event_tags) == 2
+    event_tag = all_event_tags[1]
+
+    assert getattr(event_tag, "event_id") == 1
+    assert getattr(event_tag, "tag_id") == 3
+    assert getattr(event_tag, "local")
+
+    await db.delete(event_tag)
+    await db.commit()
+
+@pytest.mark.asyncio()
+async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
+
+    event_tag = EventTag(
+        event_id=1,
+        tag_id=2,
+        local=False
+    )
+
+    db.add(event_tag)
+    db.commit()
+
+    instance = ModuleTagOperation(
+        inputs={},
+        outputs={1: []},
+        graph_id=1,
+        apperance=Apperance((0, 0), False, "", None),
+        on_demand_filter=None,
+        configuration=ModuleConfiguration(data={
+            "scope": "event",
+            "action": "remove_tag",
+            "tag_locality": "local",
+            "tags": "Foo"
+
+        })
+    )
+
+    await instance.initialize_for_visual_editor(db)
+
+    assert instance.check().errors == []
+
+    input = WorkflowInput({"Event": {"id": 1, "Tag": [{"name": "BTS tag"}, {"name": "Nord"}]}}, Mock(), Mock())
+
+    all_event_tags = (await db.execute(select(EventTag))).scalars().all()
+    assert len(all_event_tags) == 2
+
+    await instance.exec(input, db)
+
+    all_event_tags = (await db.execute(select(EventTag))).scalars().all()
+    assert len(all_event_tags) == 1
+    event_tag = all_event_tags[0]
+
+    assert getattr(event_tag, "id") == 1
+
