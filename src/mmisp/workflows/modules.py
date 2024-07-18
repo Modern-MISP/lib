@@ -9,7 +9,7 @@ from enum import Enum
 from json import dumps
 from typing import Any, Dict, List, Self, Tuple, Type, Union, cast
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.attribute import Attribute

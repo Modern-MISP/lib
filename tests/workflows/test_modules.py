@@ -21,8 +21,8 @@ from mmisp.workflows.modules import (
     ModulePublishedIf,
     ModulePublishEvent,
     ModuleTagIf,
-    TriggerEventAfterSave,
     ModuleTagOperation,
+    TriggerEventAfterSave,
 )
 
 
