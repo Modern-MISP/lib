@@ -22,7 +22,7 @@ from mmisp.workflows.modules import (
     ModulePublishEvent,
     ModuleTagIf,
     TriggerEventAfterSave,
-    ModuleTagOperation
+    ModuleTagOperation,
 )
 
 
@@ -416,22 +416,15 @@ async def test_publish_event_output_node(db: AsyncSession, event: AsyncGenerator
 
 @pytest.mark.asyncio()
 async def test_add_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
-    
-    
-
     instance = ModuleTagOperation(
         inputs={},
         outputs={1: []},
         graph_id=1,
         apperance=Apperance((0, 0), False, "", None),
         on_demand_filter=None,
-        configuration=ModuleConfiguration(data={
-            "scope": "event",
-            "action": "add_tag",
-            "tag_locality": "local",
-            "tags": "Bar"
-
-        })
+        configuration=ModuleConfiguration(
+            data={"scope": "event", "action": "add_tag", "tag_locality": "local", "tags": "Bar"}
+        ),
     )
 
     await instance.initialize_for_visual_editor(db)
@@ -457,14 +450,10 @@ async def test_add_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
     await db.delete(event_tag)
     await db.commit()
 
+
 @pytest.mark.asyncio()
 async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
-
-    event_tag = EventTag(
-        event_id=1,
-        tag_id=2,
-        local=False
-    )
+    event_tag = EventTag(event_id=1, tag_id=2, local=False)
 
     db.add(event_tag)
     db.commit()
@@ -475,13 +464,9 @@ async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> No
         graph_id=1,
         apperance=Apperance((0, 0), False, "", None),
         on_demand_filter=None,
-        configuration=ModuleConfiguration(data={
-            "scope": "event",
-            "action": "remove_tag",
-            "tag_locality": "local",
-            "tags": "Foo"
-
-        })
+        configuration=ModuleConfiguration(
+            data={"scope": "event", "action": "remove_tag", "tag_locality": "local", "tags": "Foo"}
+        ),
     )
 
     await instance.initialize_for_visual_editor(db)
@@ -500,4 +485,3 @@ async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> No
     event_tag = all_event_tags[0]
 
     assert getattr(event_tag, "id") == 1
-

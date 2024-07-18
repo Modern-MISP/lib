@@ -1178,7 +1178,7 @@ class ModuleTagOperation(ModuleAction):
     icon: str = "tags"
     on_demand_filtering_enabled: bool = True
     version: str = "0.2"
-    #supported: bool = False
+    # supported: bool = False
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
         self.configuration.data.setdefault("scope", "event")
@@ -1195,24 +1195,20 @@ class ModuleTagOperation(ModuleAction):
                 label="Scope",
                 kind=ModuleParamType.SELECT,
                 options={
-                    "options": {"event": "Event"} #currently tags can only be added to events.
+                    "options": {"event": "Event"}  # currently tags can only be added to events.
                 },
             ),
             "action": ModuleParam(
                 id="action",
                 label="Action",
                 kind=ModuleParamType.SELECT,
-                options={
-                    "options": {"add_tag": "Add Tag", "remove_tag": "Remove Tag"}
-                }
+                options={"options": {"add_tag": "Add Tag", "remove_tag": "Remove Tag"}},
             ),
             "tag_locality": ModuleParam(
                 id="tag_locality",
                 label="Tag Locality",
                 kind=ModuleParamType.SELECT,
-                options={
-                    "options": {"local": "Local", "global": "Global", "any": "Any"}
-                }
+                options={"options": {"local": "Local", "global": "Global", "any": "Any"}},
             ),
             "tags": ModuleParam(
                 id="tags",
@@ -1221,60 +1217,55 @@ class ModuleTagOperation(ModuleAction):
                 options={
                     "placeholder": "Select some Options",
                     "options": tag_dict,
-                }
+                },
             ),
             "relationship_type": ModuleParam(
                 id="relationship_type",
                 label="Relationship Type",
                 kind=ModuleParamType.INPUT,
-                options={
-                    "placeholder": "Relationship Type"
-                }
-            )
+                options={"placeholder": "Relationship Type"},
+            ),
         }
 
-    async def _add_tag(self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str) -> bool:
-        
-        event_id = payload.data["Event"]["id"] # type ignore
+    async def _add_tag(
+        self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str
+    ) -> bool:
+        event_id = payload.data["Event"]["id"]  # type ignore
         local = True if tag_locality == "local" else False
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
 
         if scope == "event":
-
-            event_tag = EventTag(
-                event_id=event_id,
-                tag_id=tag_id,
-                local=local
-            )
+            event_tag = EventTag(event_id=event_id, tag_id=tag_id, local=local)
 
             db.add(event_tag)
             await db.commit()
             return True
-        
+
         elif scope == "attribute":
             return False
-        
+
         return False
 
-
-    async def _remove_tag(self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str) -> bool:
-        event_id = payload.data["Event"]["id"] # type ignore
+    async def _remove_tag(
+        self: Self, payload: WorkflowInput, db: AsyncSession, scope: str, tag_name: str, tag_locality: str
+    ) -> bool:
+        event_id = payload.data["Event"]["id"]  # type ignore
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
-        event_tag = (await db.execute(select(EventTag).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id)))).scalar()
-        
-        if scope == "event":
+        event_tag = (
+            await db.execute(select(EventTag).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id)))
+        ).scalar()
 
+        if scope == "event":
             await db.delete(event_tag)
             await db.commit()
             return True
-        
+
         elif scope == "attribute":
             return False
-        
+
         return False
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> bool:
-        
         scope = cast(str, self.configuration.data["scope"])
         action = cast(str, self.configuration.data["action"])
         tag_name = cast(str, self.configuration.data["tags"])
@@ -1284,9 +1275,8 @@ class ModuleTagOperation(ModuleAction):
             return await self._add_tag(payload, db, scope, tag_name, tag_locality)
         elif action == "remove_tag":
             return await self._remove_tag(payload, db, scope, tag_name, tag_locality)
-        
-        return False
 
+        return False
 
 
 @workflow_node
