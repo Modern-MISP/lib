@@ -23,7 +23,7 @@ class FreeTextImportWorkerBody(BaseModel):
 
 
 class AddAttributeViaFreeTextImportEventResponse(BaseModel):
-    comment: str | None = None
+    event_id: str
     value: str
     original_value: str
     to_ids: str
