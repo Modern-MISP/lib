@@ -764,7 +764,6 @@ class ModuleCountIf(ModuleIf):
     )
     icon: str = "code-branch"
     html_template: str = "if"
-    supported: bool = False
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
         self.configuration.data.setdefault("operator", "equals")
@@ -1003,7 +1002,6 @@ class ModulePublishedIf(ModuleIf):
     icon: str = "code-branch"
     n_outputs: int = 2
     html_template: str = "if"
-    supported: bool = False
 
     async def initialize_for_visual_editor(self: Self, db: AsyncSession) -> None:
         self.configuration.data.setdefault("condition", "equals")
