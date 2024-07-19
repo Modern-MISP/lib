@@ -47,14 +47,14 @@ class Config:
 
 
 class UserAttributesBody(BaseModel):
-    org: int | None = None
+    org: str | None = None
     authkey: str | None = None
     email: str | None = None
     autoalert: bool | None = None
     pgpkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool | None = None
-    role: int | None = None
+    role: str | None = None
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
