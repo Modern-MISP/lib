@@ -15,7 +15,7 @@ class NewEventTag(BaseModel):
     """The ID of the tag if it already exists in the database."""
     tag: TagCreateBody | None = None
     """The tag if it doesn't exist yet in the Database."""
-    local: bool | None = None
+    local: bool = True
     """Whether the relationship to the event is only local or not."""
     relationship_type: str = ""
     """The relationship type between the event and tag."""
@@ -36,7 +36,7 @@ class NewAttributeTag(BaseModel):
     """The ID of the tag if it already exists in the database."""
     tag: TagCreateBody | None = None
     """The tag if it doesn't exist yet in the Database."""
-    local: bool | None = None
+    local: bool = True
     """Whether the relationship to the attribute is only local or not."""
     relationship_type: str = ""
     """The relationship type between the attribute and tag."""
