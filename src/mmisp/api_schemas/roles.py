@@ -110,8 +110,8 @@ class RoleUsersResponse(BaseModel):
 class RoleAttributeResponse(BaseModel):
     id: int
     name: str
-    created: str | None = None
-    modified: str | None = None
+    created: datetime | None = None
+    modified: datetime | None = None
     perm_add: bool
     perm_modify: bool
     perm_modify_org: bool

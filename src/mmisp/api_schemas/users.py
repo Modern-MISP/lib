@@ -148,7 +148,7 @@ class GetUsersUser(BaseModel):
     last_login: int | None
     last_api_access: int | None
     force_logout: bool
-    date_created: int
+    date_created: int | None
     date_modified: int | None
     last_pw_change: int | None
     totp: bool | None
