@@ -96,7 +96,10 @@ async def set_role(session: AsyncSession, email: str, role: str | int):
     query = select(User).where(User.email == email)
     user= await session.execute(query)
     user = user.scalar_one_or_none()
-    user.role_id = await get_element_id(session, role, "Role")
+    role_id = await get_element_id(session, role, "Role")
+    if role_id == user.role_id:
+        raise fire.core.FireError("User already has this role")
+    user.role_id = role_id
     await session.commit()
 
 

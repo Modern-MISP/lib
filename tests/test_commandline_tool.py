@@ -124,6 +124,12 @@ async def test_change_role(db, view_only_user, site_admin_role) -> None:
         error = str(e)
         assert error == "Role not found"
 
+    try:
+        await main.change_role(view_only_user.email, view_only_user.role_id)
+    except Exception as e:
+        error = str(e)
+        assert error == "User already has this role"
+
     await main.change_role(view_only_user.email, site_admin_role.id)
     role = db.execute(select(Role).where(Role.id == site_admin_role.id)).scalar_one_or_none()
     db.refresh(view_only_user)
