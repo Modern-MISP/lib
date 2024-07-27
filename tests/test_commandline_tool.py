@@ -199,3 +199,19 @@ async def test_delete_user(db, site_admin_user) -> None:
     except Exception as e:
         error = str(e)
         assert error == "User with email does not exist"
+
+@pytest.mark.asyncio
+async def test_setup(db) -> None:
+    await main.setup_db()
+    query_user = select(Role).where(Role.name == "user")
+    user_role = db.execute(query_user).scalar_one_or_none()
+    assert user_role is not None
+    query_admin = select(Role).where(Role.name == "admin")
+    admin_role = db.execute(query_admin).scalar_one_or_none()
+    assert admin_role is not None
+    query_site_admin = select(Role).where(Role.name == "site_admin")
+    site_admin_role = db.execute(query_site_admin).scalar_one_or_none()
+    assert site_admin_role is not None
+    query_org = select(Organisation).where(Organisation.name == "ghost_org")
+    org = db.execute(query_org).scalar_one_or_none()
+    assert org is not None
