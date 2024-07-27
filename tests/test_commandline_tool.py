@@ -60,6 +60,14 @@ async def test_create_organisation(db, site_admin_user) -> None:
     landingpage = time_now
     await main.create_organisation(name, admin_email, description, type, nationality, sector, contacts_email,
                                          local, restricted_domain, landingpage)
+
+    try:
+        await main.create_organisation(name, admin_email, description, type, nationality, sector, contacts_email,
+                                         local, restricted_domain, landingpage)
+    except Exception as e:
+        error = str(e)
+        assert error == "Organisation with name already exists"
+
     query = select(Organisation).where(Organisation.name == name)
     organisation = db.execute(query).scalar_one_or_none()
     assert organisation is not None
@@ -150,6 +158,14 @@ async def test_edit_organisation(db,organisation, site_admin_user) -> None:
     assert str(organisation.restricted_to_domain) == new_restricted_domain
     assert organisation.landingpage == new_landingpage
 
+    try:
+        await main.edit_organisation(organisation.name + '1', new_name, new_admin_email, new_description, new_type,
+                                       new_nationality, new_sector, new_contacts_email, new_local,
+                                       new_restricted_domain, new_landingpage)
+    except Exception as e:
+        error = str(e)
+        assert error == "Organisation does not exist"
+
 
 @pytest.mark.asyncio
 async def test_delete_organisation(db, organisation) -> None:
@@ -159,6 +175,11 @@ async def test_delete_organisation(db, organisation) -> None:
     org = db.execute(query).scalar_one_or_none()
     assert org is None
 
+    try:
+        await main.delete_organisation(organisation.name+'1')
+    except Exception as e:
+        error = str(e)
+        assert error == "Organisation does not exist"
 
 @pytest.mark.asyncio
 async def test_delete_user(db, site_admin_user) -> None:
@@ -166,3 +187,9 @@ async def test_delete_user(db, site_admin_user) -> None:
     query = select(User).where(User.email == site_admin_user.email)
     user = db.execute(query).scalar_one_or_none()
     assert user is None
+
+    try:
+        await main.delete_user(site_admin_user.email + '1')
+    except Exception as e:
+        error = str(e)
+        assert error == "User with email does not exist"
