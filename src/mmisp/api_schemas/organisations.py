@@ -41,7 +41,7 @@ class GetOrganisationResponse(BaseModel):
     landingpage: str | None = None
 
 
-class GetAllOrganisationResponse(BaseModel):
+class GetAllOrganisationsOrganisation(BaseModel):
     id: str
     name: str
     date_created: datetime
@@ -58,6 +58,10 @@ class GetAllOrganisationResponse(BaseModel):
     landingpage: str | None = None
     user_count: int
     created_by_email: str
+
+
+class GetAllOrganisationResponse(BaseModel):
+    Organisation: GetAllOrganisationsOrganisation
 
 
 class DeleteForceUpdateOrganisationResponse(BaseModel):

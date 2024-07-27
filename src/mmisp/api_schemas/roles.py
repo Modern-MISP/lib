@@ -145,3 +145,7 @@ class RoleAttributeResponse(BaseModel):
     permission: int | None = None
     permission_description: str | None = None
     default: bool | None = None
+
+
+class GetRolesResponse(BaseModel):
+    Role: RoleAttributeResponse
