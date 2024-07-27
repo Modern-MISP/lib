@@ -22,6 +22,25 @@ async def test_create_user(db, instance_owner_org, user_role) -> None:
     assert user is not None
     assert user.org_id == instance_owner_org.id
     assert user.role_id == user_role.id
+
+    try:
+        await main.create_user(email, password, instance_owner_org.id, user_role.id)
+    except Exception as e:
+        error = str(e)
+        assert error == "User with email already exists"
+
+    try:
+        await main.create_user(email + '1', password, instance_owner_org.id + 1, user_role.id)
+    except Exception as e:
+        error = str(e)
+        assert error == "Organisation not found"
+
+    try:
+        await main.create_user(email + '2', password, instance_owner_org.id, user_role.id + 1)
+    except Exception as e:
+        error = str(e)
+        assert error == "Role not found"
+
     db.query(UserSetting).filter(UserSetting.user_id == user.id).delete()
     db.query(User).filter(User.id == user.id).delete()
 
@@ -50,6 +69,13 @@ async def test_create_organisation(db, site_admin_user) -> None:
 @pytest.mark.asyncio
 async def test_change_password(db, site_admin_user) -> None:
     password = "test" + str(time.time())
+
+    try:
+        await main.change_password(site_admin_user.email + '1', password)
+    except Exception as e:
+        error = str(e)
+        assert error == "User with email does not exist"
+
     await main.change_password(site_admin_user.email, password)
     db.refresh(site_admin_user)
     assert verify_secret(password, site_admin_user.password)
@@ -58,6 +84,19 @@ async def test_change_password(db, site_admin_user) -> None:
 @pytest.mark.asyncio
 async def test_change_email(db, site_admin_user) -> None:
     new_email = str(time.time())
+
+    try:
+        await main.change_email(new_email, site_admin_user.email)
+    except Exception as e:
+        error = str(e)
+        assert error == "User with email does not exist"
+
+    try:
+        await main.change_email(site_admin_user.email, site_admin_user.email)
+    except Exception as e:
+        error = str(e)
+        assert error == "User with new email already exists"
+
     await main.change_email(site_admin_user.email, new_email)
     db.refresh(site_admin_user)
     assert site_admin_user.email == new_email
@@ -65,6 +104,18 @@ async def test_change_email(db, site_admin_user) -> None:
 
 @pytest.mark.asyncio
 async def test_change_role(db, view_only_user, site_admin_role) -> None:
+    try:
+        await main.change_role(view_only_user.email +'1', site_admin_role.id)
+    except Exception as e:
+        error = str(e)
+        assert error == "User with email does not exist"
+
+    try:
+        await main.change_role(view_only_user.email, site_admin_role.id + 1)
+    except Exception as e:
+        error = str(e)
+        assert error == "Role not found"
+
     await main.change_role(view_only_user.email, site_admin_role.id)
     role = db.execute(select(Role).where(Role.id == site_admin_role.id)).scalar_one_or_none()
     db.refresh(view_only_user)
