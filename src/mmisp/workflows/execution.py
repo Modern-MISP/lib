@@ -107,10 +107,6 @@ async def walk_nodes(
     return await walk_nodes(input, next_node, workflow, logger, db, jinja2_engine)
 
 
-class UnsupportedModules(Exception):
-    pass
-
-
 async def create_virtual_root_user(db: AsyncSession) -> User:
     god_mode_role_id = (await db.execute(select(Role.id).filter(Role.perm_site_admin == 1))).scalars().first()
     assert god_mode_role_id
