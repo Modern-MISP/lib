@@ -133,8 +133,14 @@ class EditAuthKeyResponseCompl(BaseModel):
 class EditAuthKeyBody(BaseModel):
     read_only: bool | None = None
     comment: str | None = None
-    allowed_ips: list[str] | None = None
+    allowed_ips: Union[str, List[str]] | None = None
     expiration: str | None = None
+
+    @validator('allowed_ips', pre=True)
+    def ensure_list(cls, v):
+        if isinstance(v, str):
+            return [v]
+        return v
 
 
 class AddAuthKeyResponseAuthKey(BaseModel):
