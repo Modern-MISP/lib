@@ -192,6 +192,7 @@ def test_valid_graph_report() -> None:
         is_acyclic=IsAcyclic(is_acyclic=True, cycles=[]),
         multiple_output_connection=MultipleOutputConnection(has_multiple_output_connection=False, edges=[]),
         path_warnings=PathWarnings(has_path_warnings=False, edges=[]),
+        unsupported_modules=[],
         misc_errors=[],
     )
 

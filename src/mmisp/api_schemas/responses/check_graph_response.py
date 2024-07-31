@@ -164,4 +164,5 @@ class CheckGraphResponse(BaseModel):
     is_acyclic: IsAcyclic
     multiple_output_connection: MultipleOutputConnection
     path_warnings: PathWarnings
+    unsupported_modules: List[str]
     misc_errors: List[MiscellaneousGraphValidationError]
