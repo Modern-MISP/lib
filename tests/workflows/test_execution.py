@@ -14,7 +14,6 @@ from mmisp.db.models.role import Role
 from mmisp.db.models.workflow import Workflow
 from mmisp.lib.logging import ApplicationLogger
 from mmisp.workflows.execution import (
-    UnsupportedModules,
     _increase_workflow_execution_count,
     create_virtual_root_user,
     execute_workflow,
@@ -153,14 +152,11 @@ async def test_execute_unsupported(wf: Workflow) -> None:
     db = AsyncMock()
     user = Mock()
     logger = Mock()
-
     wf.data.nodes[1].supported = False
 
-    try:
-        await execute_workflow(wf, user, {}, db, logger)
-        pytest.fail()
-    except Exception as e:
-        assert isinstance(e, UnsupportedModules)
+    status, messages = await execute_workflow(wf, user, {}, db, logger)
+    assert not status
+    assert messages == ["Workflow could not be executed, because it contains an unsupported module with an ID: demo"]
 
 
 @pytest.mark.asyncio

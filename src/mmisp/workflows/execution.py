@@ -182,6 +182,16 @@ async def execute_workflow(
     if trigger.disabled:
         return True, []
 
+    for node in graph.nodes.values():
+        if not node.supported:
+            logger.log_workflow_execution_error(
+                workflow, "Workflow was not executed, because it contained an unsupported module with an ID: " + node.id
+            )
+            await db.commit()
+            return False, [
+                "Workflow could not be executed, because it contains an unsupported module with an ID: " + node.id
+            ]
+
     logger.log_workflow_debug_message(
         workflow, f"Started executing workflow for trigger `{trigger.name}` ({workflow.id})"
     )
@@ -190,9 +200,6 @@ async def execute_workflow(
     # Nothing to do.
     if not next_step:
         return True, []
-
-    if any(not x.supported for x in graph.nodes.values()):
-        raise UnsupportedModules()
 
     try:
         roaming_data = await trigger.normalize_data(db, input)
