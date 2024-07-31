@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from pydantic import BaseModel, PositiveInt, conint
+from typing import List, Union
+from pydantic import BaseModel, PositiveInt, conint, validator
 
 
 class SearchGetAuthKeysResponseItemUser(BaseModel):
