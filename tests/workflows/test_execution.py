@@ -152,11 +152,20 @@ async def test_execute_unsupported(wf: Workflow) -> None:
     db = AsyncMock()
     user = Mock()
     logger = Mock()
+    wf.data.nodes[1].id = "mod-1"
     wf.data.nodes[1].supported = False
+    wf.data.nodes[2].id = "mod-2"
+    wf.data.nodes[2].supported = False
 
     status, messages = await execute_workflow(wf, user, {}, db, logger)
     assert not status
-    assert messages == ["Workflow could not be executed, because it contains an unsupported module with an ID: demo"]
+    # Python set iterates its elements in a random order, since we only list the detected node id and don't care
+    # about the order in which they are displayed, we leave it like that.
+    assert messages == [
+        "Workflow could not be executed, because it contains unsupported modules with the following ID: mod-1, mod-2"
+    ] or messages == [
+        "Workflow could not be executed, because it contains unsupported modules with the following ID: mod-2, mod-1"
+    ]
 
 
 @pytest.mark.asyncio

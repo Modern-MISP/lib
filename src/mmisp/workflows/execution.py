@@ -178,15 +178,27 @@ async def execute_workflow(
     if trigger.disabled:
         return True, []
 
+    unsupported_modules_id = set()
     for node in graph.nodes.values():
         if not node.supported:
-            logger.log_workflow_execution_error(
-                workflow, "Workflow was not executed, because it contained an unsupported module with an ID: " + node.id
-            )
-            await db.commit()
-            return False, [
-                "Workflow could not be executed, because it contains an unsupported module with an ID: " + node.id
-            ]
+            unsupported_modules_id.add(node.id)
+
+    if len(unsupported_modules_id) != 0:
+        unsupported_modules_str = ""
+        for module_id in unsupported_modules_id:
+            if unsupported_modules_str:
+                unsupported_modules_str += ", "
+            unsupported_modules_str += module_id
+        logger.log_workflow_execution_error(
+            workflow,
+            "Workflow was not executed, because it contained unsupported modules with the following ID: "
+            + unsupported_modules_str,
+        )
+        await db.commit()
+        return False, [
+            "Workflow could not be executed, because it contains unsupported modules with the following ID: "
+            + unsupported_modules_str
+        ]
 
     logger.log_workflow_debug_message(
         workflow, f"Started executing workflow for trigger `{trigger.name}` ({workflow.id})"
