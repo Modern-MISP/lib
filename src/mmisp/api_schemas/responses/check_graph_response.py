@@ -133,7 +133,11 @@ class CheckGraphResponse(BaseModel):
     - **multiple_output_connection**: Indicates whether the graph has illegal multiple output connections,
     detailing the nodes involved.
     - **path_warnings**: Records warnings if a path leads to a blocking node from a
-      'Concurrent Task' node, providing relevant details.
+      'Concurrent Task' node, providing relevant details. Not used in Modern MISP, and will be returned empty.
+    - **unsupported_modules"" List of the modules (identified with their graph_id) that are currently unsupported in
+      Modern MISP (not yet implemented) causing the workflow to be invalid.
+    - **misc_errors** Other miscellaneous errors indicating that the workflow graph is broken or etc. (edges registered
+    at ports outside the valid range, inconsistencies between the incoming and outgoing adjacency lists etc.)
 
     Example JSON structure:
     ```json
@@ -164,5 +168,5 @@ class CheckGraphResponse(BaseModel):
     is_acyclic: IsAcyclic
     multiple_output_connection: MultipleOutputConnection
     path_warnings: PathWarnings
-    unsupported_modules: List[str]
+    unsupported_modules: List[int]
     misc_errors: List[MiscellaneousGraphValidationError]

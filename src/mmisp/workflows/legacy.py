@@ -73,7 +73,7 @@ class GraphValidation:
         is_acyclic = IsAcyclic(is_acyclic=True, cycles=[])
         multiple_output_connection = MultipleOutputConnection(has_multiple_output_connection=False, edges={})
         path_warnings = PathWarnings(has_path_warnings=False, edges=[])
-        unsupported_modules: List[str] = []
+        unsupported_modules: List[int] = []
         misc_errors: List[MiscellaneousGraphValidationError] = []
 
         for error in result.errors:
@@ -97,7 +97,7 @@ class GraphValidation:
                 misc_errors.append(cls.__convert_inconsistent_edge_between_adjacency_lists_to_api_format(error))
                 continue
             if isinstance(error, UnsupportedWorkflow):
-                unsupported_modules.append(error.module)
+                unsupported_modules.append(error.module_graph_id)
                 continue
 
         return_val = CheckGraphResponse(

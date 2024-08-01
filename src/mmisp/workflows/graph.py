@@ -117,7 +117,7 @@ class UnsupportedWorkflow(GraphError):
     If a workflow relies on unsupported modules, this error class is used.
     """
 
-    module: str
+    module_graph_id: int
     """
     ID of the unsupported module
     """
@@ -377,8 +377,7 @@ class WorkflowNode(Node):
     def check(self: Self) -> GraphValidationResult:
         results = super().check()
         if not self.supported:
-            results.errors.append(UnsupportedWorkflow(self.id))
-
+            results.errors.append(UnsupportedWorkflow(self.graph_id))
         return results
 
 
