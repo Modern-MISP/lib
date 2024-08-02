@@ -30,7 +30,7 @@ from mmisp.workflows.modules import (
     ModulePublishEvent,
     ModuleStopExecution,
     Overhead,
-    trigger_node,
+    workflow_node,
 )
 
 
@@ -171,7 +171,7 @@ async def test_failing_workflow_rolls_back_transaction(publish_wf: Workflow, eve
 
 @pytest_asyncio.fixture
 async def publish_wf(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
-    @trigger_node
+    @workflow_node
     @dataclass(kw_only=True, eq=False)
     class FakeTrigger(Trigger):
         id: str = "fake"
@@ -290,7 +290,7 @@ async def enable_admin_setting(db: AsyncSession) -> AsyncGenerator[AdminSetting,
 
 @pytest_asyncio.fixture
 async def wf_in_db(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
-    @trigger_node
+    @workflow_node
     @dataclass(kw_only=True, eq=False)
     class FakeTrigger(Trigger):
         id: str = "fake"

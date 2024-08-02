@@ -40,7 +40,7 @@ from .graph import (
     WorkflowGraph,
 )
 from .input import Filter, Operator
-from .modules import MODULE_REGISTRY, TRIGGER_REGISTRY, ModuleAction, ModuleConfiguration, ModuleLogic
+from .modules import NODE_REGISTRY, ModuleAction, ModuleConfiguration, ModuleLogic
 
 INPUT_OUTPUT_NAME_PATTERN = re.compile("^(?:input|output)_(?P<num>[\\d]+)")
 
@@ -461,7 +461,7 @@ class GraphFactory:
         )
 
         if input["data"].get("module_type") == "trigger":
-            trigger_cls = TRIGGER_REGISTRY.lookup(data["id"])
+            trigger_cls = NODE_REGISTRY.triggers[data["id"]]
             return trigger_cls(  # type:ignore[call-arg]
                 inputs={},
                 outputs={},
@@ -471,7 +471,7 @@ class GraphFactory:
                 overhead_message=data.get("trigger_overhead_message", ""),
             )
 
-        module_cls = MODULE_REGISTRY.lookup(data["id"])
+        module_cls = NODE_REGISTRY.modules[data["id"]]
 
         return module_cls(  # type:ignore[call-arg]
             inputs={},
