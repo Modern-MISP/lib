@@ -170,7 +170,7 @@ async def execute_workflow(
     """
 
     if not workflow.enabled:
-        return False, []
+        return True, []
 
     graph = workflow.data
     trigger = _as_trigger(graph.root)
