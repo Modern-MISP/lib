@@ -403,24 +403,13 @@ class WorkflowInput:
     class.
     """
 
-    user: "User"
-    """
-    Represents the user execution a workflow. Is a system
-    user with all privileges. Mostly useful for logging
-    purposes.
-    """
-
-    workflow: "Workflow"
-    """
-    Reference to the workflow object being executed.
-    """
-
     def __init__(self: Self, data: RoamingData, user: "User", workflow: "Workflow") -> None:
         self.__unfiltered_data = data
         self.__filtered_data: RoamingData | List[RoamingData] | None = None
         self.user = user
         self.workflow = workflow
         self.filters: Dict[str, Filter] = {}
+        self.user_messages = []
 
     @property
     def data(self: Self) -> RoamingData | List[RoamingData] | None:

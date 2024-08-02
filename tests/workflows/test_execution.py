@@ -292,6 +292,7 @@ def wf_fail(trigger: Trigger) -> Workflow:
         icon: str = "none"
 
         async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Self | None]:
+            payload.user_messages.append("Hello World")
             return False, None
 
     m1 = MockupModule(
@@ -352,7 +353,6 @@ def modules(trigger: Trigger) -> List[Module]:
         async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Self | None]:
             if self.outputs[0] != []:
                 return True, self.outputs[0][0][1]
-            payload.user_messages += ["Hello World"]
             return True, None
 
     m1 = MockupModule(
