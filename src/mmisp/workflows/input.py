@@ -409,7 +409,7 @@ class WorkflowInput:
         self.user = user
         self.workflow = workflow
         self.filters: Dict[str, Filter] = {}
-        self.user_messages = []
+        self.user_messages: List[str] = []
 
     @property
     def data(self: Self) -> RoamingData | List[RoamingData] | None:
