@@ -184,19 +184,15 @@ async def execute_workflow(
             unsupported_modules_id.add(node.id)
 
     if len(unsupported_modules_id) != 0:
-        unsupported_modules_str = ""
-        for module_id in unsupported_modules_id:
-            if unsupported_modules_str:
-                unsupported_modules_str += ", "
-            unsupported_modules_str += module_id
+        unsupported_modules_str = ", ".join(unsupported_modules_id)
         logger.log_workflow_execution_error(
             workflow,
-            "Workflow was not executed, because it contained unsupported modules with the following ID: "
+            "Workflow was not executed, because it contained unsupported modules with the following IDs: "
             + unsupported_modules_str,
         )
         await db.commit()
         return False, [
-            "Workflow could not be executed, because it contains unsupported modules with the following ID: "
+            "Workflow could not be executed, because it contains unsupported modules with the following IDs: "
             + unsupported_modules_str
         ]
 

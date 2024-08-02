@@ -162,9 +162,9 @@ async def test_execute_unsupported(wf: Workflow) -> None:
     # Python set iterates its elements in a random order, since we only list the detected node id and don't care
     # about the order in which they are displayed, we leave it like that.
     assert messages == [
-        "Workflow could not be executed, because it contains unsupported modules with the following ID: mod-1, mod-2"
+        "Workflow could not be executed, because it contains unsupported modules with the following IDs: mod-1, mod-2"
     ] or messages == [
-        "Workflow could not be executed, because it contains unsupported modules with the following ID: mod-2, mod-1"
+        "Workflow could not be executed, because it contains unsupported modules with the following IDs: mod-2, mod-1"
     ]
 
 
