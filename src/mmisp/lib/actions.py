@@ -9,6 +9,3 @@ from mmisp.db.models.event import Event
 async def action_publish_event(db: AsyncSession, event: Event) -> None:
     setattr(event, "published", True)
     setattr(event, "publish_timestamp", timegm(gmtime()))
-
-    await db.commit()
-    await db.refresh(event)

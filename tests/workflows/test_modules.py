@@ -254,8 +254,6 @@ async def test_publish_event() -> None:
     await instance.exec(input, mock_db)
 
     mock_db.get.assert_called_once_with(Event, "1")
-    assert mock_db.commit.call_count == 1
-    assert mock_db.refresh.call_count == 1
 
 
 @pytest.mark.asyncio()

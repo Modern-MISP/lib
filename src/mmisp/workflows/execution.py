@@ -190,7 +190,6 @@ async def execute_workflow(
             "Workflow was not executed, because it contained unsupported modules with the following IDs: "
             + unsupported_modules_str,
         )
-        await db.commit()
         return False, [
             "Workflow could not be executed, because it contains unsupported modules with the following IDs: "
             + unsupported_modules_str
@@ -208,8 +207,8 @@ async def execute_workflow(
     try:
         roaming_data = await trigger.normalize_data(db, input)
     except Exception as e:
+        await db.rollback()
         logger.log_workflow_execution_error(workflow, f"Error while normalizing data for trigger. Error: \n{e}")
-        await db.commit()  # Make sure logs are written into the DB
         return False, [f"Internal error: {e}"]
 
     input = WorkflowInput(
@@ -233,6 +232,7 @@ async def execute_workflow(
         workflow, f"Finished executing workflow for trigger `{trigger.name}` ({workflow.id}). Outcome: {outcome}"
     )
 
-    await db.commit()
+    if not result[0]:
+        await db.rollback()
 
     return result

@@ -9,19 +9,29 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mmisp.db.models.admin_setting import AdminSetting
+from mmisp.db.models.event import Event
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.role import Role
 from mmisp.db.models.workflow import Workflow
 from mmisp.lib.logging import ApplicationLogger
 from mmisp.workflows.execution import (
+    VerbatimWorkflowInput,
     _increase_workflow_execution_count,
     create_virtual_root_user,
     execute_workflow,
     workflow_by_trigger_id,
 )
 from mmisp.workflows.graph import Apperance, Module, Trigger, WorkflowGraph
-from mmisp.workflows.input import WorkflowInput
-from mmisp.workflows.modules import ModuleAction, ModuleConfiguration, Overhead, trigger_node
+from mmisp.workflows.input import RoamingData, WorkflowInput
+from mmisp.workflows.misp_core_format import event_after_save_new_to_core_format
+from mmisp.workflows.modules import (
+    ModuleAction,
+    ModuleConfiguration,
+    ModulePublishEvent,
+    ModuleStopExecution,
+    Overhead,
+    trigger_node,
+)
 
 
 @pytest.mark.asyncio
@@ -145,6 +155,85 @@ async def test_execute_error(wf_fail: Workflow) -> None:
     logger.log_workflow_debug_message.assert_called_with(
         wf_fail, ("Finished executing workflow for trigger `demo` (25). Outcome: failure")
     )
+
+
+@pytest.mark.asyncio
+async def test_failing_workflow_rolls_back_transaction(publish_wf: Workflow, event: Event, db: AsyncSession) -> None:
+    await db.commit()
+    await db.refresh(event)
+    result = await execute_workflow(publish_wf, Mock(), event, db, Mock())
+    await db.commit()
+    assert not result[0]
+    assert result[1] == ["Execution stopped"]
+    await db.refresh(event)
+    assert not event.published
+
+
+@pytest_asyncio.fixture
+async def publish_wf(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
+    @trigger_node
+    @dataclass(kw_only=True, eq=False)
+    class FakeTrigger(Trigger):
+        id: str = "fake"
+        name: str = "Fake"
+        version: str = "0.1"
+        scope: str = "fake"
+        blocking: bool = False
+        description: str = "Fake"
+        overhead: Overhead = Overhead.LOW
+
+        async def normalize_data(self: Self, db: AsyncSession, input: VerbatimWorkflowInput) -> RoamingData:
+            assert isinstance(input, Event)
+            return await event_after_save_new_to_core_format(db, input)
+
+    appr = Apperance((0, 0), False, "", None)
+
+    stop = ModuleStopExecution(
+        graph_id=3,
+        inputs={1: []},
+        outputs={},
+        apperance=appr,
+        configuration=ModuleConfiguration({}),
+        on_demand_filter=None,
+    )
+
+    publish = ModulePublishEvent(
+        graph_id=2,
+        inputs={1: []},
+        outputs={1: [(1, stop)]},
+        apperance=appr,
+        configuration=ModuleConfiguration({}),
+        on_demand_filter=None,
+    )
+
+    trigger = FakeTrigger(
+        graph_id=1,
+        inputs={1: []},
+        outputs={1: [(1, publish)]},
+        apperance=appr,
+    )
+
+    publish.inputs[1].append((1, trigger))
+    stop.inputs[1].append((1, publish))
+
+    wf = Workflow(
+        id=26,
+        uuid=str(uuid.uuid4()),
+        name="Demo workflow",
+        description="",
+        timestamp=0,
+        enabled=True,
+        trigger_id="demo",
+        debug_enabled=True,
+        data=WorkflowGraph(
+            nodes={1: trigger, 2: publish, 3: stop},
+            root=trigger,
+            frames=[],
+        ),
+    )
+    db.add(wf)
+    yield wf
+    await db.delete(wf)
 
 
 @pytest.mark.asyncio
