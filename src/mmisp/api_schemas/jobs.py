@@ -35,12 +35,9 @@ class AddAttributeViaFreeTextImportEventResponse(BaseModel):
         orm_mode = True
 
 
-class AddAttributeViaFreeTextImportEventAttributes(BaseModel):
-    value: str
-
-
 class AddAttributeViaFreeTextImportEventBody(BaseModel):
-    Attribute: AddAttributeViaFreeTextImportEventAttributes
+    value: str
+    returnMetaAttributes: bool
 
     class Config:
         orm_mode = True
