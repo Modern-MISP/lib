@@ -131,7 +131,7 @@ async def event_to_misp_core_format(db: AsyncSession, event: Event) -> dict:
             "uuid": event.uuid,
             # this actually is a datetime.date when querying from SQLAlchemy,
             # no idea why mypy doesn't get it 🙄
-            "date": event.date.isoformat(),  # type:ignore[attr-defined]
+            "date": event.date if isinstance(event.date, str) else event.date.isoformat(),  # type:ignore[attr-defined]
             "published": event.published,
             "analysis": event.analysis,
             "attribute_count": event.attribute_count,
