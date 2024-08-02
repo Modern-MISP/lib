@@ -721,7 +721,7 @@ class ModuleStopExecution(ModuleAction):
         }
 
     async def exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, Union["Module", None]]:
-        payload.user_messages.append(cast(str, self.configuration.data["message"]))
+        payload.user_messages.append(cast(str, self.configuration.data.get("message", "Execution stopped")))
         return False, None
 
 
