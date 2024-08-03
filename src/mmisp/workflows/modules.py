@@ -1195,14 +1195,17 @@ class ModuleTagOperation(ModuleAction):
                 label="Scope",
                 kind=ModuleParamType.SELECT,
                 options={
-                    "options": {"event": "Event"}  # currently tags can only be added to events.
+                    "options": {
+                        "event": "Event",
+                        "attribute": "Attribute",
+                    }  # currently tags can only be added to events.
                 },
             ),
             "action": ModuleParam(
                 id="action",
                 label="Action",
                 kind=ModuleParamType.SELECT,
-                options={"options": {"add_tag": "Add Tag", "remove_tag": "Remove Tag"}},
+                options={"options": {"add": "Add Tag", "remove": "Remove Tag"}},
             ),
             "tag_locality": ModuleParam(
                 id="tag_locality",
@@ -1213,8 +1216,9 @@ class ModuleTagOperation(ModuleAction):
             "tags": ModuleParam(
                 id="tags",
                 label="Tags",
-                kind=ModuleParamType.SELECT,
+                kind=ModuleParamType.PICKER,
                 options={
+                    "picker_create_new": True,
                     "placeholder": "Select some Options",
                     "options": tag_dict,
                 },
@@ -1223,7 +1227,9 @@ class ModuleTagOperation(ModuleAction):
                 id="relationship_type",
                 label="Relationship Type",
                 kind=ModuleParamType.INPUT,
-                options={"placeholder": "Relationship Type"},
+                options={
+                    "placeholder": "Relationship Type",
+                },
             ),
         }
 
@@ -1235,7 +1241,7 @@ class ModuleTagOperation(ModuleAction):
         except KeyError or TypeError:  # type: ignore[truthy-function]
             return False
 
-        local = True if tag_locality == "local" else False
+        local = tag_locality == "local"
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
 
         if tag_id is None:
@@ -1245,7 +1251,6 @@ class ModuleTagOperation(ModuleAction):
             event_tag = EventTag(event_id=event_id, tag_id=tag_id, local=local)
 
             db.add(event_tag)
-            await db.commit()
             return True
 
         elif scope == "attribute":
@@ -1278,9 +1283,6 @@ class ModuleTagOperation(ModuleAction):
             await db.commit()
             return True
 
-        elif scope == "attribute":
-            return False
-
         return False
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> bool:
@@ -1289,9 +1291,12 @@ class ModuleTagOperation(ModuleAction):
         tag_name = cast(str, self.configuration.data["tags"])
         tag_locality = cast(str, self.configuration.data["tag_locality"])
 
-        if action == "add_tag":
+        if scope == "attribute":
+            return False
+
+        if action == "add":
             return await self._add_tag(payload, db, scope, tag_name, tag_locality)
-        elif action == "remove_tag":
+        elif action == "remove":
             return await self._remove_tag(payload, db, scope, tag_name, tag_locality)
 
         return False

@@ -423,7 +423,7 @@ async def test_add_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> None:
         apperance=Apperance((0, 0), False, "", None),
         on_demand_filter=None,
         configuration=ModuleConfiguration(
-            data={"scope": "event", "action": "add_tag", "tag_locality": "local", "tags": "Bar"}
+            data={"scope": "event", "action": "add", "tag_locality": "local", "tags": "Bar"}
         ),
     )
 
@@ -456,7 +456,7 @@ async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> No
     event_tag = EventTag(event_id=1, tag_id=2, local=False)
 
     db.add(event_tag)
-    db.commit()
+    await db.commit()
 
     instance = ModuleTagOperation(
         inputs={},
@@ -465,7 +465,7 @@ async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> No
         apperance=Apperance((0, 0), False, "", None),
         on_demand_filter=None,
         configuration=ModuleConfiguration(
-            data={"scope": "event", "action": "remove_tag", "tag_locality": "local", "tags": "Foo"}
+            data={"scope": "event", "action": "remove", "tag_locality": "local", "tags": "Foo"}
         ),
     )
 
@@ -478,7 +478,7 @@ async def test_remove_tag(db: AsyncSession, event: Event, tags: List[Tag]) -> No
     all_event_tags = (await db.execute(select(EventTag))).scalars().all()
     assert len(all_event_tags) == 2
 
-    await instance.exec(input, db)
+    assert await instance.exec(input, db)
 
     all_event_tags = (await db.execute(select(EventTag))).scalars().all()
     assert len(all_event_tags) == 1
