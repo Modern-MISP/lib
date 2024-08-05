@@ -58,7 +58,7 @@ def test_match_all_retained() -> None:
 def test_check_attribute_ids_with_any_value_from_operator() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "list", Operator.ANY_VALUE_FROM, [1, 7])
+    fil = Filter("Event._AttributeFlattened.{n}", "list", Operator.IN_OR, [1, 7])
 
     input.add_filter("A", fil)
     result = input.data["Event"]["_AttributeFlattened"]
@@ -93,7 +93,7 @@ def test_empty_path() -> None:
 def test_invalid_value() -> None:
     data = load_data()
     input = WorkflowInput(data, None, None)
-    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.ANY_VALUE_FROM, "test")
+    fil = Filter("Event._AttributeFlattened.{n}", "Tag.{n}.name", Operator.IN_OR, "test")
 
     try:
         input.add_filter("A", fil)
@@ -379,41 +379,41 @@ def test_get_path() -> None:
 def test_evaluate_condition_in_and_not_in() -> None:
     value = "cat"
     data = ["dog", "mice", "cat"]
-    assert evaluate_condition(value, "in", data)
-    assert not evaluate_condition(value, "not_in", data)
-    assert not evaluate_condition(value, "in", data[:2])
-    assert evaluate_condition(value, "not_in", data[:2])
-    assert not evaluate_condition(value, "in", {})
-    assert not evaluate_condition(value, "not_in", {})
+    assert evaluate_condition(value, Operator.IN, data)
+    assert not evaluate_condition(value, Operator.NOT_IN, data)
+    assert not evaluate_condition(value, Operator.IN, data[:2])
+    assert evaluate_condition(value, Operator.NOT_IN, data[:2])
+    assert not evaluate_condition(value, Operator.IN, {})
+    assert not evaluate_condition(value, Operator.NOT_IN, {})
 
 
 def test_equals_and_not_equals() -> None:
-    assert not evaluate_condition("cat", "equals", "dog")
-    assert evaluate_condition("cat", "not_equals", "dog")
-    assert evaluate_condition("cat", "equals", "cat")
-    assert not evaluate_condition("cat", "not_equals", "cat")
-    assert not evaluate_condition("cat", "equals", ["cat"])
-    assert not evaluate_condition("cat", "not_equals", ["cat"])
+    assert not evaluate_condition("cat", Operator.EQUALS, "dog")
+    assert evaluate_condition("cat", Operator.NOT_EQUALS, "dog")
+    assert evaluate_condition("cat", Operator.EQUALS, "cat")
+    assert not evaluate_condition("cat", Operator.NOT_EQUALS, "cat")
+    assert not evaluate_condition("cat", Operator.EQUALS, ["cat"])
+    assert not evaluate_condition("cat", Operator.NOT_EQUALS, ["cat"])
 
 
 def test_in_or_and_not_in_or() -> None:
     value = ["car", "motorcycle"]
     data = ["cat", "dog", "motorcycle"]
-    assert evaluate_condition(value, "in_or", data)
-    assert not evaluate_condition(value, "not_in_or", data)
-    assert not evaluate_condition(value, "in_or", data[:2])
-    assert evaluate_condition(value, "not_in_or", data[:2])
-    assert not evaluate_condition("cat", "in_or", data)
-    assert not evaluate_condition("cat", "not_in_or", data)
+    assert evaluate_condition(value, Operator.IN_OR, data)
+    assert not evaluate_condition(value, Operator.NOT_IN_OR, data)
+    assert not evaluate_condition(value, Operator.IN_OR, data[:2])
+    assert evaluate_condition(value, Operator.NOT_IN_OR, data[:2])
+    assert not evaluate_condition("cat", Operator.IN_OR, data)
+    assert not evaluate_condition("cat", Operator.NOT_IN_OR, data)
 
 
 def test_in_and_and_not_in_and() -> None:
     value = ["car", "motorcycle"]
     data = ["car", "cat", "dog", "motorcycle"]
-    assert evaluate_condition(value, "in_and", data)
-    assert not evaluate_condition(value, "not_in_and", data)
-    assert not evaluate_condition(value, "in_and", data[:3])
-    assert evaluate_condition(value, "not_in_and", data[:3])
+    assert evaluate_condition(value, Operator.IN_AND, data)
+    assert not evaluate_condition(value, Operator.NOT_IN_AND, data)
+    assert not evaluate_condition(value, Operator.IN_AND, data[:3])
+    assert evaluate_condition(value, Operator.NOT_IN_AND, data[:3])
 
 
 def load_data() -> dict:

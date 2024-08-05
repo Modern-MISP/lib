@@ -25,7 +25,10 @@ class Operator(Enum):
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     ANY_VALUE = "any_value"
-    ANY_VALUE_FROM = "in_or"
+    IN_OR = "in_or"
+    NOT_IN_OR = "not_in_or"
+    IN_AND = "in_and"
+    NOT_IN_AND = "not_in_and"
 
     @classmethod
     def from_str(cls: Type[Self], input: str) -> Self:
@@ -130,7 +133,7 @@ def get_path(path: List[str], data: Any) -> Any:
     return None
 
 
-def evaluate_condition(value: Any | List[Any], operator: str, data: Any | List[Any]) -> bool:
+def evaluate_condition(value: Any | List[Any], operator: Operator, data: Any | List[Any]) -> bool:
     """
     A utility method for performing comparisons between the specified data.
 
@@ -142,34 +145,34 @@ def evaluate_condition(value: Any | List[Any], operator: str, data: Any | List[A
         Whether the comparison holds or not.
     """
     match operator:
-        case "in":
+        case operator.IN:
             return isinstance(data, list) and value in data
-        case "not_in":
+        case operator.NOT_IN:
             return isinstance(data, list) and value not in data
-        case "equals":
+        case operator.EQUALS:
             return not isinstance(data, list) and value == data
-        case "not_equals":
+        case operator.NOT_EQUALS:
             return not isinstance(data, list) and value != data
         case _:
             if not isinstance(value, list) or not isinstance(data, list):
                 return False
             match operator:
-                case "in_or":
+                case operator.IN_OR:
                     for to_be_searched in value:
                         if to_be_searched in data:
                             return True
                     return False
-                case "not_in_or":
+                case operator.NOT_IN_OR:
                     for to_be_searched in value:
                         if to_be_searched in data:
                             return False
                     return True
-                case "in_and":
+                case operator.IN_AND:
                     for to_be_searched in value:
                         if to_be_searched not in data:
                             return False
                     return True
-                case "not_in_and":
+                case operator.NOT_IN_AND:
                     for to_be_searched in value:
                         if to_be_searched not in data:
                             return True
@@ -281,7 +284,7 @@ class Filter:
             True if the value matches the filter, False otherwise.
         """
 
-        if self.operator == Operator.ANY_VALUE_FROM:
+        if self.operator == Operator.IN_OR:
             if not isinstance(self.value, list) or not isinstance(value, list):
                 return False
             return any(x in value for x in self.value)
@@ -369,7 +372,7 @@ class Filter:
             raise InvalidOperationError("invalid operator")
 
         # check value
-        if self.operator == Operator.ANY_VALUE_FROM and not isinstance(self.value, list):
+        if self.operator == Operator.IN_OR and not isinstance(self.value, list):
             raise InvalidValueError("incorrect type")
 
         elif self.operator == Operator.ANY_VALUE:

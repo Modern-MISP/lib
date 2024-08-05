@@ -560,15 +560,15 @@ class ModuleIfGeneric(ModuleIf):
         }
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
-        operator = cast(str, self.configuration.data["operator"])
+        operator = Operator.from_str(cast(str, self.configuration.data["operator"]))
         hash_path = cast(str, self.configuration.data["hash_path"]).split(".")
 
-        if operator == "in_or":
+        if operator == Operator.IN_OR:
             value = self.configuration.data["value_list"]
         else:
             value = self.configuration.data["value"]
 
-        if operator == "equals" or operator == "not_equals":
+        if operator == Operator.EQUALS or operator == Operator.NOT_EQUALS:
             extracted_data = get_path(hash_path, payload.data)
         else:
             extracted_data = extract_path(hash_path, payload.data)
@@ -576,7 +576,7 @@ class ModuleIfGeneric(ModuleIf):
         if extracted_data is False:
             extracted_data = []
 
-        if operator == "any_value":
+        if operator == Operator.ANY_VALUE:
             decision = extracted_data != []
         else:
             decision = evaluate_condition(value, operator, extracted_data)
@@ -688,7 +688,7 @@ class ModuleTagIf(ModuleIf):
         selected_clusters = cast(list, self.configuration.data.get("clusters", []))
         return True, evaluate_condition(
             selected_tags + selected_clusters,
-            cast(str, self.configuration.data.get("condition")),
+            Operator.from_str(cast(str, self.configuration.data.get("condition"))),
             self.__get_tags_from_scope(payload, cast(str, self.configuration.data.get("scope"))),
         )
 
@@ -914,7 +914,7 @@ class ModuleGenericFilterData(ModuleFilter):
         config = self.configuration.data
 
         operator = Operator.from_str(str(config["operator"]))
-        if operator == Operator.ANY_VALUE_FROM:
+        if operator == Operator.IN_OR:
             value = self.configuration.data["value_list"]
             assert isinstance(value, list)
         else:
@@ -1021,7 +1021,9 @@ class ModulePublishedIf(ModuleIf):
 
     async def _exec(self: Self, payload: WorkflowInput, db: AsyncSession) -> Tuple[bool, bool]:  # type:ignore[override]
         return True, evaluate_condition(
-            get_path(["Event", "published"], payload.data), cast(str, self.configuration.data["condition"]), True
+            get_path(["Event", "published"], payload.data),
+            Operator.from_str(cast(str, self.configuration.data["condition"])),
+            True,
         )
 
 
