@@ -133,48 +133,50 @@ def get_path(path: List[str], data: Any) -> Any:
     return None
 
 
-def evaluate_condition(value: Any | List[Any], operator: Operator, data: Any | List[Any]) -> bool:
+def evaluate_condition(left: Any | List[Any], operator: Operator, right: Any | List[Any]) -> bool:
     """
     A utility method for performing comparisons between the specified data.
 
     Arguments:
-        value: The first operand.
+        left: The first operand.
         operator: The operator to be used in the comparison.
-        data: The second operand.
+        right: The second operand.
     Returns:
         Whether the comparison holds or not.
     """
     match operator:
+        case operator.ANY_VALUE:
+            return right is not None and right != []
         case operator.IN:
-            return isinstance(data, list) and value in data
+            return isinstance(right, list) and left in right
         case operator.NOT_IN:
-            return isinstance(data, list) and value not in data
+            return isinstance(right, list) and left not in right
         case operator.EQUALS:
-            return not isinstance(data, list) and value == data
+            return str(left) == str(right)
         case operator.NOT_EQUALS:
-            return not isinstance(data, list) and value != data
+            return str(left) != str(right)
         case _:
-            if not isinstance(value, list) or not isinstance(data, list):
+            if not isinstance(left, list) or not isinstance(right, list):
                 return False
             match operator:
                 case operator.IN_OR:
-                    for to_be_searched in value:
-                        if to_be_searched in data:
+                    for to_be_searched in left:
+                        if to_be_searched in right:
                             return True
                     return False
                 case operator.NOT_IN_OR:
-                    for to_be_searched in value:
-                        if to_be_searched in data:
+                    for to_be_searched in left:
+                        if to_be_searched in right:
                             return False
                     return True
                 case operator.IN_AND:
-                    for to_be_searched in value:
-                        if to_be_searched not in data:
+                    for to_be_searched in left:
+                        if to_be_searched not in right:
                             return False
                     return True
                 case operator.NOT_IN_AND:
-                    for to_be_searched in value:
-                        if to_be_searched not in data:
+                    for to_be_searched in left:
+                        if to_be_searched not in right:
                             return True
                     return False
     return False
@@ -283,25 +285,7 @@ class Filter:
         Returns:
             True if the value matches the filter, False otherwise.
         """
-
-        if self.operator == Operator.IN_OR:
-            if not isinstance(self.value, list) or not isinstance(value, list):
-                return False
-            return any(x in value for x in self.value)
-
-        value_str = str(value)
-
-        if self.operator == Operator.EQUALS:
-            return value_str == self.value
-        elif self.operator == Operator.NOT_EQUALS:
-            return value_str != self.value
-        elif self.operator == Operator.IN:
-            return self.value in value if isinstance(value, list) else False
-        elif self.operator == Operator.NOT_IN:
-            return self.value not in value if isinstance(value, list) else False
-        elif self.operator == Operator.ANY_VALUE:
-            return value is not None
-        return False
+        return evaluate_condition(self.value, self.operator, value)
 
     def apply(self: Self, data: RoamingData | List[RoamingData]) -> None:
         selector = self.selector.split(".")

@@ -576,11 +576,7 @@ class ModuleIfGeneric(ModuleIf):
         if extracted_data is False:
             extracted_data = []
 
-        if operator == Operator.ANY_VALUE:
-            decision = extracted_data != []
-        else:
-            decision = evaluate_condition(value, operator, extracted_data)
-
+        decision = evaluate_condition(value, operator, extracted_data)
         return True, decision
 
 
