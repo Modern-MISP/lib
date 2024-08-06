@@ -330,11 +330,19 @@ class PublishEventResponse(BaseModel):
         orm_mode = True
 
 
+class GetAllEventsEventTagTag(BaseModel):
+    id: str
+    name: str
+    colour: str
+    is_galaxy: bool
+
+
 class IndexEventsEventTag(BaseModel):
     id: str
     event_id: str
     tag_id: str
     local: bool
+    Tag: GetAllEventsEventTagTag
 
 
 class IndexEventsAttributes(BaseModel):
@@ -401,13 +409,6 @@ class ObjectEventResponse(BaseModel):
     info: str
     org_id: str | None = None
     orgc_id: str | None = None
-
-
-class GetAllEventsEventTagTag(BaseModel):
-    id: str
-    name: str
-    colour: str
-    is_galaxy: bool
 
 
 class GetAllEventsEventTag(BaseModel):
