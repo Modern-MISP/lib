@@ -58,6 +58,50 @@ class GraphValidation:
     """
 
     @classmethod
+    def report_as_str(cls: Type[Self], result: GraphValidationResult, graph: WorkflowGraph) -> str:
+        """
+        Turns validation report into a string. Used for legacy `/workflows/edit`.
+        The frontend expects a single error message here in a modal in the top left corner,
+        so all errors are kept brief on purpose.
+
+        Arguments:
+            result: Validation report.
+            graph:  Graph that got validated.
+        """
+
+        unsupported = []
+        errors = []
+        config_invalid = False
+        cyclic = False
+        broken = False
+        for error in result.errors:
+            match error:
+                case UnsupportedWorkflow(id):
+                    unsupported.append(graph.nodes[id].id)
+                case MiscellaneousGraphValidationError(_, msg):
+                    errors.append(msg)
+                case MissingTrigger():
+                    errors.append("Graph is missing a trigger")
+                case ConfigurationError():
+                    config_invalid = True
+                case CyclicGraphError():
+                    cyclic = True
+                case InconsistentEdgeBetweenAdjacencyLists():
+                    broken = True
+
+        if unsupported != []:
+            unsupp_str = "/".join(unsupported)
+            errors.append(f"Nodes {unsupp_str} are unsupported")
+        if cyclic:
+            errors.append("Graph contains cycles")
+        if config_invalid:
+            errors.append("Nodes contain configuration errors")
+        if broken:
+            errors.append("Graph contains broken node references")
+
+        return ", ".join(errors)
+
+    @classmethod
     def report(cls: Type[Self], result: GraphValidationResult) -> CheckGraphResponse:
         """
         Reports the results of the graph validation.
