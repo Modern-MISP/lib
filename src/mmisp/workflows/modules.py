@@ -1218,6 +1218,7 @@ class ModuleTagOperation(ModuleAction):
                 label="Tags",
                 kind=ModuleParamType.PICKER,
                 options={
+                    "multiple": True,
                     "picker_create_new": True,
                     "placeholder": "Select some Options",
                     "options": tag_dict,
@@ -1227,9 +1228,7 @@ class ModuleTagOperation(ModuleAction):
                 id="relationship_type",
                 label="Relationship Type",
                 kind=ModuleParamType.INPUT,
-                options={
-                    "placeholder": "Relationship Type",
-                },
+                options={"placeholder": "Relationship Type", "display_on": {"action": "add"}},
             ),
         }
 
@@ -1269,14 +1268,14 @@ class ModuleTagOperation(ModuleAction):
         tag_id = (await db.execute(select(Tag.id).where(Tag.name == tag_name))).scalar()
 
         if tag_id is None:
-            return False
+            return True
 
         event_tag = (
             await db.execute(select(EventTag).where(and_(EventTag.event_id == event_id, EventTag.tag_id == tag_id)))
         ).scalar()
 
         if event_tag is None:
-            return False
+            return True
 
         if scope == "event":
             await db.delete(event_tag)
