@@ -1,6 +1,7 @@
 import pytest
 
 from mmisp.workflows.input import (
+    EvaluateImplementation,
     Filter,
     InvalidOperationError,
     InvalidPathError,
@@ -392,7 +393,10 @@ def test_equals_and_not_equals() -> None:
     assert evaluate_condition("cat", Operator.NOT_EQUALS, "dog")
     assert evaluate_condition("cat", Operator.EQUALS, "cat")
     assert not evaluate_condition("cat", Operator.NOT_EQUALS, "cat")
-    assert evaluate_condition("['cat']", Operator.EQUALS, ["cat"])
+    assert not evaluate_condition("cat", Operator.EQUALS, ["cat"])
+    assert not evaluate_condition("cat", Operator.NOT_EQUALS, ["cat"])
+    assert evaluate_condition("['cat']", Operator.EQUALS, ["cat"], EvaluateImplementation.LEGACY_FILTER)
+    assert not evaluate_condition("['cat']", Operator.NOT_EQUALS, ["cat"], EvaluateImplementation.LEGACY_FILTER)
 
 
 def test_in_or_and_not_in_or() -> None:

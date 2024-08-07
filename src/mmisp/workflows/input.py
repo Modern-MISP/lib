@@ -42,6 +42,15 @@ class Operator(Enum):
         return cls(input)
 
 
+class EvaluateImplementation(Enum):
+    """
+    Enum representing all EvaluateCondition implementations in Legacy MISP.
+    """
+
+    LEGACY_IF_ELSE = 1
+    LEGACY_FILTER = 2
+
+
 class FilterError(Exception):
     """
     Abstract class representing possible invalid Filter inputs
@@ -133,7 +142,12 @@ def get_path(path: List[str], data: Any) -> Any:
     return None
 
 
-def evaluate_condition(left: Any | List[Any], operator: Operator, right: Any | List[Any]) -> bool:
+def evaluate_condition(
+    left: Any | List[Any],
+    operator: Operator,
+    right: Any | List[Any],
+    impl: EvaluateImplementation = EvaluateImplementation.LEGACY_IF_ELSE,
+) -> bool:
     """
     A utility method for performing comparisons between the specified data.
 
@@ -141,40 +155,49 @@ def evaluate_condition(left: Any | List[Any], operator: Operator, right: Any | L
         left: The first operand.
         operator: The operator to be used in the comparison.
         right: The second operand.
+        impl: Which legacy MISP implementation of evaluate condition to be used: the if/else or the filter.
     Returns:
         Whether the comparison holds or not.
     """
     match operator:
-        case operator.ANY_VALUE:
+        case Operator.ANY_VALUE:
             return right is not None and right != []
-        case operator.IN:
+        case Operator.IN:
             return isinstance(right, list) and left in right
-        case operator.NOT_IN:
+        case Operator.NOT_IN:
             return isinstance(right, list) and left not in right
-        case operator.EQUALS:
-            return str(left) == str(right)
-        case operator.NOT_EQUALS:
-            return str(left) != str(right)
+        case Operator.EQUALS:
+            match impl:
+                case EvaluateImplementation.LEGACY_IF_ELSE:
+                    return not isinstance(right, list) and left == right
+                case EvaluateImplementation.LEGACY_FILTER:
+                    return left == str(right)
+        case Operator.NOT_EQUALS:
+            match impl:
+                case EvaluateImplementation.LEGACY_IF_ELSE:
+                    return not isinstance(right, list) and left != right
+                case EvaluateImplementation.LEGACY_FILTER:
+                    return left != str(right)
         case _:
             if not isinstance(left, list) or not isinstance(right, list):
                 return False
             match operator:
-                case operator.IN_OR:
+                case Operator.IN_OR:
                     for to_be_searched in left:
                         if to_be_searched in right:
                             return True
                     return False
-                case operator.NOT_IN_OR:
+                case Operator.NOT_IN_OR:
                     for to_be_searched in left:
                         if to_be_searched in right:
                             return False
                     return True
-                case operator.IN_AND:
+                case Operator.IN_AND:
                     for to_be_searched in left:
                         if to_be_searched not in right:
                             return False
                     return True
-                case operator.NOT_IN_AND:
+                case Operator.NOT_IN_AND:
                     for to_be_searched in left:
                         if to_be_searched not in right:
                             return True
@@ -285,7 +308,7 @@ class Filter:
         Returns:
             True if the value matches the filter, False otherwise.
         """
-        return evaluate_condition(self.value, self.operator, value)
+        return evaluate_condition(self.value, self.operator, value, EvaluateImplementation.LEGACY_FILTER)
 
     def apply(self: Self, data: RoamingData | List[RoamingData]) -> None:
         selector = self.selector.split(".")

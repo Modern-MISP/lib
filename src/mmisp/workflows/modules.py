@@ -18,7 +18,15 @@ from ..db.models.tag import Tag
 from ..db.models.user import User
 from ..lib.actions import action_publish_event
 from .graph import Module, Node, Trigger, VerbatimWorkflowInput
-from .input import Filter, Operator, RoamingData, WorkflowInput, evaluate_condition, extract_path, get_path
+from .input import (
+    Filter,
+    Operator,
+    RoamingData,
+    WorkflowInput,
+    evaluate_condition,
+    extract_path,
+    get_path,
+)
 from .misp_core_format import (
     attribute_to_misp_core_format,
     event_after_save_new_to_core_format,
