@@ -459,8 +459,8 @@ class GetAllEventsEventTag(BaseModel):
     event_id: str
     tag_id: str
     local: bool
-    relationship_type: str
-    Tag: GetAllEventsEventTagTag
+    relationship_type: str | None = None
+    Tag: GetAllEventsEventTagTag | None = None
 
 
 class GetAllEventsResponse(BaseModel):
@@ -483,7 +483,7 @@ class GetAllEventsResponse(BaseModel):
     sighting_timestamp: str
     disable_correlation: bool
     extends_uuid: str
-    event_creator_email: str  # omitted
+    event_creator_email: str | None = None  # omitted
     protected: str | None = None
     Org: GetAllEventsOrg
     Orgc: GetAllEventsOrg
