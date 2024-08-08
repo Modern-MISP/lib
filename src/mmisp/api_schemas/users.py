@@ -47,14 +47,14 @@ class Config:
 
 
 class UserAttributesBody(BaseModel):
-    org: str | None = None
+    org_id: str | None = None
     authkey: str | None = None
     email: str | None = None
     autoalert: bool | None = None
-    pgpkey: str | None = None
+    gpgkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool | None = None
-    role: str | None = None
+    role_id: str | None = None
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
@@ -75,7 +75,7 @@ class AddUserBody(BaseModel):
     authkey: str
     contactalert: bool
     nids_sid: int
-    org: str
+    org_id: str
     email: str
     termsaccepted: bool
     disabled: bool
@@ -85,7 +85,7 @@ class AddUserBody(BaseModel):
     password: str
     name: str
     """role_id newly added"""
-    role: str
+    role_id: str
 
 
 class AddUserResponseData(BaseModel):
