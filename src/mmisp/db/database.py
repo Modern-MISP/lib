@@ -1,9 +1,11 @@
 import contextlib
 from typing import AsyncIterator, Self, TypeAlias
+import time
 
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.exc import OperationalError
 
 from mmisp.db.config import config
 
@@ -23,11 +25,16 @@ class DatabaseSessionManager:
         self._url = make_url(db_url)
 
     def init(self: Self) -> None:
-        if config.DEBUG:
-            self._engine = create_async_engine(self._url, echo=True)
-        else:
-            self._engine = create_async_engine(self._url)
-        self._sessionmaker = sessionmaker(  # type:ignore[call-overload]
+        retries = 0
+        while retries < config.MAX_RETRIES:
+            try:
+                self._engine = create_async_engine(self._url, echo=config.DEBUG)
+                break
+            except OperationalError as e:
+                retries += 1
+                print(f"Attempt {retries} failed: {e}")
+                time.sleep(config.RETRY_SLEEP)
+        self._sessionmaker = sessionmaker(
             autocommit=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
 
