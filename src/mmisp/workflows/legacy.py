@@ -73,6 +73,7 @@ class GraphValidation:
         errors = []
         config_invalid = False
         cyclic = False
+        multiple_edges_per_output = False
         broken = False
         for error in result.errors:
             match error:
@@ -88,6 +89,8 @@ class GraphValidation:
                     cyclic = True
                 case InconsistentEdgeBetweenAdjacencyLists():
                     broken = True
+                case MultipleEdgesPerOutput():
+                    multiple_edges_per_output = True
 
         if unsupported != []:
             unsupp_str = "/".join(unsupported)
@@ -98,6 +101,8 @@ class GraphValidation:
             errors.append("Nodes contain configuration errors")
         if broken:
             errors.append("Graph contains broken node references")
+        if multiple_edges_per_output:
+            errors.append("Node has multiple output edges")
 
         return ", ".join(errors)
 
