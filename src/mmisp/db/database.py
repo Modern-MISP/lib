@@ -76,6 +76,7 @@ class DatabaseSessionManager:
         if engine is None:
             engine = self._engine
 
+        retries = 0
         while retries < config.MAX_RETRIES:
             try:
                 async with engine.begin() as conn:
