@@ -75,9 +75,16 @@ class DatabaseSessionManager:
     async def create_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
             engine = self._engine
-        assert engine is not None
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)  # type:ignore[attr-defined]
+
+        while retries < config.MAX_RETRIES:
+            try:
+                async with engine.begin() as conn:
+                    await conn.run_sync(Base.metadata.create_all)
+                break
+            except OperationalError as e:
+                retries += 1
+                print(f"Attempt {retries} failed: {e}")
+                time.sleep(config.RETRY_SLEEP)
 
     async def drop_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
