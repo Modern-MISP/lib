@@ -10,6 +10,8 @@ from mmisp.workflows.graph import (
     MultipleEdgesPerOutput,
     Node,
     Trigger,
+    UnsupportedWorkflow,
+    WorkflowNode,
 )
 
 
@@ -47,6 +49,16 @@ def test_node_check() -> None:
         dummy_node, "There is an output port registered for this node outside of the valid range of [1, 2]."
     )
     assert issues.errors[2] == MultipleEdgesPerOutput((dummy_node, 1))
+
+
+def test_unsupported_node_check() -> None:
+    dummy_node = WorkflowNode(
+        inputs={}, outputs={}, n_outputs=1, graph_id=10, id="Id", name="Name", blocking=True, apperance=None
+    )
+    dummy_node.supported = False
+    issues = dummy_node.check()
+    assert len(issues.errors) == 1
+    assert issues.errors[0] == UnsupportedWorkflow(10)
 
 
 def test_graph_validation_result() -> None:
@@ -103,6 +115,46 @@ def test_graph_check_cycle() -> None:
             CyclicGraphError([(f, 1, b, 1), (e, 1, f, 1), (d, 1, e, 1), (b, 1, d, 1)]),
             CyclicGraphError([(f, 1, a, 1), (e, 1, f, 1), (d, 1, e, 1), (b, 1, d, 1), (a, 1, b, 1)]),
             CyclicGraphError([(h, 1, g, 1), (i, 1, h, 1), (g, 1, i, 1)]),
+        ]
+    )
+
+
+def test_graph_check_cycle1() -> None:
+    a = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    c = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    d = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    e = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    f = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    dummy_add_edge(a, b)
+    dummy_add_edge(a, c)
+    dummy_add_edge(b, d)
+    dummy_add_edge(b, e)
+    dummy_add_edge(c, d)
+    dummy_add_edge(c, e)
+    dummy_add_edge(d, f)
+    dummy_add_edge(e, f)
+    graph = DummyGraph({0: a, 1: b, 2: c, 3: d, 4: e, 5: f}, a, None)
+    assert len(graph.check().errors) == 0
+
+
+def test_graph_check_cycle2() -> None:
+    a = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=1)
+    b = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=2)
+    c = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=3)
+    d = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=4)
+    e = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=5)
+    f = DummyNode(inputs={}, outputs={}, enable_multiple_edges_per_output=True, graph_id=6)
+    dummy_add_edge(a, b)
+    dummy_add_edge(b, c)
+    dummy_add_edge(d, e)
+    dummy_add_edge(e, d)
+    dummy_add_edge(f, f)
+    graph = DummyGraph({0: a, 1: b, 2: c, 3: d, 4: e, 5: f}, a, None)
+    assert graph.check() == GraphValidationResult(
+        [
+            CyclicGraphError([(e, 1, d, 1), (d, 1, e, 1)]),
+            CyclicGraphError([(f, 1, f, 1)]),
         ]
     )
 
