@@ -3,7 +3,7 @@ from sqlalchemy import Boolean, ForeignKey, Integer, String
 from mmisp.db.database import Base
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.util.uuid import uuid
+from mmisp.lib.uuid import uuid
 
 
 class Object(Base, DictMixin):

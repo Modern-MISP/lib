@@ -16,6 +16,7 @@ eggs/
 .eggs/
 lib/
 !src/mmisp/lib/
+!tests/lib/
 lib64/
 parts/
 sdist/
@@ -156,3 +157,5 @@ cython_debug/
 # OS
 
 .DS_Store
+
+mmisp-tests.db

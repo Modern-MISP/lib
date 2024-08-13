@@ -54,5 +54,5 @@ metadata = MetaData()
 
 mc = MigrationContext.configure(engine.connect())
 
-diff = compare_metadata(mc, Base.metadata)
+diff = compare_metadata(mc, Base.metadata)  # type:ignore[attr-defined]
 pprint.pprint(diff, indent=2, width=20)

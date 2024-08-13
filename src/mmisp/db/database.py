@@ -16,18 +16,18 @@ Base = declarative_base()
 
 
 class DatabaseSessionManager:
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, db_url: str = config.DATABASE_URL) -> None:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: sessionmaker | None = None
 
-        self._url = make_url(config.DATABASE_URL)
+        self._url = make_url(db_url)
 
     def init(self: Self) -> None:
         if config.DEBUG:
             self._engine = create_async_engine(self._url, echo=True)
         else:
             self._engine = create_async_engine(self._url)
-        self._sessionmaker = sessionmaker(
+        self._sessionmaker = sessionmaker(  # type:ignore[call-overload]
             autocommit=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
 
@@ -68,16 +68,19 @@ class DatabaseSessionManager:
     async def create_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
             engine = self._engine
+        assert engine is not None
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(Base.metadata.create_all)  # type:ignore[attr-defined]
 
     async def drop_all(self: Self, engine: AsyncEngine | None = None) -> None:
         if engine is None:
             engine = self._engine
-        await engine.run_sync(Base.metadata.drop_all)
+        assert engine is not None
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)  # type:ignore[attr-defined]
 
 
-async def get_db() -> Session:
+async def get_db() -> AsyncIterator[Session]:
     async with sessionmanager.session() as session:
         yield session
 

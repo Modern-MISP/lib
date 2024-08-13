@@ -1,6 +1,6 @@
 [project]
 name = "mmisp-lib"
-version = "0.1.11"
+version = "0.2.0"
 description = ""
 authors = []
 readme = "README.md"
@@ -23,6 +23,7 @@ dependencies = [
   "bcrypt==4.1.2",
   "nanoid==2.0.0",
   "cryptography==42.0.5",
+  "jinja2~=3.1.4",
 ]
 
 
@@ -51,6 +52,7 @@ fix = true
 line-length = 120
 required-version = ">=0.3.7"
 src = ["src"]
+unsafe-fixes = true
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "ICN", "ANN"]

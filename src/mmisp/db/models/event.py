@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.util.uuid import uuid
+from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .organisation import Organisation
@@ -37,7 +37,7 @@ class Event(Base):
     extends_uuid: Mapped[str] = mapped_column(String(40), default="", index=True)
     protected: Mapped[bool] = mapped_column(Boolean)
 
-    attributes = relationship("Attribute", back_populates="event")
+    attributes = relationship("Attribute", back_populates="event")  # type:ignore[assignment,var-annotated]
 
 
 class EventReport(Base):

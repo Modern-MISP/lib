@@ -13,4 +13,6 @@ class DatabaseConfig:
 load_dotenv(getenv("ENV_FILE", ".env"))
 
 
-config: DatabaseConfig = DatabaseConfig(DATABASE_URL=getenv("DATABASE_URL", ""), DEBUG=bool(getenv("DEBUG", False)))
+config: DatabaseConfig = DatabaseConfig(
+    DATABASE_URL=getenv("DATABASE_URL", "sqlite:///dev/null"), DEBUG=bool(getenv("DEBUG", False))
+)

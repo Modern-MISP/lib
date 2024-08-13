@@ -8,7 +8,7 @@ from sqlalchemy.orm.decl_api import DeclarativeMeta
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
-from mmisp.util.uuid import uuid
+from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .event import Event
@@ -39,7 +39,7 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="joined")
+    event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
 
     __mapper_args__ = {"polymorphic_on": "type"}
 
@@ -62,7 +62,7 @@ class Attribute(Base, DictMixin):
             return self.value1
         return f"{self.value1}|{self.value2}"
 
-    @value.setter
+    @value.setter  # type: ignore[no-redef]
     def value(self: Self, value: str) -> None:
         split = value.split("|", 1)
         self.value1 = split[0]
@@ -89,7 +89,7 @@ class AttributeMeta(DeclarativeMeta):
         dct["categories"] = categories[mapper_safe_clsname_val[key]]
         dct["default_to_ids"] = to_ids[mapper_safe_clsname_val[key]]
         dct["__mapper_args__"] = {"polymorphic_identity": mapper_safe_clsname_val[key]}
-        return super().__new__(cls, clsname, bases, dct)
+        return super().__new__(cls, clsname, bases, dct)  # type:ignore[misc]
 
 
 for k, _ in mapper_safe_clsname_val.items():

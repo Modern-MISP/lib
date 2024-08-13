@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from mmisp.api_schemas.organisations import Organisation
-from mmisp.api_schemas.standard_status_response import StandardStatusResponse
+from mmisp.api_schemas.responses.standard_status_response import StandardStatusResponse
 
 
 class SharingGroup(BaseModel):
