@@ -70,25 +70,29 @@ async def test_create_virtual_user(db: AsyncSession, role: Role, org: Organisati
     vu = await create_virtual_root_user(db)
     assert vu.id == 0
     assert vu.email == "SYSTEM"
-    assert vu.org_id == 1
-    assert vu.role_id == 1
+    assert vu.org_id == org.id
+    assert vu.role_id == role.id
 
 
 @pytest_asyncio.fixture
 async def role(db: AsyncSession) -> AsyncGenerator[Role, None]:
-    role = Role(id=1, name="Admin", perm_site_admin=True)
+    role = Role(name="Admin", perm_site_admin=True)
 
     db.add(role)
+    await db.commit()
     yield role
     await db.delete(role)
+    await db.commit()
 
 
 @pytest_asyncio.fixture
 async def org(db: AsyncSession) -> AsyncGenerator[Organisation, None]:
-    org = Organisation(name="Snens", local=True, id=1, description="Foo", type="Bar", nationality="Ger", sector="idk")
+    org = Organisation(name="Snens", local=True, description="Foo", type="Bar", nationality="Ger", sector="idk")
     db.add(org)
+    await db.commit()
     yield org
     await db.delete(org)
+    await db.commit()
 
 
 @pytest.mark.asyncio
@@ -232,8 +236,10 @@ async def publish_wf(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
         ),
     )
     db.add(wf)
+    await db.commit()
     yield wf
     await db.delete(wf)
+    await db.commit()
 
 
 @pytest.mark.asyncio
@@ -284,8 +290,10 @@ async def test_wf_by_trigger_when_feature_disabled(wf_in_db: Workflow, db: Async
 async def enable_admin_setting(db: AsyncSession) -> AsyncGenerator[AdminSetting, None]:
     setting = AdminSetting(setting="workflow_feature_enabled", value="True")
     db.add(setting)
+    await db.commit()
     yield setting
     await db.delete(setting)
+    await db.commit()
 
 
 @pytest_asyncio.fixture
@@ -324,8 +332,10 @@ async def wf_in_db(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
         ),
     )
     db.add(wf)
+    await db.commit()
     yield wf
     await db.delete(wf)
+    await db.commit()
 
 
 @pytest.mark.asyncio

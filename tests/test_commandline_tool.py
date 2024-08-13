@@ -1,7 +1,7 @@
 import time
 
 import pytest
-from sqlalchemy.future import select
+from sqlalchemy import delete, select
 
 from mmisp.commandline_tool import main
 from mmisp.db.models.organisation import Organisation
@@ -17,7 +17,7 @@ async def test_create_user(db, instance_owner_org, user_role) -> None:
     password = "password" + str(time.time())
     await main.create_user(email, password, instance_owner_org.id, user_role.id)
     query = select(User).where(User.email == email)
-    user = db.execute(query).scalar_one_or_none()
+    user = (await db.execute(query)).scalar_one_or_none()
     assert user is not None
     assert user.org_id == instance_owner_org.id
     assert user.role_id == user_role.id
@@ -40,8 +40,8 @@ async def test_create_user(db, instance_owner_org, user_role) -> None:
         error = str(e)
         assert error == "Role not found"
 
-    db.query(UserSetting).filter(UserSetting.user_id == user.id).delete()
-    db.query(User).filter(User.id == user.id).delete()
+    await db.execute(delete(UserSetting).where(UserSetting.user_id == user.id))
+    await db.execute(delete(User).where(User.id == user.id))
 
 
 @pytest.mark.asyncio
@@ -79,9 +79,9 @@ async def test_create_organisation(db, site_admin_user) -> None:
         assert error == "Organisation with name already exists"
 
     query = select(Organisation).where(Organisation.name == name)
-    organisation = db.execute(query).scalar_one_or_none()
+    organisation = (await db.execute(query)).scalar_one_or_none()
     assert organisation is not None
-    db.query(Organisation).filter(Organisation.name == name).delete()
+    await db.execute(delete(Organisation).where(Organisation.name == name))
 
 
 @pytest.mark.asyncio
@@ -95,7 +95,7 @@ async def test_change_password(db, site_admin_user) -> None:
         assert error == "User with email does not exist"
 
     await main.change_password(site_admin_user.email, password)
-    db.refresh(site_admin_user)
+    await db.refresh(site_admin_user)
     assert verify_secret(password, site_admin_user.password)
 
 
@@ -116,7 +116,7 @@ async def test_change_email(db, site_admin_user) -> None:
         assert error == "User with new email already exists"
 
     await main.change_email(site_admin_user.email, new_email)
-    db.refresh(site_admin_user)
+    await db.refresh(site_admin_user)
     assert site_admin_user.email == new_email
 
 
@@ -141,8 +141,8 @@ async def test_change_role(db, view_only_user, site_admin_role) -> None:
         assert error == "User already has this role"
 
     await main.change_role(view_only_user.email, site_admin_role.id)
-    role = db.execute(select(Role).where(Role.id == site_admin_role.id)).scalar_one_or_none()
-    db.refresh(view_only_user)
+    role = (await db.execute(select(Role).where(Role.id == site_admin_role.id))).scalar_one_or_none()
+    await db.refresh(view_only_user)
     assert view_only_user.role_id == role.id
 
 
@@ -172,7 +172,7 @@ async def test_edit_organisation(db, organisation, site_admin_user) -> None:
         new_restricted_domain,
         new_landingpage,
     )
-    db.refresh(organisation)
+    await db.refresh(organisation)
     assert organisation.name == new_name
     assert organisation.created_by == site_admin_user.id
     assert organisation.description == new_description
@@ -208,7 +208,7 @@ async def test_delete_organisation(db, organisation) -> None:
     await main.delete_organisation(organisation.name)
     db.invalidate()
     query = select(Organisation).where(Organisation.name == organisation.name)
-    org = db.execute(query).scalar_one_or_none()
+    org = (await db.execute(query)).scalar_one_or_none()
     assert org is None
 
     try:
@@ -222,7 +222,7 @@ async def test_delete_organisation(db, organisation) -> None:
 async def test_delete_user(db, site_admin_user) -> None:
     await main.delete_user(site_admin_user.email)
     query = select(User).where(User.email == site_admin_user.email)
-    user = db.execute(query).scalar_one_or_none()
+    user = (await db.execute(query)).scalar_one_or_none()
     assert user is None
 
     try:
@@ -236,14 +236,20 @@ async def test_delete_user(db, site_admin_user) -> None:
 async def test_setup(db) -> None:
     await main.setup_db()
     query_user = select(Role).where(Role.name == "user")
-    user_role = db.execute(query_user).scalar_one_or_none()
+    user_role = (await db.execute(query_user)).scalar_one_or_none()
     assert user_role is not None
     query_admin = select(Role).where(Role.name == "admin")
-    admin_role = db.execute(query_admin).scalar_one_or_none()
+    admin_role = (await db.execute(query_admin)).scalar_one_or_none()
     assert admin_role is not None
     query_site_admin = select(Role).where(Role.name == "site_admin")
-    site_admin_role = db.execute(query_site_admin).scalar_one_or_none()
+    site_admin_role = (await db.execute(query_site_admin)).scalar_one_or_none()
     assert site_admin_role is not None
     query_org = select(Organisation).where(Organisation.name == "ghost_org")
-    org = db.execute(query_org).scalar_one_or_none()
+    org = (await db.execute(query_org)).scalar_one_or_none()
     assert org is not None
+
+    await db.delete(org)
+    await db.delete(site_admin_role)
+    await db.delete(admin_role)
+    await db.delete(user_role)
+    await db.commit()
