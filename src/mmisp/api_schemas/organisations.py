@@ -74,6 +74,7 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class OrganisationUsersResponse(BaseModel):
     id: int
     name: str
@@ -89,6 +90,7 @@ class OrganisationUsersResponse(BaseModel):
     local: bool | None = None
     restricted_to_domain: str | None = None
     landingpage: str | None = None
+
 
 class AddOrganisation(BaseModel):
     id: str
@@ -106,6 +108,7 @@ class AddOrganisation(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class EditOrganisation(BaseModel):
     name: str

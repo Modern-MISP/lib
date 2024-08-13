@@ -22,6 +22,7 @@ class AddEditGetEventGalaxyClusterMeta(BaseModel):
     refs: list[str] | None = None
     kill_chain: str | None = None
 
+
 class FreeTextImportWorkerData(BaseModel):
     data: str
 
@@ -36,8 +37,6 @@ class FreeTextImportWorkerBody(BaseModel):
 
     class Config:
         orm_mode = True
-
-
 
 
 class AddAttributeViaFreeTextImportEventResponse(BaseModel):
@@ -62,8 +61,6 @@ class AddAttributeViaFreeTextImportEventBody(BaseModel):
 
     class Config:
         orm_mode = True
-
-
 
 
 class GetAllEventsGalaxyCluster(BaseModel):

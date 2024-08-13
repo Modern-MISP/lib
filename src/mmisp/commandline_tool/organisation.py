@@ -1,22 +1,45 @@
 import fire
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.user import User
 
 organisation_fields = []
 
-async def create(session: AsyncSession, name: str | None, admin_email: int | str | None, description: str | None,
-                 type: str | None, nationality: str | None, sector: str | None, contacts_email: str | None,
-                 local: bool | None, restricted_domain: str| None, landingpage: str| None):
+
+async def create(
+    session: AsyncSession,
+    name: str | None,
+    admin_email: int | str | None,
+    description: str | None,
+    type: str | None,
+    nationality: str | None,
+    sector: str | None,
+    contacts_email: str | None,
+    local: bool | None,
+    restricted_domain: str | None,
+    landingpage: str | None,
+) -> None:
     organisation = Organisation()
 
     if await check_if_organsiastion_exists(session, name):
         raise fire.core.FireError("Organisation with name already exists")
 
-    await set_attributes(session, organisation, name, admin_email, description, type, nationality, sector,
-                         contacts_email, local, restricted_domain, landingpage)
+    await set_attributes(
+        session,
+        organisation,
+        name,
+        admin_email,
+        description,
+        type,
+        nationality,
+        sector,
+        contacts_email,
+        local,
+        restricted_domain,
+        landingpage,
+    )
     session.add(organisation)
     await session.commit()
 
@@ -33,10 +56,20 @@ async def check_if_organsiastion_exists(session: AsyncSession, name: str | int) 
     return True
 
 
-async def edit_organisation(session: AsyncSession, organisation: str | int, new_name: str | None,
-                            admin_email: int | str | None, description: str | None, type: str | None, nationality: str | None,
-                            sector: str | None, contacts_email: str | None, local: bool | None,
-                            restricted_domain: str| None, landingpage: str| None):
+async def edit_organisation(
+    session: AsyncSession,
+    organisation: str | int,
+    new_name: str | None,
+    admin_email: int | str | None,
+    description: str | None,
+    type: str | None,
+    nationality: str | None,
+    sector: str | None,
+    contacts_email: str | None,
+    local: bool | None,
+    restricted_domain: str | None,
+    landingpage: str | None,
+) -> None:
     if isinstance(organisation, str):
         query = select(Organisation).where(Organisation.name == organisation)
     else:
@@ -47,16 +80,38 @@ async def edit_organisation(session: AsyncSession, organisation: str | int, new_
     if organisation is None:
         raise fire.core.FireError("Organisation does not exist")
 
-    await set_attributes(session, organisation, new_name, admin_email, description, type, nationality, sector,
-                         contacts_email, local, restricted_domain, landingpage)
+    await set_attributes(
+        session,
+        organisation,
+        new_name,
+        admin_email,
+        description,
+        type,
+        nationality,
+        sector,
+        contacts_email,
+        local,
+        restricted_domain,
+        landingpage,
+    )
 
     await session.commit()
 
 
-async def set_attributes(session: AsyncSession, organisation: Organisation, name: str | None,
-                         admin_user: int | str | None, description: str | None, type: str | None,
-                         nationality: str | None, sector: str | None, contacts_email: str | None, local: bool | None,
-                         restricted_domain: str| None, landingpage: str| None):
+async def set_attributes(
+    session: AsyncSession,
+    organisation: Organisation,
+    name: str | None,
+    admin_user: int | str | None,
+    description: str | None,
+    type: str | None,
+    nationality: str | None,
+    sector: str | None,
+    contacts_email: str | None,
+    local: bool | None,
+    restricted_domain: str | None,
+    landingpage: str | None,
+) -> None:
     if name is not None:
         organisation.name = name
     if admin_user is not None:
@@ -87,7 +142,7 @@ async def set_attributes(session: AsyncSession, organisation: Organisation, name
         organisation.landingpage = landingpage
 
 
-async def delete_organisation(session: AsyncSession, organisation: str | int):
+async def delete_organisation(session: AsyncSession, organisation: str | int) -> None:
     if isinstance(organisation, str):
         query = select(Organisation).where(Organisation.name == organisation)
     else:

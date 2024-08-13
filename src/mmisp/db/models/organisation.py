@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, DateTime, Integer, String, Text
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.lib.uuid import uuid
 
 from ..database import Base
 

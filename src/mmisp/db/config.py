@@ -19,5 +19,5 @@ config: DatabaseConfig = DatabaseConfig(
     DATABASE_URL=getenv("DATABASE_URL", ""),
     DEBUG=bool(getenv("DEBUG", False)),
     RETRY_SLEEP=int(getenv("DB_RETRY", 5)),
-    MAX_RETRIES=int(getenv("DB_MAX_RETRIES", 100))
+    MAX_RETRIES=int(getenv("DB_MAX_RETRIES", 100)),
 )

@@ -1,10 +1,9 @@
-from pydantic import BaseModel, PositiveInt, conint
-
-from mmisp.api_schemas.organisations import Organisation
+from pydantic import BaseModel
 
 
 class FreeTextProcessID(BaseModel):
     id: str
+
 
 class FreeTextImportWorkerData(BaseModel):
     data: str

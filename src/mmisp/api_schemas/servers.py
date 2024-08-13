@@ -20,6 +20,7 @@ class AddServer(BaseModel):
     self_signed: bool
     skip_proxy: bool
 
+
 class EditServer(BaseModel):
     name: str
     url: str
@@ -45,11 +46,13 @@ class EditServer(BaseModel):
 class AddServerResponse(BaseModel):
     id: str
 
-class RemoveServer (BaseModel):
+
+class RemoveServer(BaseModel):
     id: str
     sharing_group_id: str
     server_id: str
     all_orgs: bool
+
 
 class GetRemoteServersResponse(BaseModel):
     id: int
@@ -74,4 +77,3 @@ class GetRemoteServersResponse(BaseModel):
 
 class ServersGetVersion(BaseModel):
     pass
-

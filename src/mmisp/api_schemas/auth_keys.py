@@ -1,6 +1,6 @@
 from datetime import datetime
+from typing import List, Self, Union
 
-from typing import List, Union
 from pydantic import BaseModel, PositiveInt, conint, validator
 
 
@@ -137,8 +137,8 @@ class EditAuthKeyBody(BaseModel):
     allowed_ips: Union[str, List[str]] | None = None
     expiration: str | None = None
 
-    @validator('allowed_ips', pre=True)
-    def ensure_list(cls, v):
+    @validator("allowed_ips", pre=True)
+    def ensure_list(cls: Self, v: str | List[str]) -> List[str]:
         if isinstance(v, str):
             return [v]
         return v

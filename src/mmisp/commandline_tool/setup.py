@@ -1,19 +1,17 @@
-import fire
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from mmisp.db.models.role import Role
 from mmisp.db.models.organisation import Organisation
+from mmisp.db.models.role import Role
 
 
-async def setup(session: AsyncSession):
+async def setup(session: AsyncSession) -> None:
     user = Role()
     user.name = "user"
     await add_role_if_not_exist(session, user)
 
     admin = Role(
-        name = "admin",
+        name="admin",
         perm_add=True,
         perm_modify=True,
         perm_modify_org=True,
@@ -47,7 +45,7 @@ async def setup(session: AsyncSession):
     await add_role_if_not_exist(session, admin)
 
     site_admin = Role(
-        name = "site_admin",
+        name="site_admin",
         perm_add=True,
         perm_modify_org=True,
         perm_publish=True,
@@ -85,7 +83,7 @@ async def setup(session: AsyncSession):
     await add_organisation_if_not_exist(session, ghost_org)
 
 
-async def add_role_if_not_exist(session: AsyncSession, role: Role):
+async def add_role_if_not_exist(session: AsyncSession, role: Role) -> None:
     query = select(Role).where(Role.name == role.name)
     role_db = await session.execute(query)
     role_db = role_db.scalar_one_or_none()
@@ -94,7 +92,7 @@ async def add_role_if_not_exist(session: AsyncSession, role: Role):
         await session.commit()
 
 
-async def add_organisation_if_not_exist(session: AsyncSession, organisation: Organisation):
+async def add_organisation_if_not_exist(session: AsyncSession, organisation: Organisation) -> None:
     query = select(Organisation).where(Organisation.name == organisation.name)
     organisation_db = await session.execute(query)
     organisation_db = organisation_db.scalar_one_or_none()

@@ -1,7 +1,6 @@
 import time
 
 import pytest
-from icecream import ic
 from sqlalchemy.future import select
 
 from mmisp.commandline_tool import main
@@ -18,7 +17,7 @@ async def test_create_user(db, instance_owner_org, user_role) -> None:
     password = "password" + str(time.time())
     await main.create_user(email, password, instance_owner_org.id, user_role.id)
     query = select(User).where(User.email == email)
-    user= db.execute(query).scalar_one_or_none()
+    user = db.execute(query).scalar_one_or_none()
     assert user is not None
     assert user.org_id == instance_owner_org.id
     assert user.role_id == user_role.id
@@ -30,13 +29,13 @@ async def test_create_user(db, instance_owner_org, user_role) -> None:
         assert error == "User with email already exists"
 
     try:
-        await main.create_user(email + '1', password, instance_owner_org.id + 1, user_role.id)
+        await main.create_user(email + "1", password, instance_owner_org.id + 1, user_role.id)
     except Exception as e:
         error = str(e)
         assert error == "Organisation not found"
 
     try:
-        await main.create_user(email + '2', password, instance_owner_org.id, user_role.id + 1)
+        await main.create_user(email + "2", password, instance_owner_org.id, user_role.id + 1)
     except Exception as e:
         error = str(e)
         assert error == "Role not found"
@@ -58,12 +57,23 @@ async def test_create_organisation(db, site_admin_user) -> None:
     local = False
     restricted_domain = False
     landingpage = time_now
-    await main.create_organisation(name, admin_email, description, type, nationality, sector, contacts_email,
-                                         local, restricted_domain, landingpage)
+    await main.create_organisation(
+        name, admin_email, description, type, nationality, sector, contacts_email, local, restricted_domain, landingpage
+    )
 
     try:
-        await main.create_organisation(name, admin_email, description, type, nationality, sector, contacts_email,
-                                         local, restricted_domain, landingpage)
+        await main.create_organisation(
+            name,
+            admin_email,
+            description,
+            type,
+            nationality,
+            sector,
+            contacts_email,
+            local,
+            restricted_domain,
+            landingpage,
+        )
     except Exception as e:
         error = str(e)
         assert error == "Organisation with name already exists"
@@ -79,7 +89,7 @@ async def test_change_password(db, site_admin_user) -> None:
     password = "test" + str(time.time())
 
     try:
-        await main.change_password(site_admin_user.email + '1', password)
+        await main.change_password(site_admin_user.email + "1", password)
     except Exception as e:
         error = str(e)
         assert error == "User with email does not exist"
@@ -113,7 +123,7 @@ async def test_change_email(db, site_admin_user) -> None:
 @pytest.mark.asyncio
 async def test_change_role(db, view_only_user, site_admin_role) -> None:
     try:
-        await main.change_role(view_only_user.email +'1', site_admin_role.id)
+        await main.change_role(view_only_user.email + "1", site_admin_role.id)
     except Exception as e:
         error = str(e)
         assert error == "User with email does not exist"
@@ -137,7 +147,7 @@ async def test_change_role(db, view_only_user, site_admin_role) -> None:
 
 
 @pytest.mark.asyncio
-async def test_edit_organisation(db,organisation, site_admin_user) -> None:
+async def test_edit_organisation(db, organisation, site_admin_user) -> None:
     time_now = str(time.time())
     new_name = time_now
     new_admin_email = site_admin_user.email
@@ -149,9 +159,19 @@ async def test_edit_organisation(db,organisation, site_admin_user) -> None:
     new_local = False
     new_restricted_domain = "{}"
     new_landingpage = time_now
-    await main.edit_organisation(organisation.name, new_name, new_admin_email, new_description, new_type,
-                                       new_nationality, new_sector, new_contacts_email, new_local,
-                                       new_restricted_domain, new_landingpage)
+    await main.edit_organisation(
+        organisation.name,
+        new_name,
+        new_admin_email,
+        new_description,
+        new_type,
+        new_nationality,
+        new_sector,
+        new_contacts_email,
+        new_local,
+        new_restricted_domain,
+        new_landingpage,
+    )
     db.refresh(organisation)
     assert organisation.name == new_name
     assert organisation.created_by == site_admin_user.id
@@ -165,9 +185,19 @@ async def test_edit_organisation(db,organisation, site_admin_user) -> None:
     assert organisation.landingpage == new_landingpage
 
     try:
-        await main.edit_organisation(organisation.name + '1', new_name, new_admin_email, new_description, new_type,
-                                       new_nationality, new_sector, new_contacts_email, new_local,
-                                       new_restricted_domain, new_landingpage)
+        await main.edit_organisation(
+            organisation.name + "1",
+            new_name,
+            new_admin_email,
+            new_description,
+            new_type,
+            new_nationality,
+            new_sector,
+            new_contacts_email,
+            new_local,
+            new_restricted_domain,
+            new_landingpage,
+        )
     except Exception as e:
         error = str(e)
         assert error == "Organisation does not exist"
@@ -182,10 +212,11 @@ async def test_delete_organisation(db, organisation) -> None:
     assert org is None
 
     try:
-        await main.delete_organisation(organisation.name+'1')
+        await main.delete_organisation(organisation.name + "1")
     except Exception as e:
         error = str(e)
         assert error == "Organisation does not exist"
+
 
 @pytest.mark.asyncio
 async def test_delete_user(db, site_admin_user) -> None:
@@ -195,10 +226,11 @@ async def test_delete_user(db, site_admin_user) -> None:
     assert user is None
 
     try:
-        await main.delete_user(site_admin_user.email + '1')
+        await main.delete_user(site_admin_user.email + "1")
     except Exception as e:
         error = str(e)
         assert error == "User with email does not exist"
+
 
 @pytest.mark.asyncio
 async def test_setup(db) -> None:

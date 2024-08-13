@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
-from mmisp.api_schemas.roles import Role, RoleUsersResponse
+from mmisp.api_schemas.organisations import OrganisationUsersResponse
+from mmisp.api_schemas.roles import RoleUsersResponse
 
 
 class User(BaseModel):
@@ -163,7 +163,7 @@ class GetUsersUser(BaseModel):
     """new contents bellow"""
     name: str
     contact: bool
-    notification: bool 
+    notification: bool
 
 
 class GetUsersElement(BaseModel):

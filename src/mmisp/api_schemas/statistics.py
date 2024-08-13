@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class UsageDataResponseModel(BaseModel):
     events: int
     attributes: int
@@ -10,6 +11,7 @@ class UsageDataResponseModel(BaseModel):
     localOrganisations: int
     eventCreatorOrgs: int
     averageUsersPerOrg: float
+
 
 class OrgDataResponseModel(BaseModel):
     users: int

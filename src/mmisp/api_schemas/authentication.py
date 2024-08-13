@@ -35,6 +35,7 @@ class IdentityProviderEditBody(BaseModel):
     client_secret: str | None = None
     scope: str | None = None
 
+
 class GetIdentityProviderResponse(BaseModel):
     id: str
     name: str
@@ -44,7 +45,6 @@ class GetIdentityProviderResponse(BaseModel):
     client_id: str
     client_secret: str
     scope: str | None = None
-
 
 
 class IdentityProviderInfo(BaseModel):
@@ -78,6 +78,7 @@ class ChangePasswordBody(BaseModel):
     email: str
     password: str
     oldPassword: str | None = None
+
 
 class ExchangeTokenLoginBody(BaseModel):
     exchangeToken: str

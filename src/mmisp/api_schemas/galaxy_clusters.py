@@ -1,12 +1,11 @@
-
 from pydantic import BaseModel
 
 from mmisp.api_schemas.events.add_edit_get_event_response import AddEditGetEventGalaxyClusterRelation
 from mmisp.api_schemas.events.get_all_events_response import GetAllEventsGalaxyClusterGalaxy
-from mmisp.api_schemas.organisations.organisation import Organisation
-
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationResponse
+from mmisp.api_schemas.organisations.organisation import Organisation
+
 
 class GetGalaxyClusterResponse(BaseModel):
     id: str | None = None
@@ -34,7 +33,6 @@ class GetGalaxyClusterResponse(BaseModel):
     GalaxyElement: list[ExportGalaxyGalaxyElement]
     Org: GetOrganisationResponse
     Orgc: GetOrganisationResponse
-
 
 
 class ExportGalaxyClusterResponse(BaseModel):

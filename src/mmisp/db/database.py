@@ -3,11 +3,12 @@ import time
 from collections.abc import AsyncIterator
 from typing import Self, TypeAlias
 
-from mmisp.db.config import config
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+from mmisp.db.config import config
 
 Session: TypeAlias = AsyncSession
 

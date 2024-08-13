@@ -1,12 +1,11 @@
 import fire
 
+from mmisp.commandline_tool import organisation, setup, user
 from mmisp.db.database import sessionmanager
-
-from mmisp.commandline_tool import user, organisation, setup
-
 
 # This is a simple command line tool that uses the fire library to create a command line tool for creating users
 # and organisations and changing their details.
+
 
 async def setup_db() -> str:
     """setup"""
@@ -26,8 +25,9 @@ async def create_user(email: str, password: str, organisation: str | int, role: 
         await user.create(session, email, password, organisation, role)
 
     await sessionmanager.close()
-    return "User created with email: {}, password: {}, in organisation: {}, with role: {}".format(email, password,
-                                                                                                  organisation, role)
+    return "User created with email: {}, password: {}, in organisation: {}, with role: {}".format(
+        email, password, organisation, role
+    )
 
 
 async def create_organisation(
@@ -42,20 +42,29 @@ async def create_organisation(
     restricted_domain: str | None = None,
     landingpage: str | None = None,
 ) -> str:
-    """create-organisation <name> [-admin_email <admin_email>] [- description <description>] [-type <type>] 
-    [-nationality <nationality>] [<sector>] [<contacts_email>] [-local <local>] 
+    """create-organisation <name> [-admin_email <admin_email>] [- description <description>] [-type <type>]
+    [-nationality <nationality>] [<sector>] [<contacts_email>] [-local <local>]
     [- restricted_domain <restricted_domain>] [-landigpage <landingpage>]"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
-        await organisation.create(session, name, admin_email, description, type, nationality, sector, contacts_email,
-                                   local, restricted_domain, landingpage)
+        await organisation.create(
+            session,
+            name,
+            admin_email,
+            description,
+            type,
+            nationality,
+            sector,
+            contacts_email,
+            local,
+            restricted_domain,
+            landingpage,
+        )
 
     await sessionmanager.close()
 
-    output = (
-        "Organisation created with name: {} admin_email: {} description: {}"
-    )
+    output = "Organisation created with name: {} admin_email: {} description: {}"
     return output.format(name, admin_email, description)
 
 
@@ -94,8 +103,8 @@ async def change_role(email: str, role: str | int) -> str:
 
 async def edit_organisation(
     org: str | int,
-    new_name:  str | None = None,
-    admin_email: int |str | None = None,
+    new_name: str | None = None,
+    admin_email: int | str | None = None,
     description: str | None = None,
     type: str | None = None,
     nationality: str | None = None,
@@ -108,9 +117,7 @@ async def edit_organisation(
     """edit-organisation <organisation> [-new_name <new_name>] [-admin_email <admin_email>] [-description <description>]
     [-type <type>] [-nationality <nationality>] [-sector <sector>] [-contacts_email <contacts_email>] [-local <local>]
     [-restricted_domain <restricted_domain>] [-landingpage <landingpage>]"""
-    output = (
-        "organisation {} edited"
-    )
+    output = "organisation {} edited"
     sessionmanager.init()
     await sessionmanager.create_all()
 
@@ -127,7 +134,8 @@ async def edit_organisation(
             contacts_email,
             local,
             restricted_domain,
-            landingpage)
+            landingpage,
+        )
 
     await sessionmanager.close()
     return output.format(org)
@@ -156,7 +164,6 @@ async def delete_user(email: str) -> str:
 
 
 if __name__ == "__main__":
-
     fire.Fire(
         {
             "setup": setup_db,

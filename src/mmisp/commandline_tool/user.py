@@ -1,18 +1,18 @@
-import fire
 import json
 
+import fire
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from mmisp.util.crypto import hash_secret
 
+from mmisp.db.models.auth_key import AuthKey
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.role import Role
 from mmisp.db.models.user import User
-from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.user_setting import UserSetting
-from mmisp.db.models.auth_key import AuthKey
+from mmisp.util.crypto import hash_secret
 
 
-async def create(session: AsyncSession, email: str, password: str, org: str | int, role: str | int):
+async def create(session: AsyncSession, email: str, password: str, org: str | int, role: str | int) -> None:
     user = User()
 
     if await check_if_email_exists(session, email):
@@ -33,8 +33,8 @@ async def create(session: AsyncSession, email: str, password: str, org: str | in
 
     user_setting = UserSetting()
     user_setting.user_id = user.id
-    user_setting.setting="user_name"
-    user_setting.value=json.dumps({"name": str(user.email)})
+    user_setting.setting = "user_name"
+    user_setting.value = json.dumps({"name": str(user.email)})
     session.add(user_setting)
     await session.commit()
 
@@ -54,7 +54,7 @@ async def get_element_id(session: AsyncSession, element: int | str, type: str) -
     element = await session.execute(query)
     element = element.scalar_one_or_none()
     if element is None:
-        raise fire.core.FireError(type+" not found")
+        raise fire.core.FireError(type + " not found")
     return element
 
 
@@ -67,7 +67,7 @@ async def check_if_email_exists(session: AsyncSession, email: str) -> bool:
     return True
 
 
-async def set_email(session: AsyncSession, email: str, new_email: str):
+async def set_email(session: AsyncSession, email: str, new_email: str) -> None:
     if not await check_if_email_exists(session, email):
         raise fire.core.FireError("User with email does not exist")
     if await check_if_email_exists(session, new_email):
@@ -79,7 +79,7 @@ async def set_email(session: AsyncSession, email: str, new_email: str):
     await session.commit()
 
 
-async def set_password(session: AsyncSession, email: str, password: str):
+async def set_password(session: AsyncSession, email: str, password: str) -> None:
     if not await check_if_email_exists(session, email):
         raise fire.core.FireError("User with email does not exist")
     query = select(User).where(User.email == email)
@@ -90,11 +90,11 @@ async def set_password(session: AsyncSession, email: str, password: str):
     await session.commit()
 
 
-async def set_role(session: AsyncSession, email: str, role: str | int):
+async def set_role(session: AsyncSession, email: str, role: str | int) -> None:
     if not await check_if_email_exists(session, email):
         raise fire.core.FireError("User with email does not exist")
     query = select(User).where(User.email == email)
-    user= await session.execute(query)
+    user = await session.execute(query)
     user = user.scalar_one_or_none()
     role_id = await get_element_id(session, role, "Role")
     if role_id == user.role_id:
@@ -103,7 +103,7 @@ async def set_role(session: AsyncSession, email: str, role: str | int):
     await session.commit()
 
 
-async def delete_user(session: AsyncSession, email: str):
+async def delete_user(session: AsyncSession, email: str) -> None:
     if not await check_if_email_exists(session, email):
         raise fire.core.FireError("User with email does not exist")
 
