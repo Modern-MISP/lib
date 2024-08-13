@@ -11,7 +11,6 @@ USAGE:
     - Run `python -m mmisp.db.print_changes`
 """
 
-
 import os
 import pprint
 
