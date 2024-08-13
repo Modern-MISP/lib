@@ -1,27 +1,90 @@
----
-
 default:
   tags:
-    - any-image-allowed
+      - kgr1-instance-mini
+
+variables:
+  LIB_REPO_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.kit.edu/${CI_PROJECT_NAMESPACE}/lib.git
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # CI_DEBUG_SERVICES: true
+  PYTHONUNBUFFERED: true
 
 stages:
+  - build_image
   - test
+  - coverage
   - docs
 
-test_job:
-  stage: test
-  image: python:3.11-slim
-  before_script:
-    - apt-get update && apt-get install -y make
-    - python --version
+cache:
+  paths:
+    - .cache/pip
+
+build_image:
+  needs: []
+  before_script: []
+  stage: build_image
+  tags:
+    - kgr1-instance-standard
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   script:
-    - pip install -e ".[dev]"
-    - ENV_FILE=.env.test.lite pytest tests
+    - mkdir -p /kaniko/.docker
+    - >-
+      echo '{"auths":{"https://registry.cert.kit.edu/v2/":{"auth": "'$(echo -n ${REGISTRY_USER}:${REGISTRY_PASSWORD} | base64 -w 0)'" }}}' > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}/"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --build-arg LIB_REPO_URL=${LIB_REPO_URL}
+      --build-arg BRANCH=${CI_COMMIT_BRANCH}
+      --build-arg INSTALL_LIB=true
+      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_BRANCH}
+      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
+
+
+pytest:
+  parallel: 1
+  stage: test
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
+  script:
+    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --cov --cov-report term tests/
+  variables:
+    COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
+    DATABASE_URL: sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False
+    HASH_SECRET: hO1cfVGuFGsNwGvw9xzxnq5sU
+    WORKER_KEY: GcXh5TAq8RxYvdTpdioP0nI20Le
+    OWN_URL: http://localhost:4000
+    WORKER_URL: https://worker.mmisp.service
+    DASHBOARD_URL: https://dashboard.mmisp.service
+  artifacts:
+    paths:
+      - ".coverage.*"
+
+pytest_coverage_combine:
+  stage: coverage
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
+  script:
+    - coverage combine
+    - coverage xml
+    - coverage report
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+mypy:
+  stage: test
+  image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
+  script:
+    - pip install "sqlalchemy>=2.0"
+    - MYPYPATH=src mypy --explicit-package-bases src/mmisp/
 
 generate_mkdocs:
   before_script: []
   stage: docs
-  image: hub.cert.kit.edu:5000/mkdocs
+  image: registry.cert.kit.edu/public-gitlab-ci/mkdocs
   script:
     - source /root/.venv/bin/activate; PYTHONPATH=src mkdocs build
   artifacts:
