@@ -29,7 +29,7 @@ async def create(session: AsyncSession, email: str, password: str, org: str | in
 
     session.add(user)
     await session.commit()
-    session.refresh(user)
+    await session.refresh(user)
 
     user_setting = UserSetting()
     user_setting.user_id = user.id

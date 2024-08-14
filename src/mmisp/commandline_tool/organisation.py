@@ -10,7 +10,7 @@ organisation_fields = []
 
 async def create(
     session: AsyncSession,
-    name: str | None,
+    name: str,
     admin_email: int | str | None,
     description: str | None,
     type: str | None,
@@ -23,7 +23,7 @@ async def create(
 ) -> None:
     organisation = Organisation()
 
-    if await check_if_organsiastion_exists(session, name):
+    if await check_if_organisation_exists(session, name):
         raise fire.core.FireError("Organisation with name already exists")
 
     await set_attributes(
@@ -44,7 +44,7 @@ async def create(
     await session.commit()
 
 
-async def check_if_organsiastion_exists(session: AsyncSession, name: str | int) -> bool:
+async def check_if_organisation_exists(session: AsyncSession, name: str | int) -> bool:
     if isinstance(name, str):
         query = select(Organisation).where(Organisation.name == name)
     else:
