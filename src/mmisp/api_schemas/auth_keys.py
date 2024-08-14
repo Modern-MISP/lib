@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import List, Self, Union
 
-from pydantic import BaseModel, PositiveInt, conint
+from pydantic import BaseModel, PositiveInt, conint, validator
 
 
 class SearchGetAuthKeysResponseItemUser(BaseModel):
@@ -41,8 +42,31 @@ class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
     unique_ips: list[str] | None = []
 
 
+class SearchGetAuthKeysResponseAuthKey(BaseModel):
+    id: str
+    uuid: str
+    authkey_start: str
+    authkey_end: str
+    created: str
+    expiration: str
+    read_only: bool
+    user_id: str
+    comment: str | None
+    allowed_ips: list[str] | None = None
+    unique_ips: list[str] | None = []
+    last_used: str | None = None
+
+
 class SearchGetAuthKeysResponseItem(BaseModel):
     AuthKey: SearchGetAuthKeysResponseItemAuthKey
+    User: SearchGetAuthKeysResponseItemUser
+
+    class Config:
+        orm_mode = True
+
+
+class SearchGetAuthKeysResponse(BaseModel):
+    AuthKey: SearchGetAuthKeysResponseAuthKey
     User: SearchGetAuthKeysResponseItemUser
 
     class Config:
@@ -78,6 +102,20 @@ class EditAuthKeyResponseAuthKey(BaseModel):
     allowed_ips: str | None = None
 
 
+class EditAuthKeyResponseCompleteAuthKey(BaseModel):
+    id: str
+    uuid: str
+    authkey_start: str
+    authkey_end: str
+    created: str
+    expiration: str
+    read_only: bool
+    user_id: str
+    comment: str
+    allowed_ips: str | None = None
+    unique_ips: list[str] | None = None
+
+
 class EditAuthKeyResponseUser(BaseModel):
     id: str
     org_id: str
@@ -88,11 +126,22 @@ class EditAuthKeyResponse(BaseModel):
     User: EditAuthKeyResponseUser
 
 
+class EditAuthKeyResponseCompl(BaseModel):
+    AuthKey: EditAuthKeyResponseCompleteAuthKey
+    User: EditAuthKeyResponseUser
+
+
 class EditAuthKeyBody(BaseModel):
     read_only: bool | None = None
     comment: str | None = None
-    allowed_ips: list[str] | None = None
-    expiration: int | None = None
+    allowed_ips: Union[str, List[str]] | None = None
+    expiration: str | None = None
+
+    @validator("allowed_ips", pre=True)
+    def ensure_list(cls: Self, v: str | List[str]) -> List[str]:
+        if isinstance(v, str):
+            return [v]
+        return v
 
 
 class AddAuthKeyResponseAuthKey(BaseModel):

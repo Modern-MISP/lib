@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, DateTime, Integer, String, Text
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.lib.uuid import uuid
 
 from ..database import Base
 
@@ -23,7 +22,7 @@ class Organisation(Base, DictMixin):
     nationality: Mapped[str] = mapped_column(String(255))
     sector: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid)
+    uuid: Mapped[str] = mapped_column(String(255), unique=True)
     contacts: Mapped[str] = mapped_column(Text)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     restricted_to_domain: Mapped[str] = mapped_column(Text)

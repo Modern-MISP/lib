@@ -18,6 +18,8 @@ class SettingName(Enum):
     TAG_NUMERICAL_VALUE_OVERRIDE = "tag_numerical_value_override"
     EVENT_INDEX_HIDE_COLUMNS = "event_index_hide_columns"
     PERIODIC_NOTIFICATION_FILTERS = "periodic_notification_filters"
+    USER_NAME = "user_name"
+    VISUAL_SETTING = "visual_setting"
 
 
 class UserSetting(Base):

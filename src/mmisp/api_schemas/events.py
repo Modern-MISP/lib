@@ -23,6 +23,46 @@ class AddEditGetEventGalaxyClusterMeta(BaseModel):
     kill_chain: str | None = None
 
 
+class FreeTextImportWorkerData(BaseModel):
+    data: str
+
+
+class FreeTextImportWorkerUser(BaseModel):
+    user_id: int
+
+
+class FreeTextImportWorkerBody(BaseModel):
+    user: FreeTextImportWorkerUser
+    data: FreeTextImportWorkerData
+
+    class Config:
+        orm_mode = True
+
+
+class AddAttributeViaFreeTextImportEventResponse(BaseModel):
+    comment: str | None = None
+    value: str
+    original_value: str
+    to_ids: str
+    type: str
+    category: str
+    distribution: str
+
+    class Config:
+        orm_mode = True
+
+
+class AddAttributeViaFreeTextImportEventAttributes(BaseModel):
+    value: str
+
+
+class AddAttributeViaFreeTextImportEventBody(BaseModel):
+    Attribute: AddAttributeViaFreeTextImportEventAttributes
+
+    class Config:
+        orm_mode = True
+
+
 class GetAllEventsGalaxyCluster(BaseModel):
     id: str
     uuid: str
@@ -130,7 +170,7 @@ class AddEditGetEventGalaxy(BaseModel):
 class AddEditGetEventOrg(BaseModel):
     id: str
     name: str
-    uuid: str
+    uuid: str | None = None
     local: bool | None = None
 
 
@@ -254,7 +294,7 @@ class AddEditGetEventResponse(BaseModel):
 class GetAllEventsOrg(BaseModel):
     id: str
     name: str
-    uuid: str
+    uuid: str | None = None
 
 
 class UnpublishEventResponse(BaseModel):
@@ -416,8 +456,8 @@ class GetAllEventsEventTag(BaseModel):
     event_id: str
     tag_id: str
     local: bool
-    relationship_type: str
-    Tag: GetAllEventsEventTagTag
+    relationship_type: str | None = None
+    Tag: GetAllEventsEventTagTag | None = None
 
 
 class GetAllEventsResponse(BaseModel):
@@ -440,28 +480,12 @@ class GetAllEventsResponse(BaseModel):
     sighting_timestamp: str
     disable_correlation: bool
     extends_uuid: str
-    event_creator_email: str  # omitted
+    event_creator_email: str | None = None  # omitted
     protected: str | None = None
     Org: GetAllEventsOrg
     Orgc: GetAllEventsOrg
     GalaxyCluster: list[GetAllEventsGalaxyCluster]
     EventTag: list[GetAllEventsEventTag]
-
-    class Config:
-        orm_mode = True
-
-
-class FreeTextImportWorkerData(BaseModel):
-    data: str
-
-
-class FreeTextImportWorkerUser(BaseModel):
-    user_id: int
-
-
-class FreeTextImportWorkerBody(BaseModel):
-    user: FreeTextImportWorkerUser
-    data: FreeTextImportWorkerData
 
     class Config:
         orm_mode = True
@@ -544,30 +568,6 @@ class AddEventBody(BaseModel):
 
 class AddEventTag(BaseModel):
     name: str
-
-
-class AddAttributeViaFreeTextImportEventResponse(BaseModel):
-    comment: str | None = None
-    value: str
-    original_value: str
-    to_ids: str
-    type: str
-    category: str
-    distribution: str
-
-    class Config:
-        orm_mode = True
-
-
-class AddAttributeViaFreeTextImportEventAttributes(BaseModel):
-    value: str
-
-
-class AddAttributeViaFreeTextImportEventBody(BaseModel):
-    Attribute: AddAttributeViaFreeTextImportEventAttributes
-
-    class Config:
-        orm_mode = True
 
 
 class AddEditGetEventRelatedEventAttributesOrg(BaseModel):

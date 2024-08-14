@@ -46,7 +46,6 @@ async def test_event_after_save(db: AsyncSession, event: Event) -> None:
 @pytest_asyncio.fixture
 async def attribute(db: AsyncSession, event: Event) -> AsyncGenerator[Attribute, None]:
     orgc = Organisation(
-        id=2,
         name="Bar",
         uuid="14f9be37-fc01-47bc-acd9-d7241c8b1941",
         description="Blub",
@@ -78,12 +77,13 @@ async def attribute(db: AsyncSession, event: Event) -> AsyncGenerator[Attribute,
         last_seen=None,
     )
     db.add(attr)
+    await db.commit()
     sighting = Sighting(
         id=23,
         uuid="7de0a199-ed84-4a78-ba6c-2eeddd044965",
         attribute_id=23,
         event_id=event.id,
-        org_id=2,
+        org_id=orgc.id,
         date_sighting=1717943390,
         source="",
         type=0,
@@ -100,6 +100,7 @@ async def attribute(db: AsyncSession, event: Event) -> AsyncGenerator[Attribute,
         type=0,
     )
     db.add(sighting2)
+    await db.commit()
     yield attr
     await db.delete(orgc)
     await db.delete(sighting2)

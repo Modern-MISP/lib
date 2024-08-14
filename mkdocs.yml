@@ -1,5 +1,7 @@
 site_name: Modern MISP LIB Documentation
-site_author: MMISP workflows team
+docs_dir: docs
+repo_url: https://gitlab.kit.edu/kit/kit-cert/mmisp/lib
+site_author: Modern MISP Lib Team
 
 theme:
   name: "material"
@@ -31,7 +33,9 @@ plugins:
       output_format: svg
       diagram_root: docs/plantuml
   - with-pdf:
-      cover_subtitle: Design Phase
+      cover_subtitle: Design
+      copyright: '​'
+      toc_level: 3
 
 markdown_extensions:
   - admonition
