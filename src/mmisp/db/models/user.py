@@ -1,6 +1,7 @@
 from time import time
 
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -44,3 +45,6 @@ class User(Base):
     totp: Mapped[str] = mapped_column(String(255))
     hotp_counter: Mapped[int] = mapped_column(Integer)
     last_pw_change: Mapped[int] = mapped_column(BigInteger)
+
+    # Relationships
+    org = relationship("Organisation", back_populates="users")
