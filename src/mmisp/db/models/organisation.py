@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
@@ -27,3 +28,9 @@ class Organisation(Base, DictMixin):
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     restricted_to_domain: Mapped[str] = mapped_column(Text)
     landingpage: Mapped[str] = mapped_column(Text)
+
+    # Relationship to users
+    users = relationship("User", back_populates="org")
+    creator = relationship(
+        "User", primaryjoin="Organisation.created_by == User.id", foreign_keys=created_by, lazy="selectin"
+    )
