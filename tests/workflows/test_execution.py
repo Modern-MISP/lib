@@ -266,11 +266,11 @@ async def test_execute_unsupported(wf: Workflow) -> None:
 @pytest.mark.asyncio
 async def test_increase_workflow_number(wf_in_db: Workflow, db: AsyncSession) -> None:
     await _increase_workflow_execution_count(db, wf_in_db.id)
-    workflow = (await db.execute(select(Workflow).filter(Workflow.id == 26))).scalars().one()
+    workflow = (await db.execute(select(Workflow).filter(Workflow.id == wf_in_db.id))).scalars().one()
     assert workflow.counter == 1
 
     await _increase_workflow_execution_count(db, wf_in_db.id)
-    workflow = (await db.execute(select(Workflow).filter(Workflow.id == 26))).scalars().one()
+    workflow = (await db.execute(select(Workflow).filter(Workflow.id == wf_in_db.id))).scalars().one()
     assert workflow.counter == 2
 
 
@@ -317,7 +317,6 @@ async def wf_in_db(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
     )
 
     wf = Workflow(
-        id=26,
         uuid=str(uuid.uuid4()),
         name="Demo workflow",
         description="",

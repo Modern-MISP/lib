@@ -34,3 +34,9 @@ class Organisation(Base, DictMixin):
     creator = relationship(
         "User", primaryjoin="Organisation.created_by == User.id", foreign_keys=created_by, lazy="selectin"
     )
+    events = relationship(
+        "Event", primaryjoin="Organisation.id == Event.org_id", back_populates="org", lazy="raise_on_sql"
+    )  # type:ignore[assignment,var-annotated]
+    events_created = relationship(
+        "Event", primaryjoin="Organisation.id == Event.orgc_id", back_populates="orgc", lazy="raise_on_sql"
+    )  # type:ignore[assignment,var-annotated]
