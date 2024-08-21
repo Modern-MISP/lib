@@ -82,6 +82,7 @@ async def event(db: AsyncSession) -> AsyncGenerator[Event, None]:
     await db.commit()
     yield event
     await db.delete(eventtag)
+    await db.commit()
     await db.delete(event)
     await db.delete(tag)
     await db.delete(us)

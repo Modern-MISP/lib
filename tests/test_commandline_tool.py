@@ -206,7 +206,7 @@ async def test_edit_organisation(db, organisation, site_admin_user) -> None:
 @pytest.mark.asyncio
 async def test_delete_organisation(db, organisation) -> None:
     await main.delete_organisation(organisation.name)
-    db.invalidate()
+    await db.invalidate()
     query = select(Organisation).where(Organisation.name == organisation.name)
     org = (await db.execute(query)).scalar_one_or_none()
     assert org is None

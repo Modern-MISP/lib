@@ -38,6 +38,20 @@ class Event(Base):
     protected: Mapped[bool] = mapped_column(Boolean)
 
     attributes = relationship("Attribute", back_populates="event")  # type:ignore[assignment,var-annotated]
+    org = relationship(
+        "Organisation", primaryjoin="Event.org_id == Organisation.id", back_populates="events", lazy="raise_on_sql"
+    )  # type:ignore[assignment,var-annotated]
+    orgc = relationship(
+        "Organisation",
+        primaryjoin="Event.orgc_id == Organisation.id",
+        back_populates="events_created",
+        lazy="raise_on_sql",
+    )  # type:ignore[assignment,var-annotated]
+    creator = relationship("User", primaryjoin="Event.user_id == User.id", lazy="selectin")
+    tags = relationship("Tag", secondary="event_tags", lazy="raise_on_sql")
+    eventtags = relationship(
+        "EventTag", primaryjoin="Event.id == EventTag.event_id", lazy="raise_on_sql", viewonly=True
+    )
 
 
 class EventReport(Base):
