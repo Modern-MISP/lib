@@ -1,7 +1,8 @@
+import typing
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -13,6 +14,20 @@ from mmisp.lib.uuid import uuid
 from ..database import Base
 from .event import Event
 from .tag import Tag
+
+if typing.TYPE_CHECKING:
+    from sqlalchemy import ColumnExpressionArgument
+else:
+    ColumnExpressionArgument = typing.Any
+
+
+class AttributeComparator(Comparator):
+    def __init__(self: Self, cls: typing.Any) -> None:
+        self.cls = cls
+
+    def __eq__(self: Self, other: typing.Any) -> ColumnExpressionArgument:
+        # Overriding equality to check if the value matches either value1 or value1 + "|" + value2
+        return or_(self.cls.value1 == other, self.cls.value1 + "|" + self.cls.value2 == other)
 
 
 class Attribute(Base, DictMixin):
@@ -44,7 +59,7 @@ class Attribute(Base, DictMixin):
     __mapper_args__ = {"polymorphic_on": "type"}
 
     def __init__(self: Self, *arg, **kwargs) -> None:
-        if kwargs["value1"] is None:
+        if "value" in kwargs:
             split_val = kwargs["value"].split("|", 1)
             kwargs["value1"] = split_val[0]
             if len(split_val) == 2:
@@ -68,6 +83,10 @@ class Attribute(Base, DictMixin):
         self.value1 = split[0]
         if len(split) == 2:
             self.value2 = split[1]
+
+    @value.comparator
+    def value(cls: Self) -> AttributeComparator:
+        return AttributeComparator(cls)
 
 
 class AttributeTag(Base):

@@ -6,6 +6,7 @@ import pytest_asyncio
 from nanoid import generate
 
 from mmisp.db.database import DatabaseSessionManager, sessionmanager
+from mmisp.db.models.attribute import Attribute
 from mmisp.util.crypto import hash_secret
 
 from .generators.model_generators.attribute_generator import generate_attribute
@@ -312,6 +313,21 @@ async def attribute(db, event):
 async def attribute2(db, event):
     event_id = event.id
     attribute = generate_attribute(event_id)
+
+    db.add(attribute)
+    await db.commit()
+    await db.refresh(attribute)
+
+    yield attribute
+
+    await db.delete(attribute)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def attribute_multi(db, event):
+    event_id = event.id
+    attribute = Attribute(value="1.2.3.4|80", type="ip-src|port", category="Network Activity", event_id=event_id)
 
     db.add(attribute)
     await db.commit()

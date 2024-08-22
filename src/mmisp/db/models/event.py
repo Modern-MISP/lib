@@ -52,6 +52,14 @@ class Event(Base):
     eventtags = relationship(
         "EventTag", primaryjoin="Event.id == EventTag.event_id", lazy="raise_on_sql", viewonly=True
     )
+    galaxy_tags = relationship(
+        "Tag",
+        secondary="event_tags",
+        secondaryjoin="and_(EventTag.tag_id == Tag.id, Tag.is_galaxy)",
+        lazy="raise_on_sql",
+        overlaps="tags, events",
+        viewonly=True,
+    )
 
 
 class EventReport(Base):
