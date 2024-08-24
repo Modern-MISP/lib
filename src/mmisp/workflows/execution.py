@@ -109,9 +109,11 @@ async def walk_nodes(
 
 async def create_virtual_root_user(db: AsyncSession) -> User:
     god_mode_role_id = (await db.execute(select(Role.id).filter(Role.perm_site_admin == 1))).scalars().first()
-    assert god_mode_role_id
-    local_org_id = (await db.execute(select(Organisation.id).filter(Organisation.local == True))).scalars().first()  # noqa
-    assert local_org_id
+    local_org_id = (await db.execute(select(Organisation.id).filter(Organisation.local))).scalars().first()
+    if not god_mode_role_id:
+        raise ValueError("No site admin role found")
+    if not local_org_id:
+        raise ValueError("No local_org_id found")
 
     return User(
         id=0,
