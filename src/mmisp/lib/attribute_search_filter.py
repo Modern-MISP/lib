@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from sqlalchemy import and_
 
@@ -25,8 +25,9 @@ def get_search_filters(
     published: bool | None = None,
     to_ids: bool | None = None,
     deleted: bool | None = None,
-) -> Sequence[ColumnExpressionArgument]:
-    cond = []
+    **kwargs,
+) -> ColumnExpressionArgument:
+    cond = [True]  # for empty filters
     if value is not None:
         cond.append(Attribute.value == value)
     if value1 is not None:
