@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
@@ -34,6 +35,31 @@ class GalaxyCluster(Base):
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    org = relationship(
+        "Organisation",
+        primaryjoin="GalaxyCluster.org_id == Organisation.id",
+        back_populates="galaxy_clusters",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.org_id",
+    )  # type:ignore[assignment,var-annotated]
+    orgc = relationship(
+        "Organisation",
+        primaryjoin="GalaxyCluster.orgc_id == Organisation.id",
+        back_populates="galaxy_clusters_created",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.orgc_id",
+    )  # type:ignore[assignment,var-annotated]
+    galaxy = relationship(
+        "Galaxy",
+        back_populates="galaxy_clusters",
+        lazy="raise_on_sql",
+    )  # type:ignore[assignment,var-annotated]
+    galaxy_elements = relationship(
+        "GalaxyElement",
+        back_populates="galaxy_cluster",
+        lazy="raise_on_sql",
+    )  # type:ignore[assignment,var-annotated]
+
 
 class GalaxyElement(Base):
     __tablename__ = "galaxy_elements"
@@ -44,6 +70,12 @@ class GalaxyElement(Base):
     )
     key: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
+
+    galaxy_cluster = relationship(
+        "GalaxyCluster",
+        back_populates="galaxy_elements",
+        lazy="raise_on_sql",
+    )  # type:ignore[assignment,var-annotated]
 
 
 class GalaxyReference(Base):

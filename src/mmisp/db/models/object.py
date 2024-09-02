@@ -33,6 +33,11 @@ class Object(Base, DictMixin):
         lazy="raise_on_sql",
         foreign_keys="Attribute.object_id",
     )  # type:ignore[var-annotated]
+    event = relationship(
+        "Event",
+        back_populates="mispobjects",
+        lazy="raise_on_sql",
+    )  # type:ignore[var-annotated]
 
 
 class ObjectTemplate(Base, DictMixin):

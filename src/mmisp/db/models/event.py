@@ -38,6 +38,7 @@ class Event(Base):
     protected: Mapped[bool] = mapped_column(Boolean)
 
     attributes = relationship("Attribute", back_populates="event")  # type:ignore[assignment,var-annotated]
+    mispobjects = relationship("Object", back_populates="event")  # type:ignore[assignment,var-annotated]
     org = relationship(
         "Organisation", primaryjoin="Event.org_id == Organisation.id", back_populates="events", lazy="raise_on_sql"
     )  # type:ignore[assignment,var-annotated]
