@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, PositiveInt, conint
 
 from mmisp.api_schemas.organisations import Organisation
@@ -288,7 +290,7 @@ class AddEditGetEventResponse(BaseModel):
     Event: AddEditGetEventDetails
 
     class Config:
-        orm_mode = True
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class GetAllEventsOrg(BaseModel):

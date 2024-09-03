@@ -30,7 +30,7 @@ class Organisation(Base, DictMixin):
     landingpage: Mapped[str] = mapped_column(Text)
 
     # Relationship to users
-    users = relationship("User", back_populates="org")
+    users = relationship("User", back_populates="org", lazy="raise_on_sql")
     creator = relationship(
         "User", primaryjoin="Organisation.created_by == User.id", foreign_keys=created_by, lazy="selectin"
     )
