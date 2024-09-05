@@ -91,7 +91,7 @@ class GetAllEventsGalaxyCluster(BaseModel):
     meta: AddEditGetEventGalaxyClusterMeta | None = None
     tag_id: str
     local: bool | None = None
-    relationship_type: str | None = None
+    relationship_type: bool | str | None = None
 
 
 class AddEditGetEventGalaxyClusterRelationTag(BaseModel):
@@ -151,7 +151,7 @@ class AddEditGetEventGalaxyCluster(BaseModel):
     attribute_tag_id: str | None = None
     event_tag_id: str | None = None
     local: bool | None = None
-    relationship_type: str = ""
+    relationship_type: bool | str = ""
 
 
 class AddEditGetEventGalaxy(BaseModel):
@@ -188,7 +188,7 @@ class AddEditGetEventTag(BaseModel):
     is_custom_galaxy: bool
     local_only: bool
     local: bool
-    relationship_type: str | None = None
+    relationship_type: bool | str | None = None
 
 
 class AddEditGetEventAttribute(BaseModel):
@@ -458,7 +458,7 @@ class GetAllEventsEventTag(BaseModel):
     event_id: str
     tag_id: str
     local: bool
-    relationship_type: str | None = None
+    relationship_type: bool | str | None = None
     Tag: GetAllEventsEventTagTag | None = None
 
 
