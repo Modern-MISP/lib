@@ -92,6 +92,7 @@ class EventTag(Base):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
 
     event = relationship("Event", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
     tag = relationship("Tag", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)

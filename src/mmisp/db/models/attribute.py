@@ -154,6 +154,7 @@ class AttributeTag(Base):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
 
     attribute = relationship("Attribute", back_populates="attributetags", lazy="raise_on_sql")
     tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")
