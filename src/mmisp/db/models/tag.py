@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Integer, String
+from sqlalchemy.orm import relationship
 
 from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
@@ -18,3 +19,5 @@ class Tag(Base):
     is_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     is_custom_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql")

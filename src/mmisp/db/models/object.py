@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from mmisp.db.database import Base
 from mmisp.db.mixins import DictMixin
@@ -24,6 +25,14 @@ class Object(Base, DictMixin):
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     first_seen: Mapped[int] = mapped_column(Integer, index=True, default=None)
     last_seen: Mapped[int] = mapped_column(Integer, index=True, default=None)
+
+    attributes = relationship(
+        "Attribute",
+        primaryjoin="Object.id == Attribute.object_id",
+        back_populates="mispobject",
+        lazy="raise_on_sql",
+        foreign_keys="Attribute.object_id",
+    )  # type:ignore[var-annotated]
 
 
 class ObjectTemplate(Base, DictMixin):
