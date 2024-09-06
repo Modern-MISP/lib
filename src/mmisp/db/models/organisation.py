@@ -30,7 +30,7 @@ class Organisation(Base, DictMixin):
     landingpage: Mapped[str] = mapped_column(Text)
 
     # Relationship to users
-    users = relationship("User", back_populates="org")
+    users = relationship("User", back_populates="org", lazy="raise_on_sql")
     creator = relationship(
         "User", primaryjoin="Organisation.created_by == User.id", foreign_keys=created_by, lazy="selectin"
     )
@@ -39,4 +39,19 @@ class Organisation(Base, DictMixin):
     )  # type:ignore[assignment,var-annotated]
     events_created = relationship(
         "Event", primaryjoin="Organisation.id == Event.orgc_id", back_populates="orgc", lazy="raise_on_sql"
+    )  # type:ignore[assignment,var-annotated]
+
+    galaxy_clusters = relationship(
+        "GalaxyCluster",
+        primaryjoin="Organisation.id == GalaxyCluster.org_id",
+        back_populates="org",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.org_id",
+    )  # type:ignore[assignment,var-annotated]
+    galaxy_clusters_created = relationship(
+        "GalaxyCluster",
+        primaryjoin="Organisation.id == GalaxyCluster.orgc_id",
+        back_populates="orgc",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.orgc_id",
     )  # type:ignore[assignment,var-annotated]

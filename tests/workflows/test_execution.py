@@ -61,7 +61,7 @@ async def test_virtual_user_no_org(db: AsyncSession, role: Role) -> None:
     try:
         await create_virtual_root_user(db)
         pytest.fail()
-    except AssertionError:
+    except ValueError:
         pass
 
 

@@ -1,7 +1,9 @@
+import typing
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -13,6 +15,20 @@ from mmisp.lib.uuid import uuid
 from ..database import Base
 from .event import Event
 from .tag import Tag
+
+if typing.TYPE_CHECKING:
+    from sqlalchemy import ColumnExpressionArgument
+else:
+    ColumnExpressionArgument = typing.Any
+
+
+class AttributeComparator(Comparator):
+    def __init__(self: Self, cls: typing.Any) -> None:
+        self.cls = cls
+
+    def __eq__(self: Self, other: typing.Any) -> ColumnExpressionArgument:
+        # Overriding equality to check if the value matches either value1 or value1 + "|" + value2
+        return or_(self.cls.value1 == other, self.cls.value1 + "|" + self.cls.value2 == other)
 
 
 class Attribute(Base, DictMixin):
@@ -40,17 +56,71 @@ class Attribute(Base, DictMixin):
     last_seen: Mapped[int] = mapped_column(BigInteger, index=True)
 
     event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
+    mispobject = relationship(
+        "Object",
+        primaryjoin="Attribute.object_id == Object.id",
+        back_populates="attributes",
+        lazy="joined",
+        foreign_keys="Attribute.object_id",
+    )  # type:ignore[var-annotated]
+    tags = relationship("Tag", secondary="attribute_tags", lazy="raise_on_sql", viewonly=True)
+    attributetags = relationship(
+        "AttributeTag",
+        primaryjoin="Attribute.id == AttributeTag.attribute_id",
+        back_populates="attribute",
+        lazy="raise_on_sql",
+        viewonly=True,
+    )
+    attributetags_galaxy = relationship(
+        "AttributeTag",
+        primaryjoin="and_(Attribute.id == AttributeTag.attribute_id, Tag.is_galaxy)",
+        secondary="join(AttributeTag, Tag, AttributeTag.tag_id == Tag.id)",
+        secondaryjoin="AttributeTag.tag_id == Tag.id",
+        lazy="raise_on_sql",
+        viewonly=True,
+    )
+
+    galaxy_tags = relationship(
+        "Tag",
+        secondary="attribute_tags",
+        secondaryjoin="and_(AttributeTag.tag_id == Tag.id, Tag.is_galaxy)",
+        lazy="raise_on_sql",
+        overlaps="tags, events",
+        viewonly=True,
+    )
+    local_tags = relationship(
+        "Tag",
+        secondary="attribute_tags",
+        secondaryjoin="and_(AttributeTag.tag_id == Tag.id, AttributeTag.local)",
+        lazy="raise_on_sql",
+        viewonly=True,
+    )
+    nonlocal_tags = relationship(
+        "Tag",
+        secondary="attribute_tags",
+        secondaryjoin="and_(AttributeTag.tag_id == Tag.id, not_(AttributeTag.local))",
+        lazy="raise_on_sql",
+        viewonly=True,
+    )
 
     __mapper_args__ = {"polymorphic_on": "type"}
 
     def __init__(self: Self, *arg, **kwargs) -> None:
-        if kwargs["value1"] is None:
+        if "value" in kwargs:
             split_val = kwargs["value"].split("|", 1)
             kwargs["value1"] = split_val[0]
             if len(split_val) == 2:
                 kwargs["value2"] = split_val[1]
 
         super().__init__(*arg, **kwargs)
+
+    async def add_tag(self: Self, db: AsyncSession, tag: "Tag", local: bool = False) -> "AttributeTag":
+        if tag.local_only:
+            local = True
+        attribute_tag = AttributeTag(attribute=self, tag=tag, event_id=self.event_id, local=local)
+        db.add(attribute_tag)
+        await db.commit()
+        return attribute_tag
 
     @property
     def event_uuid(self: "Attribute") -> str:
@@ -69,6 +139,10 @@ class Attribute(Base, DictMixin):
         if len(split) == 2:
             self.value2 = split[1]
 
+    @value.comparator
+    def value(cls: Self) -> AttributeComparator:
+        return AttributeComparator(cls)
+
 
 class AttributeTag(Base):
     __tablename__ = "attribute_tags"
@@ -80,6 +154,10 @@ class AttributeTag(Base):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
+
+    attribute = relationship("Attribute", back_populates="attributetags", lazy="raise_on_sql")
+    tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")
 
 
 class AttributeMeta(DeclarativeMeta):

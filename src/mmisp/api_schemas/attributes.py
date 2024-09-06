@@ -34,6 +34,7 @@ class SearchAttributesEvent(BaseModel):
     info: str
     orgc_id: str
     uuid: str
+    publish_timestamp: int
 
 
 class SearchAttributesAttributesDetails(BaseModel):
@@ -56,7 +57,7 @@ class SearchAttributesAttributesDetails(BaseModel):
     last_seen: str | None = None
     Event: SearchAttributesEvent | None = None
     Object: SearchAttributesObject | None = None
-    Tag: list[GetAttributeTag] = []
+    Tag: list[GetAttributeTag] | None = None
 
 
 class SearchAttributesAttributes(BaseModel):
@@ -86,10 +87,7 @@ class SearchAttributesModelOverrides(BaseModel):
     base_score_config: SearchAttributesModelOverridesBaseScoreConfig
 
 
-class SearchAttributesBody(BaseModel):
-    returnFormat: str = "json"
-    page: int | None = None
-    limit: int | None = None
+class RestSearchFilter(BaseModel):
     value: str | None = None
     value1: str | None = None
     value2: str | None = None
@@ -101,15 +99,21 @@ class SearchAttributesBody(BaseModel):
     to: str | None = None
     last: int | None = None
     eventid: str | None = None
+    published: bool | None = None
+    to_ids: bool | None = None
+    deleted: bool | None = None
+
+
+class SearchAttributesBody(RestSearchFilter):
+    returnFormat: str = "json"
+    page: int | None = None
+    limit: int | None = None
     with_attachments: Annotated[bool | None, Field(alias="withAttachments")] = None
     uuid: str | None = None
     publish_timestamp: str | None = None
-    published: bool | None = None
     timestamp: str | None = None
     attribute_timestamp: str | None = None
     enforce_warninglist: Annotated[bool | None, Field(alias="enforceWarninglist")]
-    to_ids: bool | None = None
-    deleted: bool | None = None
     event_timestamp: str | None = None
     threat_level_id: str | None = None
     eventinfo: str | None = None
@@ -133,9 +137,6 @@ class SearchAttributesBody(BaseModel):
     include_decay_score: Annotated[bool | None, Field(alias="includeDecayScore")] = None
     include_full_model: Annotated[bool | None, Field(alias="includeFullModel")] = None
     exclude_decayed: Annotated[bool | None, Field(alias="excludeDecayed")] = None
-
-    class Config:
-        orm_mode = True
 
 
 class RestoreAttributeResponse(BaseModel):

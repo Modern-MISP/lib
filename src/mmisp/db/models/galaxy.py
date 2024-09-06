@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
@@ -21,3 +22,9 @@ class Galaxy(Base):
     """must be serialized"""
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    galaxy_clusters = relationship(
+        "GalaxyCluster",
+        back_populates="galaxy",
+        lazy="raise_on_sql",
+    )  # type:ignore[assignment,var-annotated]

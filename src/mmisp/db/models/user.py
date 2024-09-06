@@ -47,4 +47,4 @@ class User(Base):
     last_pw_change: Mapped[int] = mapped_column(BigInteger)
 
     # Relationships
-    org = relationship("Organisation", back_populates="users")
+    org = relationship("Organisation", back_populates="users", lazy="raise_on_sql")
