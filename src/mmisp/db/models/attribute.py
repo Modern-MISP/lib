@@ -71,6 +71,14 @@ class Attribute(Base, DictMixin):
         lazy="raise_on_sql",
         viewonly=True,
     )
+    attributetags_galaxy = relationship(
+        "AttributeTag",
+        primaryjoin="and_(Attribute.id == AttributeTag.attribute_id, Tag.is_galaxy)",
+        secondary="join(AttributeTag, Tag, AttributeTag.tag_id == Tag.id)",
+        secondaryjoin="AttributeTag.tag_id == Tag.id",
+        lazy="raise_on_sql",
+        viewonly=True,
+    )
 
     galaxy_tags = relationship(
         "Tag",

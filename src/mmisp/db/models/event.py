@@ -49,9 +49,17 @@ class Event(Base):
         lazy="raise_on_sql",
     )  # type:ignore[assignment,var-annotated]
     creator = relationship("User", primaryjoin="Event.user_id == User.id", lazy="selectin")
-    tags = relationship("Tag", secondary="event_tags", lazy="raise_on_sql")
+    tags = relationship("Tag", secondary="event_tags", lazy="raise_on_sql", viewonly=True)
     eventtags = relationship(
         "EventTag", primaryjoin="Event.id == EventTag.event_id", lazy="raise_on_sql", viewonly=True
+    )
+    eventtags_galaxy = relationship(
+        "EventTag",
+        primaryjoin="and_(Event.id == EventTag.event_id, Tag.is_galaxy)",
+        secondary="join(EventTag, Tag, EventTag.tag_id == Tag.id)",
+        secondaryjoin="EventTag.tag_id == Tag.id",
+        lazy="raise_on_sql",
+        viewonly=True,
     )
     galaxy_tags = relationship(
         "Tag",
@@ -84,3 +92,6 @@ class EventTag(Base):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    event = relationship("Event", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
+    tag = relationship("Tag", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)

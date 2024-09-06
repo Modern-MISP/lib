@@ -20,4 +20,5 @@ class Tag(Base):
     is_custom_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql")
+    attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
+    eventtags = relationship("EventTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
