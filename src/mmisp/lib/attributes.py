@@ -126,6 +126,7 @@ mapper_val_safe_clsname = {
     "identity-card-number": "IdentityCardNumber",
     "impfuzzy": "Impfuzzy",
     "imphash": "Imphash",
+    "integer": "MispInteger",
     "ip-dst|port": "IpDstPort",
     "ip-src|port": "IpSrcPort",
     "issue-date-of-the-visa": "IssueDateOfTheVisa",
@@ -320,6 +321,7 @@ default_category = {
     "identity-card-number": AttributeCategories.PERSON,
     "impfuzzy": AttributeCategories.PAYLOAD_DELIVERY,
     "imphash": AttributeCategories.PAYLOAD_DELIVERY,
+    "integer": AttributeCategories.OTHER,
     "ip-dst|port": AttributeCategories.NETWORK_ACTIVITY,
     "ip-src|port": AttributeCategories.NETWORK_ACTIVITY,
     "issue-date-of-the-visa": AttributeCategories.PERSON,
@@ -768,6 +770,7 @@ categories = {
             AttributeCategories.PAYLOAD_INSTALLATION,
         }
     ),
+    "integer": frozenset({AttributeCategories.OTHER}),
     "ip-dst": frozenset(
         {
             AttributeCategories.PAYLOAD_DELIVERY,
@@ -968,7 +971,13 @@ categories = {
             AttributeCategories.PAYLOAD_INSTALLATION,
         }
     ),
-    "sha224": frozenset({AttributeCategories.PAYLOAD_DELIVERY}),
+    "sha224": frozenset(
+        {
+            AttributeCategories.PAYLOAD_DELIVERY,
+            AttributeCategories.PAYLOAD_INSTALLATION,
+            AttributeCategories.ARTIFACTS_DROPPED,
+        }
+    ),
     "sha256": frozenset(
         {
             AttributeCategories.ARTIFACTS_DROPPED,
@@ -1285,6 +1294,7 @@ to_ids = {
     "identity-card-number": False,
     "impfuzzy": True,
     "imphash": True,
+    "integer": False,
     "ip-dst": True,
     "ip-dst|port": True,
     "ip-src": True,
