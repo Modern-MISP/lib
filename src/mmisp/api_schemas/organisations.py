@@ -3,17 +3,20 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class Organisation(BaseModel):
-    id: str
-    name: str
+class BaseOrganisation(BaseModel):
+    id: str | None = None
+    name: str | None = None
+    nationality: str | None = None
+    sector: str | None = None
+    type: str | None = None
+    uuid: str | None = None
+
+
+class Organisation(BaseOrganisation):
     date_created: datetime
     date_modified: datetime
     description: str | None = None
-    type: str
-    nationality: str | None = None
-    sector: str | None = None
     created_by: str
-    uuid: str
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
@@ -27,14 +30,14 @@ class Organisation(BaseModel):
 class GetOrganisationResponse(BaseModel):
     id: str
     name: str
+    nationality: str | None = None
+    sector: str | None = None
+    type: str | None = None
+    uuid: str | None = None
     date_created: datetime
     date_modified: datetime
     description: str | None = None
-    type: str | None = None
-    nationality: str | None = None
-    sector: str | None = None
     created_by: str
-    uuid: str | None = None
     contacts: str | None = None
     local: bool
     restricted_to_domain: str | None = None

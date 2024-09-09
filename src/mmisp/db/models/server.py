@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -18,8 +19,10 @@ class Server(Base):
     push_sightings: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     push_galaxy_clusters: Mapped[bool] = mapped_column(Boolean, default=False)
     pull_galaxy_clusters: Mapped[bool] = mapped_column(Boolean, default=False)
-    lastpulledid: Mapped[int] = mapped_column(Integer)
-    lastpushedid: Mapped[int] = mapped_column(Integer)
+    push_analyst_data: Mapped[bool] = mapped_column(Boolean, default=False)
+    pull_analyst_data: Mapped[bool] = mapped_column(Boolean, default=False)
+    last_pulled_id: Mapped[int] = mapped_column("lastpulledid", Integer)
+    last_pushed_id: Mapped[int] = mapped_column("lastpushedid", Integer)
     organization: Mapped[str] = mapped_column(String(10), default=None)
     remote_org_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     publish_without_email: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -33,3 +36,24 @@ class Server(Base):
     skip_proxy: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     caching_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    remove_missing_tags: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    organisation = relationship(
+        "Organisation",
+        primaryjoin="Server.org_id == Organisation.id",
+        lazy="raise_on_sql",
+        foreign_keys="Server.org_id",
+    )  # type:ignore[assignment,var-annotated]
+    remote_organisation = relationship(
+        "Organisation",
+        primaryjoin="Server.remote_org_id == Organisation.id",
+        lazy="raise_on_sql",
+        foreign_keys="Server.remote_org_id",
+    )  # type:ignore[assignment,var-annotated]
+    users = relationship(
+        "User",
+        primaryjoin="Server.id == User.server_id",
+        foreign_keys="User.server_id",
+        back_populates="server",
+        lazy="raise_on_sql",
+    )
