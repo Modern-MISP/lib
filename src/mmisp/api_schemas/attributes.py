@@ -165,28 +165,23 @@ class RestoreAttributeResponse(BaseModel):
 
 class GetDescribeTypesAttributes(BaseModel):
     sane_defaults: dict = {}
-    for k, v in to_ids.items():
+    for _k, _v in to_ids.items():
         sane_defaults.update(
             {
-                k: {
-                    "default_category": default_category[k],
-                    "to_ids": v,
+                _k: {
+                    "default_category": default_category[_k],
+                    "to_ids": "1" if _v else "0",
                 }
             }
         )
 
     types: list[str] = list(mapper_val_safe_clsname.keys())
-
     categories: list[str] = [member.value for member in AttributeCategories]
-
     category_type_mappings: dict = inverted_categories
 
 
 class GetDescribeTypesResponse(BaseModel):
     result: GetDescribeTypesAttributes
-
-    class Config:
-        orm_mode = True
 
 
 class GetAttributeAttributes(BaseModel):
@@ -414,28 +409,12 @@ class AddAttributeBody(BaseModel):
 
 GetAttributeStatisticsTypesResponseAttrs = {x: Field(default=None) for x in mapper_val_safe_clsname.keys()}
 GetAttributeStatisticsTypesResponseAttrs["__annotations__"] = {x: str | None for x in mapper_val_safe_clsname.keys()}
-GetAttributeStatisticsTypesResponse = type(
+GetAttributeStatisticsTypesResponse = type(  # type: ignore
     "GetAttributeStatisticsTypesResponse", (BaseModel,), GetAttributeStatisticsTypesResponseAttrs
 )
 
-
-class GetAttributeStatisticsCategoriesResponse(BaseModel):
-    antivirus_detection: str = Field(alias="Antivirus detection")
-    artifacts_dropped: str = Field(alias="Artifacts dropped")
-    attribution: str = Field(alias="Attribution")
-    external_analysis: str = Field(alias="External analysis")
-    financial_fraud: str = Field(alias="Financial fraud")
-    internal_reference: str = Field(alias="Internal reference")
-    network_activity: str = Field(alias="Network activity")
-    other: str = Field(alias="Other")
-    payload_delivery: str = Field(alias="Payload delivery")
-    payload_installation: str = Field(alias="Payload installation")
-    payload_type: str = Field(alias="Payload type")
-    persistence_mechanism: str = Field(alias="Persistence mechanism")
-    person: str = Field(alias="Person")
-    social_network: str = Field(alias="Social network")
-    support__tool: str = Field(alias="Support Tool")
-    targeting_data: str = Field(alias="Targeting data")
-
-    class Config:
-        orm_mode = True
+GetAttributeStatisticsCategoriesResponseAttrs = {x.value: Field(default=None) for x in AttributeCategories}
+GetAttributeStatisticsCategoriesResponseAttrs["__annotations__"] = {x.value: str | None for x in AttributeCategories}
+GetAttributeStatisticsCategoriesResponse = type(  # type: ignore
+    "GetAttributeStatisticsCategoriesResponse", (BaseModel,), GetAttributeStatisticsCategoriesResponseAttrs
+)

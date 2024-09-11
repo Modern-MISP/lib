@@ -48,3 +48,10 @@ class User(Base):
 
     # Relationships
     org = relationship("Organisation", back_populates="users", lazy="raise_on_sql")
+    server = relationship(
+        "Server",
+        primaryjoin="Server.id == User.server_id",
+        foreign_keys="User.server_id",
+        back_populates="users",
+        lazy="raise_on_sql",
+    )

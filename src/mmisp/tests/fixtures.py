@@ -334,7 +334,7 @@ async def attribute2(db, event):
 @pytest_asyncio.fixture
 async def attribute_multi(db, event):
     event_id = event.id
-    attribute = Attribute(value="1.2.3.4|80", type="ip-src|port", category="Network Activity", event_id=event_id)
+    attribute = Attribute(value="1.2.3.4|80", type="ip-src|port", category="Network activity", event_id=event_id)
 
     db.add(attribute)
     await db.commit()
@@ -349,7 +349,7 @@ async def attribute_multi(db, event):
 @pytest_asyncio.fixture
 async def attribute_multi2(db, event):
     event_id = event.id
-    attribute = Attribute(value="2.3.4.5|80", type="ip-src|port", category="Network Activity", event_id=event_id)
+    attribute = Attribute(value="2.3.4.5|80", type="ip-src|port", category="Network activity", event_id=event_id)
 
     db.add(attribute)
     await db.commit()

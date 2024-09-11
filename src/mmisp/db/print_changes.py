@@ -2,57 +2,46 @@
 
 """
 USAGE:
-    - Create env file with the variables
-        MYSQL_USER
-        MYSQL_PASSWORD
-        MYSQL_HOST
-        MYSQL_DBNAME
-    - Populate your environment `export $(cat ENVFILE)`
     - Run `python -m mmisp.db.print_changes`
 """
 
-import os
+import asyncio
 import pprint
+from collections import defaultdict
 
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import MetaData
 
-from .database import Base
+import mmisp.db.all_models  # noqa
 
-# import all models, so Base is populated
-from .models import (  # noqa: F401
-    attribute,
-    auth_key,
-    event,
-    feed,
-    galaxy,
-    galaxy_cluster,
-    noticelist,
-    object,
-    organisation,
-    role,
-    server,
-    sharing_group,
-    sighting,
-    tag,
-    taxonomy,
-    user,
-    user_setting,
-    warninglist,
-)
-
-myuser = os.getenv("MYSQL_USER")
-password = os.getenv("MYSQL_PASSWORD")
-host = os.getenv("MYSQL_HOST")
-db_name = os.getenv("MYSQL_DBNAME")
-
-engine = create_engine(f"mysql+mysqlconnector://{myuser}:{password}@{host}/{db_name}")
-
+from .database import Base, sessionmanager
 
 metadata = MetaData()
 
-mc = MigrationContext.configure(engine.connect())
 
-diff = compare_metadata(mc, Base.metadata)  # type:ignore[attr-defined]
-pprint.pprint(diff, indent=2, width=20)
+def create_diff(conn) -> list:  # noqa
+    mc = MigrationContext.configure(conn)
+    diff = compare_metadata(mc, Base.metadata)  # type:ignore[attr-defined]
+    return diff
+
+
+async def print_changes() -> None:
+    changes = defaultdict(list)
+    sessionmanager.init()
+    assert sessionmanager._engine is not None
+    async with sessionmanager._engine.begin() as connection:
+        assert connection is not None
+        diff = await connection.run_sync(create_diff)
+        for elem in diff:
+            if isinstance(elem, list):
+                for inner_elem in elem:
+                    changes[inner_elem[0]].append(inner_elem)
+            else:
+                changes[elem[0]].append(elem)
+    pprint.pprint(changes, indent=2, width=20)
+    for k, v in changes.items():
+        print(k, len(v))
+
+
+asyncio.run(print_changes())
