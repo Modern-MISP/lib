@@ -409,12 +409,12 @@ class AddAttributeBody(BaseModel):
 
 GetAttributeStatisticsTypesResponseAttrs = {x: Field(default=None) for x in mapper_val_safe_clsname.keys()}
 GetAttributeStatisticsTypesResponseAttrs["__annotations__"] = {x: str | None for x in mapper_val_safe_clsname.keys()}
-GetAttributeStatisticsTypesResponse = type(
+GetAttributeStatisticsTypesResponse = type(  # type: ignore
     "GetAttributeStatisticsTypesResponse", (BaseModel,), GetAttributeStatisticsTypesResponseAttrs
 )
 
 GetAttributeStatisticsCategoriesResponseAttrs = {x.value: Field(default=None) for x in AttributeCategories}
 GetAttributeStatisticsCategoriesResponseAttrs["__annotations__"] = {x.value: str | None for x in AttributeCategories}
-GetAttributeStatisticsCategoriesResponse = type(
+GetAttributeStatisticsCategoriesResponse = type(  # type: ignore
     "GetAttributeStatisticsCategoriesResponse", (BaseModel,), GetAttributeStatisticsCategoriesResponseAttrs
 )
