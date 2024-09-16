@@ -32,12 +32,14 @@ class GetGalaxyClusterResponse(BaseModel):
     orgc_id: str
     default: bool
     locked: bool
-    extends_uuid: str
+    extends_uuid: str | None = None
     extends_version: str
     published: bool
     deleted: bool
     Galaxy: GetAllSearchGalaxiesAttributes
     GalaxyElement: list[ExportGalaxyGalaxyElement]
+    GalaxyClusterRelation: list
+    RelationshipInbound: list
     Org: GetOrganisationResponse
     Orgc: GetOrganisationResponse
 
