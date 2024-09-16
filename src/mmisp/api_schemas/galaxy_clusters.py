@@ -35,6 +35,10 @@ class GetGalaxyClusterResponse(BaseModel):
     Orgc: GetOrganisationResponse
 
 
+class GalaxyClusterResponse(BaseModel):
+    GalaxyCluster: GetGalaxyClusterResponse
+
+
 class ExportGalaxyClusterResponse(BaseModel):
     id: str
     uuid: str
