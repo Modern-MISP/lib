@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
@@ -42,6 +44,9 @@ class GetGalaxyClusterResponse(BaseModel):
 
 class GalaxyClusterResponse(BaseModel):
     GalaxyCluster: GetGalaxyClusterResponse
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class ExportGalaxyClusterResponse(BaseModel):
