@@ -38,8 +38,8 @@ class GetGalaxyClusterResponse(BaseModel):
     deleted: bool
     Galaxy: GetAllSearchGalaxiesAttributes
     GalaxyElement: list[ExportGalaxyGalaxyElement]
-    GalaxyClusterRelation: list
-    RelationshipInbound: list
+    GalaxyClusterRelation: list = []
+    RelationshipInbound: list = []
     Org: GetOrganisationResponse
     Orgc: GetOrganisationResponse
 
