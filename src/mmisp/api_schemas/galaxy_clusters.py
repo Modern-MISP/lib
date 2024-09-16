@@ -36,12 +36,12 @@ class GetGalaxyClusterResponse(BaseModel):
     extends_version: str
     published: bool
     deleted: bool
-    Galaxy: GetAllSearchGalaxiesAttributes
+    Galaxy: GetAllSearchGalaxiesAttributes | None = None
     GalaxyElement: list[ExportGalaxyGalaxyElement]
     GalaxyClusterRelation: list = []
     RelationshipInbound: list = []
-    Org: GetOrganisationResponse
-    Orgc: GetOrganisationResponse
+    Org: GetOrganisationResponse | None = None
+    Orgc: GetOrganisationResponse | None = None
 
 
 class GalaxyClusterResponse(BaseModel):
