@@ -508,7 +508,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
     await db.refresh(galaxy)
 
     galaxy_cluster = GalaxyCluster(
-        uuid=galaxy_cluster_one_uuid,
+        uuid=galaxy_default_cluster_one_uuid,
         collection_uuid="",
         type="test galaxy type",
         value="test",
@@ -530,7 +530,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         deleted=False,
     )
     galaxy_cluster2 = GalaxyCluster(
-        uuid=galaxy_cluster_two_uuid,
+        uuid=galaxy_default_cluster_two_uuid,
         collection_uuid="",
         type="test galaxy type",
         value="test",

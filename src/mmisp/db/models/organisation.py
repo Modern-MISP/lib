@@ -55,21 +55,3 @@ class Organisation(Base, DictMixin):
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.orgc_id",
     )  # type:ignore[assignment,var-annotated]
-
-
-GENERIC_MISP_ORGANISATION = Organisation(
-    id="0",
-    name="MISP",
-    date_created="",
-    date_modified="",
-    description="Automatically generated MISP organisation",
-    type="",
-    nationality="Not specified",
-    sector="",
-    created_by="0",
-    uuid="0",
-    contacts="",
-    local=True,
-    restricted_to_domain=[],
-    landingpage=None,
-)
