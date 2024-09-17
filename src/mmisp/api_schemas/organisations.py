@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import Self
 
 from pydantic import BaseModel
+
+from mmisp.lib.serialisation_helper import timestamp_or_empty_string
 
 
 class BaseOrganisation(BaseModel):
@@ -34,14 +37,24 @@ class GetOrganisationResponse(BaseModel):
     sector: str | None = None
     type: str | None = None
     uuid: str | None = None
-    date_created: datetime
-    date_modified: datetime
+    # the fallback GENERIC_MISP_ORGANISATION doesn't have this property
+    # str is needed because its returned as string
+    date_created: datetime | None | str = None
+    date_modified: datetime | None | str = None
     description: str | None = None
     created_by: str
     contacts: str | None = None
     local: bool
-    restricted_to_domain: str | None = None
+    restricted_to_domain: str | list | None = None
     landingpage: str | None = None
+
+    def dict(self: Self, *args, **kwargs) -> dict:
+        d = super().dict(*args, **kwargs)
+
+        d["date_created"] = timestamp_or_empty_string(d["date_created"])
+        d["date_modified"] = timestamp_or_empty_string(d["date_modified"])
+
+        return d
 
 
 class GetAllOrganisationsOrganisation(BaseModel):
