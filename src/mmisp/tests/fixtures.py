@@ -13,6 +13,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.tag import Tag
+from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 
@@ -460,10 +461,6 @@ async def auth_key(db, site_admin_user):
     await db.commit()
 
 
-def galaxy_tag_name_from_uuid(galaxy_cluster_uuid):
-    return f'misp-galaxy:test="{galaxy_cluster_uuid}"'
-
-
 @pytest.fixture
 def galaxy_cluster_collection_uuid():
     return uuid()
@@ -512,7 +509,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         collection_uuid="",
         type="test galaxy type",
         value="test",
-        tag_name=galaxy_tag_name_from_uuid(galaxy_default_cluster_one_uuid),
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
         description="test",
         galaxy_id=galaxy.id,
         source="me",
@@ -534,7 +531,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         collection_uuid="",
         type="test galaxy type",
         value="test",
-        tag_name=galaxy_tag_name_from_uuid(galaxy_default_cluster_two_uuid),
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
         description="test",
         galaxy_id=galaxy.id,
         source="me",
@@ -624,7 +621,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
         collection_uuid="",
         type="test galaxy type",
         value="test",
-        tag_name=galaxy_tag_name_from_uuid(galaxy_cluster_one_uuid),
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
         description="test",
         galaxy_id=galaxy.id,
         source="me",
@@ -646,7 +643,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
         collection_uuid="",
         type="test galaxy type",
         value="test",
-        tag_name=galaxy_tag_name_from_uuid(galaxy_cluster_two_uuid),
+        tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_two_uuid),
         description="test",
         galaxy_id=galaxy.id,
         source="me",
@@ -716,7 +713,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
 @pytest_asyncio.fixture()
 async def galaxy_cluster_one_tag(db, galaxy_cluster_one_uuid):
     tag = Tag(
-        name=galaxy_tag_name_from_uuid(galaxy_cluster_one_uuid),
+        name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
         colour="#123456",
         exportable=True,
         hide_tag=False,
