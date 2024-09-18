@@ -15,3 +15,7 @@ def parse_galaxy_authors(str_authors: str) -> list[str]:
     assert isinstance(parsed_author, list)
 
     return parsed_author
+
+
+def galaxy_tag_name(galaxy_type: str, galaxy_cluster_uuid: str) -> str:
+    return f'misp-galaxy:{galaxy_type}="{galaxy_cluster_uuid}"'
