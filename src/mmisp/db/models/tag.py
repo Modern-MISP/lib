@@ -22,3 +22,12 @@ class Tag(Base):
 
     attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
     eventtags = relationship("EventTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
+    galaxy_cluster = relationship(
+        "GalaxyCluster",
+        primaryjoin="Tag.name == GalaxyCluster.tag_name",
+        back_populates="tag",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.tag_name",
+        single_parent=True,
+        uselist=False,
+    )  # type:ignore[assignment,var-annotated]
