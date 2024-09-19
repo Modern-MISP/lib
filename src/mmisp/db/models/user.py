@@ -55,3 +55,9 @@ class User(Base):
         back_populates="users",
         lazy="raise_on_sql",
     )
+    role = relationship(
+        "Role",
+        primaryjoin="User.role_id == Role.id",
+        foreign_keys="User.role_id",
+        lazy="raise_on_sql",
+    )

@@ -59,6 +59,15 @@ class GalaxyCluster(Base):
         back_populates="galaxy_cluster",
         lazy="raise_on_sql",
     )  # type:ignore[assignment,var-annotated]
+    tag = relationship(
+        "Tag",
+        primaryjoin="GalaxyCluster.tag_name == Tag.name",
+        back_populates="galaxy_cluster",
+        lazy="raise_on_sql",
+        foreign_keys="GalaxyCluster.tag_name",
+        single_parent=True,
+        uselist=False,
+    )  # type:ignore[assignment,var-annotated]
 
 
 class GalaxyElement(Base):
