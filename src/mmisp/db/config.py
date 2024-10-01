@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from os import getenv
 
@@ -21,3 +22,7 @@ config: DatabaseConfig = DatabaseConfig(
     RETRY_SLEEP=int(getenv("DB_RETRY", 5)),
     MAX_RETRIES=int(getenv("DB_MAX_RETRIES", 100)),
 )
+sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
+sqlalchemy_logger.setLevel(logging.INFO)
+if config.DEBUG:
+    sqlalchemy_logger.setLevel(logging.DEBUG)

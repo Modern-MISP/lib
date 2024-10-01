@@ -31,7 +31,7 @@ class DatabaseSessionManager:
         retries = 0
         while retries < config.MAX_RETRIES:
             try:
-                self._engine = create_async_engine(self._url, echo=config.DEBUG)
+                self._engine = create_async_engine(self._url, echo=False, hide_parameters=not (config.DEBUG))
                 break
             except OperationalError as e:
                 retries += 1
