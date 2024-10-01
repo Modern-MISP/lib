@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 
 class TokenResponse(BaseModel):
@@ -17,7 +17,7 @@ class IdentityProviderBody(BaseModel):
     active: bool
     base_url: str
     client_id: str
-    client_secret: str
+    client_secret: SecretStr
     scope: str | None = None
 
 
@@ -32,7 +32,7 @@ class IdentityProviderEditBody(BaseModel):
     active: bool | None = None
     base_url: str | None = None
     client_id: str | None = None
-    client_secret: str | None = None
+    client_secret: SecretStr | None = None
     scope: str | None = None
 
 
@@ -43,7 +43,6 @@ class GetIdentityProviderResponse(BaseModel):
     active: bool
     base_url: str
     client_id: str
-    client_secret: str
     scope: str | None = None
 
 
@@ -67,17 +66,17 @@ class StartLoginBody(BaseModel):
 
 class PasswordLoginBody(BaseModel):
     email: str
-    password: str
+    password: SecretStr
 
 
 class SetPasswordBody(BaseModel):
-    password: str
+    password: SecretStr
 
 
 class ChangePasswordBody(BaseModel):
     email: str
-    password: str
-    oldPassword: str | None = None
+    password: SecretStr
+    oldPassword: SecretStr | None = None
 
 
 class ExchangeTokenLoginBody(BaseModel):
