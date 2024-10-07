@@ -12,7 +12,7 @@ class AuthKey(Base):
     __tablename__ = "auth_keys"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid.uuid4, nullable=False)
+    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid, nullable=False)
     authkey: Mapped[str] = mapped_column(String(255), nullable=False)
     authkey_start: Mapped[str] = mapped_column(String(255), nullable=False)
     authkey_end: Mapped[str] = mapped_column(String(255), nullable=False)
