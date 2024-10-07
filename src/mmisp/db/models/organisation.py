@@ -29,7 +29,9 @@ class Organisation(Base, DictMixin):
     restricted_to_domain: Mapped[str] = mapped_column(Text)
     landingpage: Mapped[str] = mapped_column(Text)
 
-    # Relationship to users
+
+    #TODO
+    """# Relationship to users
     users = relationship("User", back_populates="org", lazy="raise_on_sql")
     creator = relationship(
         "User", primaryjoin="Organisation.created_by == User.id", foreign_keys=created_by, lazy="selectin"
@@ -55,3 +57,4 @@ class Organisation(Base, DictMixin):
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.orgc_id",
     )  # type:ignore[assignment,var-annotated]
+    """

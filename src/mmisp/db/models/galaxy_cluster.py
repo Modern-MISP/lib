@@ -37,6 +37,8 @@ class GalaxyCluster(Base):
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    #TODO
+    """
     org = relationship(
         "Organisation",
         primaryjoin="GalaxyCluster.org_id == Organisation.id",
@@ -70,7 +72,7 @@ class GalaxyCluster(Base):
         single_parent=True,
         uselist=False,
     )  # type:ignore[assignment,var-annotated]
-
+    """
 
 class GalaxyElement(Base):
     __tablename__ = "galaxy_elements"
