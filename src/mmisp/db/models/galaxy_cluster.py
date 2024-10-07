@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
@@ -37,8 +35,7 @@ class GalaxyCluster(Base):
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    #TODO
-    """
+    # TODO
     org = relationship(
         "Organisation",
         primaryjoin="GalaxyCluster.org_id == Organisation.id",
@@ -72,7 +69,7 @@ class GalaxyCluster(Base):
         single_parent=True,
         uselist=False,
     )  # type:ignore[assignment,var-annotated]
-    """
+
 
 class GalaxyElement(Base):
     __tablename__ = "galaxy_elements"
