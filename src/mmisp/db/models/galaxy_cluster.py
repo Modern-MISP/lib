@@ -38,14 +38,14 @@ class GalaxyCluster(Base):
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     org = relationship(
-        "Organisation",
+        "organisations",
         primaryjoin="GalaxyCluster.org_id == Organisation.id",
         back_populates="galaxy_clusters",
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.org_id",
     )  # type:ignore[assignment,var-annotated]
     orgc = relationship(
-        "Organisation",
+        "organisations",
         primaryjoin="GalaxyCluster.orgc_id == Organisation.id",
         back_populates="galaxy_clusters_created",
         lazy="raise_on_sql",

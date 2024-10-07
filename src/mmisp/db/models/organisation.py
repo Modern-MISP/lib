@@ -42,14 +42,14 @@ class Organisation(Base, DictMixin):
     )  # type:ignore[assignment,var-annotated]
 
     galaxy_clusters = relationship(
-        "GalaxyCluster",
+        "galaxy_clusters",
         primaryjoin="Organisation.id == GalaxyCluster.org_id",
         back_populates="org",
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.org_id",
     )  # type:ignore[assignment,var-annotated]
     galaxy_clusters_created = relationship(
-        "GalaxyCluster",
+        "galaxy_clusters",
         primaryjoin="Organisation.id == GalaxyCluster.orgc_id",
         back_populates="orgc",
         lazy="raise_on_sql",
