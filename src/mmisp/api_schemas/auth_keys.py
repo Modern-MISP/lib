@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Self, Union
 
 from pydantic import BaseModel, PositiveInt, conint, validator
@@ -14,7 +13,7 @@ class ViewAuthKeyResponseWrapper(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
+    created: str
     expiration: int
     read_only: bool
     user_id: int
