@@ -4,6 +4,8 @@ from pydantic import BaseModel
 
 from mmisp.api_schemas.organisations import OrganisationUsersResponse
 from mmisp.api_schemas.roles import RoleUsersResponse
+from mmisp.api_schemas.roles import Role
+from mmisp.api_schemas.organisations import Organisation
 
 
 class User(BaseModel):
@@ -180,6 +182,8 @@ class GetAllUsersResponse(BaseModel):
 class UserWithName(BaseModel):
     user: User
     name: str
+
+
 
 class UsersViewMeResponse(BaseModel):
     User: User

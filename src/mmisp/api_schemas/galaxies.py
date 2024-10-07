@@ -2,8 +2,9 @@ from typing import Any, List
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.galaxy_clusters import GetGalaxyClusterResponse
-from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.common import TagAttributesResponse
+from mmisp.api_schemas.events import GetAllEventsGalaxyClusterGalaxy, AddEditGetEventGalaxyClusterRelation
+from mmisp.api_schemas.organisations import Organisation
 
 
 class SearchGalaxiesBody(BaseModel):
@@ -140,24 +141,11 @@ class ExportGalaxyClusterResponse(BaseModel):
     GalaxyElement: list[ExportGalaxyGalaxyElement]
     Galaxy: GetAllEventsGalaxyClusterGalaxy
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
-    Org: mmisp.api_schemas.organisations.Organisation
-    Orgc: mmisp.api_schemas.organisations.Organisation
+    Org: Organisation
+    Orgc: Organisation
 
     class Config:
         orm_mode = True
-
-
-class TargetingClusterRelation(BaseModel):
-    id: int
-    galaxy_cluster_id: int
-    referenced_galaxy_cluster_id: int
-    referenced_galaxy_cluster_uuid: str
-    referenced_galaxy_cluster_type: str
-    galaxy_cluster_uuid: str
-    distribution: int
-    sharing_group_id: int | None = None
-    default: bool
-    Tag: list[TagAttributesResponse]
 
 
 class GalaxyClustersViewResponse(BaseModel):
@@ -185,8 +173,8 @@ class GalaxyClustersViewResponse(BaseModel):
     GalaxyElement: list[ExportGalaxyGalaxyElement]
     Galaxy: GetAllEventsGalaxyClusterGalaxy
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
-    Org: mmisp.api_schemas.organisations.Organisation
-    Orgc: mmisp.api_schemas.organisations.Organisation
+    Org: Organisation
+    Orgc: Organisation
     TargetingClusterRelation: list[TargetingClusterRelation] | None = None
     RelationshipInbound: list[Any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
 
@@ -194,9 +182,9 @@ class TargetingClusterRelation(BaseModel):
     id: int
     galaxy_cluster_id: int
     referenced_galaxy_cluster_id: int
-    referenced_galaxy_cluster_uuid: uuid
+    referenced_galaxy_cluster_uuid: str
     referenced_galaxy_cluster_type: str
-    galaxy_cluster_uuid: uuid
+    galaxy_cluster_uuid: str
     distribution: int
     sharing_group_id: int | None = None
     default: bool
