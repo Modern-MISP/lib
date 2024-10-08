@@ -29,7 +29,6 @@ class Organisation(Base, DictMixin):
     restricted_to_domain: Mapped[str] = mapped_column(Text)
     landingpage: Mapped[str] = mapped_column(Text)
 
-    # TODO
     # Relationship to users
     users = relationship("User", back_populates="org", lazy="raise_on_sql")
     creator = relationship(

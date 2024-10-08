@@ -1,8 +1,7 @@
 from sqlalchemy import Integer, String, Text
-from sqlalchemy.orm import Mapped
 
 from ..database import Base
-from ..mypy import mapped_column
+from mmisp.db.mypy import Mapped, mapped_column
 
 
 class OverCorrelatingValue(Base):
@@ -23,14 +22,14 @@ class CorrelationValue(Base):
     __tablename__ = "correlation_values"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    value: Mapped[str] = mapped_column(String, nullable=False, index=True, unique=True)
+    value: Mapped[str] = mapped_column(String(255), nullable=False, index=True, unique=True)
 
 
 class CorrelationExclusions(Base):
     __tablename__ = 'correlation_exclusions'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    value: Mapped[str] = mapped_column(String, nullable=False, index=True, unique=True)
+    value: Mapped[str] = mapped_column(String(255), nullable=False, index=True, unique=True)
     from_json: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     comment: Mapped[str] = mapped_column(Text, nullable=False)
 

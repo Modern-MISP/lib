@@ -35,7 +35,6 @@ class GalaxyCluster(Base):
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    # TODO
     org = relationship(
         "Organisation",
         primaryjoin="GalaxyCluster.org_id == Organisation.id",
