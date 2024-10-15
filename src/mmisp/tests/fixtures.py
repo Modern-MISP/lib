@@ -16,6 +16,10 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+
+from ..db.models.correlation import CorrelationValue, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_value_generator import generate_correlation_value_a_to_c
@@ -924,6 +928,9 @@ async def event_with_normal_tag(db, event, normal_tag):
         .execution_options(populate_existing=True)
     )
     await db.execute(qry)
+
+    print("bonobo event_with_normal_tag", "event:", event, "normal_tag:", normal_tag)
+
     event_tag: EventTag = await event.add_tag(db, normal_tag)
     assert not event_tag.local
 
@@ -995,7 +1002,8 @@ async def over_correlating_values(db):
 @pytest_asyncio.fixture
 async def correlation_exclusion_excluded(db):
     exclusion: CorrelationExclusions = CorrelationExclusions(
-        value="excluded"
+        value="excluded",
+        comment="This is an excluded value",
     )
 
     db.add(exclusion)
