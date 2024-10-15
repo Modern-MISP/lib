@@ -16,15 +16,16 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from .generators.model_generators.post_generator import generate_post
-from ..db.models.correlation import OverCorrelatingValue
 
+from ..db.models.correlation import OverCorrelatingValue
+from ..db.models.event import Event, EventTag
 from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
 from .generators.model_generators.organisation_generator import generate_organisation
+from .generators.model_generators.post_generator import generate_post
 from .generators.model_generators.role_generator import (
     generate_org_admin_role,
     generate_read_only_role,
@@ -906,6 +907,26 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
     yield attribute
 
     await db.delete(at)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_with_normal_tag(db, event, normal_tag):
+    assert not normal_tag.local_only
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.eventtags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+    event_tag: EventTag = await event.add_tag(db, normal_tag)
+    assert not event_tag.local
+
+    await db.commit()
+    yield event
+
+    await db.delete(event_tag)
     await db.commit()
 
 

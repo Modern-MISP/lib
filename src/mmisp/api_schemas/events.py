@@ -270,7 +270,7 @@ class AddEditGetEventDetails(BaseModel):
     proposal_email_lock: bool
     locked: bool
     publish_timestamp: str
-    sharing_group_id: int
+    sharing_group_id: int | None = None
     disable_correlation: bool
     extends_uuid: str
     protected: bool | None = None
