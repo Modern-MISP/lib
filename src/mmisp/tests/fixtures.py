@@ -16,8 +16,10 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+from .generators.model_generators.correlation_value_generator import correlation_value_a_to_c_generator
+from .generators.model_generators.over_correlating_value_generator import generate_over_correlating_value_value_turla
 
-from ..db.models.correlation import OverCorrelatingValue
+from ..db.models.correlation import OverCorrelatingValue, CorrelationValue
 from ..db.models.event import Event, EventTag
 from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
@@ -945,7 +947,7 @@ async def post(db):
 
 @pytest_asyncio.fixture()
 async def over_correlating_value_value_turla(db):
-    ocv: OverCorrelatingValue = generate_post()
+    ocv: OverCorrelatingValue = generate_over_correlating_value_value_turla()
     db.add(ocv)
     await db.commit()
     await db.refresh(ocv)
@@ -954,3 +956,19 @@ async def over_correlating_value_value_turla(db):
 
     await db.delete(ocv)
     await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def correlating_values(db):
+    list_c_v: list[CorrelationValue] = correlation_value_a_to_c_generator()
+
+    for list_c_v_item in list_c_v:
+        db.add(list_c_v_item)
+        await db.commit()
+        await db.refresh(list_c_v_item)
+
+    yield list_c_v
+
+    for list_c_v_item in list_c_v:
+        await db.delete(list_c_v_item)
+        await db.commit()
