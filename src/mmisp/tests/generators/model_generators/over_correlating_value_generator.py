@@ -1,9 +1,34 @@
 from mmisp.db.models.correlation import OverCorrelatingValue
 
 
-def generate_over_correlating_value_value_turla():
+def generate_over_correlating_value_turla() -> OverCorrelatingValue:
     return OverCorrelatingValue(
-        id=1,
         value="Turla",
         occurrence=1,
     )
+
+
+def generate_over_correlating_value_x() -> OverCorrelatingValue:
+    return OverCorrelatingValue(
+        value="x",
+        occurrence=1,
+    )
+
+
+def generate_over_correlating_value_y() -> OverCorrelatingValue:
+    return OverCorrelatingValue(
+        value="y",
+        occurrence=1,
+    )
+
+
+def generate_over_correlating_value_z() -> OverCorrelatingValue:
+    return OverCorrelatingValue(
+        value="z",
+        occurrence=1,
+    )
+
+
+def generate_over_correlating_value_x_to_z() -> list[OverCorrelatingValue]:
+    return [generate_over_correlating_value_x(), generate_over_correlating_value_y(),
+            generate_over_correlating_value_z()]

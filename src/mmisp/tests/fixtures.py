@@ -16,8 +16,9 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from .generators.model_generators.correlation_value_generator import correlation_value_a_to_c_generator
-from .generators.model_generators.over_correlating_value_generator import generate_over_correlating_value_value_turla
+from .generators.model_generators.correlation_value_generator import generate_correlation_value_a_to_c
+from .generators.model_generators.over_correlating_value_generator import generate_over_correlating_value_turla, \
+    generate_over_correlating_value_x_to_z
 
 from ..db.models.correlation import OverCorrelatingValue, CorrelationValue
 from ..db.models.event import Event, EventTag
@@ -946,8 +947,8 @@ async def post(db):
 
 
 @pytest_asyncio.fixture()
-async def over_correlating_value_value_turla(db):
-    ocv: OverCorrelatingValue = generate_over_correlating_value_value_turla()
+async def over_correlating_value_turla(db):
+    ocv: OverCorrelatingValue = generate_over_correlating_value_turla()
     db.add(ocv)
     await db.commit()
     await db.refresh(ocv)
@@ -960,7 +961,7 @@ async def over_correlating_value_value_turla(db):
 
 @pytest_asyncio.fixture()
 async def correlating_values(db):
-    list_c_v: list[CorrelationValue] = correlation_value_a_to_c_generator()
+    list_c_v: list[CorrelationValue] = generate_correlation_value_a_to_c()
 
     for list_c_v_item in list_c_v:
         db.add(list_c_v_item)
@@ -971,4 +972,20 @@ async def correlating_values(db):
 
     for list_c_v_item in list_c_v:
         await db.delete(list_c_v_item)
+        await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def over_correlating_values(db):
+    list_o_c_v: list[OverCorrelatingValue] = generate_over_correlating_value_x_to_z()
+
+    for list_o_c_v_item in list_o_c_v:
+        db.add(list_o_c_v_item)
+        await db.commit()
+        await db.refresh(list_o_c_v_item)
+
+    yield list_o_c_v
+
+    for list_o_c_v_item in list_o_c_v:
+        await db.delete(list_o_c_v_item)
         await db.commit()

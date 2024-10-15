@@ -1,23 +1,23 @@
 from mmisp.db.models.correlation import CorrelationValue
 
 
-def correlation_value_a_generator() -> CorrelationValue:
+def generate_correlation_value_a() -> CorrelationValue:
     return CorrelationValue(
         value="a",
     )
 
 
-def correlation_value_b_generator() -> CorrelationValue:
+def generate_correlation_value_b() -> CorrelationValue:
     return CorrelationValue(
         value="b",
     )
 
 
-def correlation_value_c_generator() -> CorrelationValue:
+def generate_correlation_value_c() -> CorrelationValue:
     return CorrelationValue(
         value="c",
     )
 
 
-def correlation_value_a_to_c_generator() -> list[CorrelationValue]:
-    return [correlation_value_a_generator(), correlation_value_b_generator(), correlation_value_c_generator()]
+def generate_correlation_value_a_to_c() -> list[CorrelationValue]:
+    return [generate_correlation_value_a(), generate_correlation_value_b(), generate_correlation_value_c()]
