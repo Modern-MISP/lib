@@ -1,23 +1,8 @@
 from mmisp.db.models.correlation import CorrelationValue
+from mmisp.util.uuid import uuid
 
 
-def generate_correlation_value_a() -> CorrelationValue:
+def generate_correlation_value() -> CorrelationValue:
     return CorrelationValue(
-        value="a",
+        value=uuid(),
     )
-
-
-def generate_correlation_value_b() -> CorrelationValue:
-    return CorrelationValue(
-        value="b",
-    )
-
-
-def generate_correlation_value_c() -> CorrelationValue:
-    return CorrelationValue(
-        value="c",
-    )
-
-
-def generate_correlation_value_a_to_c() -> list[CorrelationValue]:
-    return [generate_correlation_value_a(), generate_correlation_value_b(), generate_correlation_value_c()]

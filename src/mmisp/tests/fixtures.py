@@ -16,15 +16,21 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
-from .generators.model_generators.correlation_value_generator import generate_correlation_value_a_to_c
+from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
+from .generators.model_generators.correlation_value_generator import (
+    generate_correlation_value,
+)
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
-    generate_over_correlating_value_turla,
-    generate_over_correlating_value_x_to_z,
+    generate_over_correlating_value,
 )
 from .generators.model_generators.post_generator import generate_post
 from .generators.model_generators.role_generator import (
@@ -37,9 +43,6 @@ from .generators.model_generators.sharing_group_generator import generate_sharin
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.post import Post
 
 
 @pytest.fixture(scope="session")
@@ -55,6 +58,7 @@ async def db_connection(event_loop):
     sm.init()
     await sm.create_all()
     yield sm
+
 
 @pytest_asyncio.fixture
 async def db(db_connection):
@@ -948,8 +952,8 @@ async def post(db):
 
 
 @pytest_asyncio.fixture()
-async def over_correlating_value_turla(db):
-    ocv: OverCorrelatingValue = generate_over_correlating_value_turla()
+async def over_correlating_value(db):
+    ocv: OverCorrelatingValue = generate_over_correlating_value()
     db.add(ocv)
     await db.commit()
     await db.refresh(ocv)
@@ -962,12 +966,13 @@ async def over_correlating_value_turla(db):
 
 @pytest_asyncio.fixture()
 async def correlating_values(db):
-    list_c_v: list[CorrelationValue] = generate_correlation_value_a_to_c()
+    list_c_v: list[CorrelationValue] = []
 
-    for list_c_v_item in list_c_v:
-        db.add(list_c_v_item)
+    for i in range(3):
+        list_c_v.append(generate_correlation_value())
+        db.add(list_c_v[i])
         await db.commit()
-        await db.refresh(list_c_v_item)
+        await db.refresh(list_c_v[i])
 
     yield list_c_v
 
@@ -978,12 +983,13 @@ async def correlating_values(db):
 
 @pytest_asyncio.fixture()
 async def over_correlating_values(db):
-    list_o_c_v: list[OverCorrelatingValue] = generate_over_correlating_value_x_to_z()
+    list_o_c_v: list[OverCorrelatingValue] = []
 
-    for list_o_c_v_item in list_o_c_v:
-        db.add(list_o_c_v_item)
+    for i in range(3):
+        list_o_c_v.append(generate_correlation_value())
+        db.add(list_o_c_v[i])
         await db.commit()
-        await db.refresh(list_o_c_v_item)
+        await db.refresh(list_o_c_v[i])
 
     yield list_o_c_v
 
@@ -994,10 +1000,7 @@ async def over_correlating_values(db):
 
 @pytest_asyncio.fixture
 async def correlation_exclusion(db):
-    exclusion: CorrelationExclusions = CorrelationExclusions(
-        value=uuid(),
-        comment="This is an excluded value",
-    )
+    exclusion: CorrelationExclusions = generate_correlation_exclusions()
 
     db.add(exclusion)
     await db.commit()
@@ -1007,3 +1010,20 @@ async def correlation_exclusion(db):
 
     await db.delete(exclusion)
     await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def correlation_exclusions(db):
+    list_exclusions: list[CorrelationExclusions] = []
+
+    for i in range(3):
+        list_exclusions.append(generate_correlation_exclusions())
+        db.add(list_exclusions[i])
+        await db.commit()
+        await db.refresh(list_exclusions[i])
+
+    yield list_exclusions
+
+    for exclusion in list_exclusions:
+        await db.delete(exclusion)
+        await db.commit()
