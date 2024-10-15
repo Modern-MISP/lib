@@ -1,7 +1,8 @@
 from sqlalchemy import Integer, String, Text
 
-from ..database import Base
 from mmisp.db.mypy import Mapped, mapped_column
+
+from ..database import Base
 
 
 class OverCorrelatingValue(Base):

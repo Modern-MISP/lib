@@ -16,7 +16,10 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+from .generators.model_generators.post_generator import generate_post
+from ..db.models.correlation import OverCorrelatingValue
 
+from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.event_generator import generate_event
@@ -903,4 +906,30 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
     yield attribute
 
     await db.delete(at)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def post(db):
+    post: Post = generate_post()
+    db.add(post)
+    await db.commit()
+    await db.refresh(post)
+
+    yield post
+
+    await db.delete(post)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def over_correlating_value_value_turla(db):
+    ocv: OverCorrelatingValue = generate_post()
+    db.add(ocv)
+    await db.commit()
+    await db.refresh(ocv)
+
+    yield ocv
+
+    await db.delete(ocv)
     await db.commit()
