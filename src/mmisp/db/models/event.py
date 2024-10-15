@@ -76,7 +76,7 @@ class Event(Base):
     async def add_tag(self: Self, db: AsyncSession, tag: "Tag", local: bool = False) -> "EventTag":
         if tag.local_only:
             local = True
-        event_tag: EventTag = EventTag(event=self, tag=tag, local=local)
+        event_tag: EventTag = EventTag(event=self, tag=tag, local=local, event_id=self.id, tag_id=tag.id)
         db.add(event_tag)
         await db.commit()
         return event_tag
