@@ -16,10 +16,6 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..db.models.correlation import CorrelationValue, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_value_generator import generate_correlation_value_a_to_c
@@ -59,7 +55,6 @@ async def db_connection(event_loop):
     sm.init()
     await sm.create_all()
     yield sm
-
 
 @pytest_asyncio.fixture
 async def db(db_connection):
@@ -929,8 +924,6 @@ async def event_with_normal_tag(db, event, normal_tag):
     )
     await db.execute(qry)
 
-    print("bonobo event_with_normal_tag", "event:", event, "normal_tag:", normal_tag)
-
     event_tag: EventTag = await event.add_tag(db, normal_tag)
     assert not event_tag.local
 
@@ -1000,16 +993,17 @@ async def over_correlating_values(db):
 
 
 @pytest_asyncio.fixture
-async def correlation_exclusion_excluded(db):
+async def correlation_exclusion(db):
     exclusion: CorrelationExclusions = CorrelationExclusions(
-        value="excluded",
+        value=uuid(),
         comment="This is an excluded value",
     )
 
     db.add(exclusion)
-    db.commit()
+    await db.commit()
+    await db.refresh(exclusion)
 
-    yield
+    yield exclusion
 
     await db.delete(exclusion)
     await db.commit()
