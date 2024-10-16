@@ -1,6 +1,7 @@
 import random
 
 from mmisp.api_schemas.attributes import GetAttributeAttributes
+from mmisp.lib.attributes import mapper_val_safe_clsname
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
 from mmisp.tests.generators.feed_generator import generate_number_as_str
@@ -15,7 +16,7 @@ def generate_get_attribute_attributes_response() -> GetAttributeAttributes:
         object_id=generate_ids_as_str(),
         object_relation=generate_random_str(),
         category=generate_random_str(),
-        type=generate_random_str(),
+        type=random.choice(list(mapper_val_safe_clsname.keys())),
         value=generate_random_str(),
         to_ids=False,
         uuid=uuid(),

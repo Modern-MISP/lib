@@ -6,30 +6,9 @@ from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagCreateBody
 
 
-class NewEventTag(BaseModel):
+class NewTag(BaseModel):
     """
-    Encapsulates a new MISP Event Tag that has been created using enrichment.
-    """
-
-    tag_id: int | None = None
-    """The ID of the tag if it already exists in the database."""
-    tag: TagCreateBody | None = None
-    """The tag if it doesn't exist yet in the Database."""
-    local: bool = True
-    """Whether the relationship to the event is only local or not."""
-    relationship_type: str = ""
-    """The relationship type between the event and tag."""
-
-    @root_validator
-    def check_tag_id_or_new_tag_provided(cls: type[Self], values: dict) -> dict:
-        if not values["tag_id"] or values["tag"]:
-            raise ValueError("At least one of the values tag_id or tag is required.")
-        return values
-
-
-class NewAttributeTag(BaseModel):
-    """
-    Encapsulates a new MISP Attribute Tag created by enrichment.
+    Encapsulates a new MISP Tag created by enrichment.
     """
 
     tag_id: int | None = None
@@ -39,12 +18,12 @@ class NewAttributeTag(BaseModel):
     local: bool = True
     """Whether the relationship to the attribute is only local or not."""
     relationship_type: str = ""
-    """The relationship type between the attribute and tag."""
+    """The relationship type between the attribute or event and tag."""
 
     @root_validator
     @classmethod
-    def check_tag_id_or_new_tag_provided(cls: type["NewEventTag"], values: dict) -> dict:
-        if not values["tag_id"] or values["tag"]:
+    def check_tag_id_or_new_tag_provided(cls: type["NewTag"], values: dict) -> dict:
+        if not values["tag_id"] and not values["tag"]:
             raise ValueError("At least one of the values tag_id or tag is required.")
         return values
 
@@ -56,7 +35,7 @@ class NewAttribute(BaseModel):
 
     attribute: AddAttributeBody
     """The attribute to create."""
-    tags: list[NewAttributeTag] = []
+    tags: list[NewTag] = []
     """Tags attached to the attribute"""
 
 
@@ -69,7 +48,7 @@ class EnrichAttributeResult(BaseModel):
 
     attributes: list[NewAttribute] = []
     """The created attributes."""
-    event_tags: list[NewEventTag] = []
+    event_tags: list[NewTag] = []
     """The created event tags. Can also be the IDs of already existing tags."""
 
     def append(self: Self, result_to_merge: "EnrichAttributeResult") -> None:
