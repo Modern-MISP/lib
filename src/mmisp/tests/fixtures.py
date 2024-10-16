@@ -17,8 +17,6 @@ from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 
-from ..api_schemas.events import AddEditGetEventDetails
-from ..api_schemas.objects import ObjectWithAttributesResponse
 from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
 from ..db.models.object import Object
@@ -29,6 +27,7 @@ from .generators.model_generators.correlation_exclusions_generator import genera
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
+from .generators.model_generators.default_correlation_generator import generate_default_correlation
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
 from .generators.model_generators.object_generator import generate_object
@@ -1077,7 +1076,22 @@ async def object2(db, event, sharing_group):
     await db.delete(object)
     await db.commit()
 
+@pytest_asyncio.fixture()
+async def default_correlation(db, correlating_value):
+    dc: DefaultCorrelation = generate_default_correlation()
+    dc.value_id = correlating_value.id
 
+    db.add(dc)
+    await db.commit()
+    await db.refresh(dc)
+
+    yield dc
+
+    await db.delete(dc)
+    await db.commit()
+
+
+"""
 @pytest_asyncio.fixture()
 async def default_correlation(db, correlating_value, attribute, attribute2, event, event2, object, object2):
     attributes: list[Attribute] = [attribute, attribute2]
@@ -1117,7 +1131,7 @@ def _create_correlation_from_attributes(
         object_2: ObjectWithAttributesResponse,
         value_id: int,
 ) -> DefaultCorrelation:
-    """
+    """"""
     Method to construct a DefaultCorrelation object based on two attributes and the events they occur in.
     The value of the correlation is specified by the value id.
 
@@ -1137,7 +1151,7 @@ def _create_correlation_from_attributes(
     :type value_id: int
     :return: a DefaultCorrelation object based on the input
     :rtype: DefaultCorrelation
-    """
+    """"""
     return DefaultCorrelation(
         attribute_id=attribute_1.id,
         object_id=attribute_1.object_id,
@@ -1161,3 +1175,4 @@ def _create_correlation_from_attributes(
         event_sharing_group_id_1=event_2.sharing_group_id,
         value_id=value_id,
     )
+"""
