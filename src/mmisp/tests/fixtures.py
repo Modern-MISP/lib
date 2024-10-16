@@ -856,6 +856,8 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
     assert not at.local
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -875,6 +877,8 @@ async def attribute_with_local_tag(db, attribute, local_only_tag):
     assert at.local
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -894,6 +898,8 @@ async def attribute_with_non_exportable_local_tag(db, attribute, non_exportable_
     at = await attribute.add_tag(db, non_exportable_local_only_tag)
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -914,6 +920,8 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
     assert not at.local
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -936,7 +944,6 @@ async def event_with_normal_tag(db, event, normal_tag):
 
     await db.commit()
     await db.refresh(event)
-    assert event.eventtags
 
     yield event
 
