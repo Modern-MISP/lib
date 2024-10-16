@@ -4,6 +4,7 @@ from typing import Any
 
 from sqlalchemy import func
 
+from mmisp.api_schemas.attributes import GetAttributeTag
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.tag import Tag
 
@@ -50,6 +51,16 @@ def generate_valid_tag_data() -> TagCreateBody:
         inherited=bool(random.getrandbits),
     )
 
+
+def generate_get_attribute_tag_response() -> GetAttributeTag:
+    return GetAttributeTag(
+        id=generate_ids_as_str(),
+        name=random_string(),
+        colour=random_hexcolour(6),
+        numerical_value=generate_number(),
+        is_galaxy=bool(random.getrandbits),
+        local=bool(random.getrandbits)
+    )
 
 def generate_invalid_tag_data() -> Any:
     input_list = [
