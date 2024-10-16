@@ -17,8 +17,11 @@ from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, OverCorrelatingValue
+from ..api_schemas.events import AddEditGetEventDetails
+from ..api_schemas.objects import ObjectWithAttributesResponse
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
 from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
@@ -28,6 +31,7 @@ from .generators.model_generators.correlation_value_generator import (
 )
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
+from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
     generate_over_correlating_value,
@@ -965,6 +969,19 @@ async def over_correlating_value(db):
 
 
 @pytest_asyncio.fixture()
+async def correlating_value(db):
+    cv: CorrelationValue = generate_correlation_value()
+    db.add(cv)
+    await db.commit()
+    await db.refresh(cv)
+
+    yield cv
+
+    await db.delete(cv)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
 async def correlating_values(db):
     list_c_v: list[CorrelationValue] = []
 
@@ -1027,3 +1044,120 @@ async def correlation_exclusions(db):
     for exclusion in list_exclusions:
         await db.delete(exclusion)
         await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def object(db, event, sharing_group):
+    object: Object = generate_object()
+    object.event_id = event.id
+    object.sharing_group_id = sharing_group.id
+
+    db.add(object)
+    await db.commit()
+    await db.refresh(object)
+
+    yield object
+
+    await db.delete(object)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def object2(db, event, sharing_group):
+    object: Object = generate_object()
+    object.event_id = event.id
+    object.sharing_group_id = sharing_group.id
+
+    db.add(object)
+    await db.commit()
+    await db.refresh(object)
+
+    yield object
+
+    await db.delete(object)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def default_correlation(db, correlating_value, attribute, attribute2, event, event2, object, object2):
+    attributes: list[Attribute] = [attribute, attribute2]
+    events: list[Event] = [event, event2]
+    objects: list[Object] = [object, object2]
+
+    count: int = len(attributes)
+    default_correlations: list[DefaultCorrelation] = list()
+    for i in range(count):
+        for j in range(i + 1, count):
+            if attributes[i].event_id != attributes[j].event_id:
+                new_correlation: DefaultCorrelation = _create_correlation_from_attributes(
+                    attributes[i], events[i], objects[i], attributes[j], events[j], objects[j], correlating_value.id
+                )
+                default_correlations.append(new_correlation)
+
+    print("bonobo", default_correlations)
+
+    for dc in default_correlations:
+        db.add(dc)
+        await db.commit()
+        await db.refresh(dc)
+
+    yield dc
+
+    for dc in default_correlations:
+        await db.delete(dc)
+        await db.commit()
+
+
+def _create_correlation_from_attributes(
+        attribute_1: Attribute,
+        event_1: AddEditGetEventDetails,
+        object_1: ObjectWithAttributesResponse,
+        attribute_2: Attribute,
+        event_2: AddEditGetEventDetails,
+        object_2: ObjectWithAttributesResponse,
+        value_id: int,
+) -> DefaultCorrelation:
+    """
+    Method to construct a DefaultCorrelation object based on two attributes and the events they occur in.
+    The value of the correlation is specified by the value id.
+
+    :param attribute_1: first attribute of the correlation
+    :type attribute_1: Attribute
+    :param event_1: event of the first attribute
+    :type event_1: AddEditGetEventDetails
+    :param object_1: object of the first attribute
+    :type object_1: MispObject
+    :param attribute_2: second attribute of the correlation
+    :type attribute_2: Attribute
+    :param event_2: event of the second attribute
+    :type event_2: AddEditGetEventDetails
+    :param object_2: object of the second attribute
+    :type object_2: MispObject
+    :param value_id: value of the correlation
+    :type value_id: int
+    :return: a DefaultCorrelation object based on the input
+    :rtype: DefaultCorrelation
+    """
+    return DefaultCorrelation(
+        attribute_id=attribute_1.id,
+        object_id=attribute_1.object_id,
+        event_id=attribute_1.event_id,
+        org_id=event_1.org_id,
+        distribution=attribute_1.distribution,
+        object_distribution=object_1.distribution,
+        event_distribution=event_1.distribution,
+        sharing_group_id=attribute_1.sharing_group_id,
+        object_sharing_group_id=object_1.sharing_group_id,
+        event_sharing_group_id=event_1.sharing_group_id,
+        attribute_id_1=attribute_2.id,
+        object_id_1=attribute_2.object_id,
+        event_id_1=attribute_2.event_id,
+        org_id_1=event_2.org_id,
+        distribution_1=attribute_2.distribution,
+        object_distribution_1=object_2.distribution,
+        event_distribution_1=event_2.distribution,
+        sharing_group_id_1=attribute_2.sharing_group_id,
+        object_sharing_group_id_1=object_2.sharing_group_id,
+        event_sharing_group_id_1=event_2.sharing_group_id,
+        value_id=value_id,
+    )
