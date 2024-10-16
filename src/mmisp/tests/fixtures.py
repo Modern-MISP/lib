@@ -935,6 +935,9 @@ async def event_with_normal_tag(db, event, normal_tag):
     assert not event_tag.local
 
     await db.commit()
+    await db.refresh(event)
+    assert event.eventtags
+
     yield event
 
     await db.delete(event_tag)
