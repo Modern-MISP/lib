@@ -950,6 +950,29 @@ async def event_with_normal_tag(db, event, normal_tag):
     await db.delete(event_tag)
     await db.commit()
 
+@pytest_asyncio.fixture()
+async def event_with_attributes(db, event, attribute, attribute2):
+    event_id = event.id
+    attribute.event_id = event_id
+    attribute2.event_id = event_id
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    db.add(attribute)
+    await db.commit()
+    await db.refresh(attribute)
+
+    yield event
+
+    await db.delete(attribute)
+    await db.commit()
+
 
 @pytest_asyncio.fixture()
 async def post(db):
