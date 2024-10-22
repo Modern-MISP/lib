@@ -4,8 +4,8 @@ from pydantic import BaseModel
 class Role(BaseModel):
     id: int
     name: str
-    created: str
-    modified: str
+    created: str | None = None
+    modified: str | None = None
     perm_add: bool
     perm_modify: bool
     """Manage Own Events."""
