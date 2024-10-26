@@ -1122,3 +1122,41 @@ async def default_correlation(db, correlating_value):
 
     await db.delete(dc)
     await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def user(db, instance_owner_org, site_admin_role):
+    user = generate_user()
+    user.email = f"user_id:{user.id}@bonobo.com"
+
+    user.org_id = instance_owner_org.id
+    user.server_id = 0
+    user.role_id = site_admin_role.id
+
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    yield user
+
+    await db.delete(user)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_sharing_group_zero(db, organisation, site_admin_user):
+    org_id = organisation.id
+    event = generate_event()
+    event.org_id = org_id
+    event.orgc_id = org_id
+    event.user_id = site_admin_user.id
+    event.sharing_group_id = 0
+
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
+
+    yield event
+
+    await db.delete(event)
+    await db.commit()
