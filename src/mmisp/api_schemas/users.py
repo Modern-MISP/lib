@@ -11,7 +11,7 @@ class User(BaseModel):
     org_id: int
     email: str
     autoalert: bool
-    invited_by: str
+    invited_by: int
     gpgkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool
@@ -19,26 +19,26 @@ class User(BaseModel):
     change_pw: bool
     contactalert: bool
     disabled: bool
-    expiration: str | None = None
-    current_login: str
+    expiration: int | None = None
+    current_login: int
     """time in seconds"""
-    last_login: str
+    last_login: int
     """time in seconds"""
     force_logout: bool
-    date_created: str
+    date_created: int
     """time in seconds"""
-    date_modified: str
+    date_modified: int
     """time in seconds"""
     external_auth_required: bool
     external_auth_key: str | None = None
-    last_api_access: str
+    last_api_access: int
     """time in seconds"""
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
     totp: str | None = None
-    hotp_counter: str | None = None
-    last_pw_change: str | None = None
+    hotp_counter: int | None = None
+    last_pw_change: int | None = None
     """time in seconds"""
 
 
@@ -117,7 +117,7 @@ class AddUserResponseData(BaseModel):
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
-    totp: bool | None = None
+    totp: str | None = None
     hotp_counter: int | None = None
     last_pw_change: int | None = None
 
@@ -151,7 +151,7 @@ class GetUsersUser(BaseModel):
     date_created: int | None
     date_modified: int | None
     last_pw_change: int | None
-    totp: bool | None
+    totp: str | None
     """detailed information bellow"""
     hotp_counter: int | None
     notification_daily: bool | None
