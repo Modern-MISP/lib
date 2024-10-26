@@ -279,12 +279,13 @@ async def organisation(db):
 
 
 @pytest_asyncio.fixture
-async def event(db, organisation, site_admin_user):
+async def event(db, organisation, site_admin_user, sharing_group):
     org_id = organisation.id
     event = generate_event()
     event.org_id = org_id
     event.orgc_id = org_id
     event.user_id = site_admin_user.id
+    event.sharing_group_id = sharing_group.id
 
     db.add(event)
     await db.commit()
@@ -1140,23 +1141,4 @@ async def user(db, instance_owner_org, site_admin_role):
     yield user
 
     await db.delete(user)
-    await db.commit()
-
-
-@pytest_asyncio.fixture()
-async def event_sharing_group_zero(db, organisation, site_admin_user):
-    org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-    event.sharing_group_id = 0
-
-    db.add(event)
-    await db.commit()
-    await db.refresh(event)
-
-    yield event
-
-    await db.delete(event)
     await db.commit()

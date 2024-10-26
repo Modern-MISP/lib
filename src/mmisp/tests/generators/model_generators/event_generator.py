@@ -13,4 +13,5 @@ def generate_event() -> Event:
         info="test event",
         date=datetime.date(year=2024, month=2, day=13),
         analysis=1,
+        distribution=4,
     )
