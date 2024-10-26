@@ -148,6 +148,7 @@ async def site_admin_user(db, site_admin_role, instance_owner_org):
     db.add(user_setting)
     await db.commit()
 
+    print("bananenbieger, user_id: sau: ", user.id)
     yield user
     await db.delete(user_setting)
     await db.commit()
@@ -196,6 +197,7 @@ async def instance_owner_org_admin_user(db, instance_owner_org, org_admin_role):
     db.add(user_setting)
     await db.commit()
 
+    print("bananenbieger, user_id: iooau: ", user.id)
     yield user
     await db.delete(user_setting)
     await db.commit()
