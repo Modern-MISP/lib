@@ -16,8 +16,8 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from ..api_schemas.events import AddEditGetEventOrg
 
+from ..api_schemas.events import AddEditGetEventOrg
 from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
 from ..db.models.object import Object
@@ -954,6 +954,7 @@ async def event_with_normal_tag(db, event, normal_tag):
     await db.delete(event_tag)
     await db.commit()
 
+
 @pytest_asyncio.fixture()
 async def event_with_attributes(db, event, attribute, attribute2):
     event_id = event.id
@@ -1112,6 +1113,7 @@ async def object2(db, event, sharing_group):
 
     await db.delete(object)
     await db.commit()
+
 
 @pytest_asyncio.fixture()
 async def default_correlation(db, correlating_value):

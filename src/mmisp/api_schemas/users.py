@@ -1,9 +1,7 @@
 from pydantic import BaseModel
 
-from mmisp.api_schemas.organisations import OrganisationUsersResponse
-from mmisp.api_schemas.roles import RoleUsersResponse
-from mmisp.api_schemas.roles import Role
-from mmisp.api_schemas.organisations import Organisation
+from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
+from mmisp.api_schemas.roles import Role, RoleUsersResponse
 
 
 class User(BaseModel):
@@ -160,7 +158,7 @@ class GetUsersUser(BaseModel):
     external_auth_required: bool | None
     external_auth_key: str | None
     sub: str | None
-    """new contents bellow""" # not in the database, all 3 fields to none now, so no error will be raised
+    """new contents bellow"""  # not in the database, all 3 fields to none now, so no error will be raised
     name: str | None
     contact: bool | None
     notification: bool | None
@@ -180,7 +178,6 @@ class GetAllUsersResponse(BaseModel):
 class UserWithName(BaseModel):
     user: User
     name: str
-
 
 
 class UsersViewMeResponse(BaseModel):
