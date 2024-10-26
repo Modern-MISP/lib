@@ -16,6 +16,7 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+from ..api_schemas.events import AddEditGetEventOrg
 
 from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
@@ -286,6 +287,8 @@ async def event(db, organisation, site_admin_user, sharing_group):
     event.orgc_id = org_id
     event.user_id = site_admin_user.id
     event.sharing_group_id = sharing_group.id
+    event.Orgc = AddEditGetEventOrg(name=organisation.name, local=organisation.local,
+                                    id=organisation.id, uuid=organisation.uuid)
 
     db.add(event)
     await db.commit()
@@ -1080,7 +1083,7 @@ async def correlation_exclusions(db):
 
 
 @pytest_asyncio.fixture()
-async def object(db, event, sharing_group):
+async def object1(db, event, sharing_group):
     object: Object = generate_object()
     object.event_id = event.id
     object.sharing_group_id = sharing_group.id

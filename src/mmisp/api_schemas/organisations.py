@@ -88,7 +88,7 @@ class OrganisationUsersResponse(BaseModel):
     uuid: str | None = None
     contacts: str | None = None
     local: bool | None = None
-    restricted_to_domain: str | None = None
+    restricted_to_domain: str | list | None = None
     landingpage: str | None = None
 
 

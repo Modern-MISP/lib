@@ -129,7 +129,7 @@ class AddUserResponse(BaseModel):
 class GetUsersUser(BaseModel):
     id: int
     org_id: int
-    server_id: int
+    server_id: int = 0
     email: str
     autoalert: bool
     auth_key: str | None
@@ -160,10 +160,10 @@ class GetUsersUser(BaseModel):
     external_auth_required: bool | None
     external_auth_key: str | None
     sub: str | None
-    """new contents bellow"""
-    name: str
-    contact: bool
-    notification: bool
+    """new contents bellow""" # not in the database, all 3 fields to none now, so no error will be raised
+    name: str | None
+    contact: bool | None
+    notification: bool | None
 
 
 class GetUsersElement(BaseModel):
