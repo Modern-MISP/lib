@@ -8,11 +8,10 @@ from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
-
-from ..database import Base
 from .organisation import Organisation
 from .tag import Tag
 from .user import User
+from ..database import Base
 
 
 class Event(Base):
@@ -79,6 +78,7 @@ class Event(Base):
         event_tag: EventTag = EventTag(event=self, tag=tag, local=local, event_id=self.id, tag_id=tag.id)
         db.add(event_tag)
         await db.commit()
+        await db.refresh(event_tag)
         return event_tag
 
 

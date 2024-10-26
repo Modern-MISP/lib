@@ -11,10 +11,9 @@ from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.uuid import uuid
-
-from ..database import Base
 from .event import Event
 from .tag import Tag
+from ..database import Base
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
@@ -120,6 +119,7 @@ class Attribute(Base, DictMixin):
         attribute_tag = AttributeTag(attribute=self, tag=tag, event_id=self.event_id, local=local)
         db.add(attribute_tag)
         await db.commit()
+        await db.refresh(attribute_tag)
         return attribute_tag
 
     @property
