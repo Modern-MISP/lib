@@ -16,12 +16,6 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..api_schemas.events import AddEditGetEventOrg
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -43,10 +37,17 @@ from .generators.model_generators.role_generator import (
     generate_site_admin_role,
 )
 from .generators.model_generators.server_generator import generate_server
+from .generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
 from .generators.model_generators.sharing_group_generator import generate_sharing_group
+from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
 
 
 @pytest.fixture(scope="session")
@@ -303,6 +304,21 @@ async def event(db, organisation, site_admin_user, sharing_group):
 
 
 @pytest_asyncio.fixture
+async def sighting(db, organisation, event_with_attributes):
+    attribute: Attribute = event_with_attributes.attributes[0]
+    sighting: Sighting = generate_sighting(event_with_attributes.id, attribute.id, organisation.id)
+
+    db.add(sighting)
+    await db.commit()
+    await db.refresh(sighting)
+
+    yield sighting
+
+    await db.delete(sighting)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
 async def event2(db, organisation, site_admin_user):
     org_id = organisation.id
     event = generate_event()
@@ -398,6 +414,20 @@ async def tag(db):
     yield tag
 
     await db.delete(tag)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def shadow_attribute(db, organisation, event):
+    shadow_attribute = generate_shadow_attribute(organisation.id, event.id, event.uuid, event.org_id)
+
+    db.add(shadow_attribute)
+    await db.commit()
+    await db.refresh(shadow_attribute)
+
+    yield shadow_attribute
+
+    await db.delete(shadow_attribute)
     await db.commit()
 
 
