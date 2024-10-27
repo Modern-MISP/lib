@@ -1,7 +1,7 @@
 from mmisp.db.models.correlation import DefaultCorrelation
 
 
-# ids don't match to the actual ids in the database, its complex and I am lazy
+# ids don't match to the actual ids in the database, its complex, and I am lazy
 def generate_default_correlation() -> DefaultCorrelation:
     return DefaultCorrelation(
         attribute_id=1,
