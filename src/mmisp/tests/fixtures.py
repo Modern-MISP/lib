@@ -292,6 +292,10 @@ async def event(db, organisation, site_admin_user, sharing_group):
     await db.commit()
     await db.refresh(event)
 
+    statement = select(Event).where(Event.id == event.id)
+    search_result: Event | None = (await db.execute(statement)).scalars().first()
+    print("bananenbieger, event_id: ", search_result.id)
+
     yield event
 
     await db.delete(event)
