@@ -38,7 +38,7 @@ class DatabaseSessionManager:
                 print(f"Attempt {retries} failed: {e}")
                 time.sleep(config.RETRY_SLEEP)
         self._sessionmaker = sessionmaker(
-            autocommit=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
+            autocommit=False, autoflush=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
 
     async def close(self: Self) -> None:
