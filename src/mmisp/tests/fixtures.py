@@ -16,11 +16,6 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -81,6 +76,7 @@ async def site_admin_role(db):
     role = generate_site_admin_role()
     db.add(role)
     await db.commit()
+    await db.refresh(role)
     yield role
     await db.delete(role)
     await db.commit()
@@ -111,6 +107,7 @@ async def instance_owner_org(db):
     instance_owner_org = generate_organisation()
     db.add(instance_owner_org)
     await db.commit()
+    await db.refresh(instance_owner_org)
     yield instance_owner_org
     await db.delete(instance_owner_org)
     await db.commit()
@@ -986,6 +983,7 @@ async def event_with_normal_tag(db, event, normal_tag):
 
     await db.commit()
     await db.refresh(event)
+    await db.execute(qry)
 
     yield event
 
@@ -994,26 +992,34 @@ async def event_with_normal_tag(db, event, normal_tag):
 
 
 @pytest_asyncio.fixture()
-async def event_with_attributes(db, event, attribute, attribute2):
+async def event_with_attributes(db, event):
     event_id = event.id
-    attribute.event_id = event_id
-    attribute2.event_id = event_id
+    attribute = generate_attribute(event_id)
+    attribute_2 = generate_attribute(event_id)
+    event.attribute_count += 2
+
+    db.add(attribute)
+    db.add(attribute_2)
+    await db.commit()
+    await db.refresh(event)
 
     qry = (
         select(Event)
-        .filter(Event.id == event.id)
+        .filter(Event.id == event_id)
         .options(selectinload(Event.attributes))
         .execution_options(populate_existing=True)
     )
     await db.execute(qry)
 
-    db.add(attribute)
-    await db.commit()
     await db.refresh(attribute)
+    await db.refresh(attribute_2)
 
     yield event
 
     await db.delete(attribute)
+    await db.delete(attribute_2)
+    event.attribute_count -= 2
+
     await db.commit()
 
 
@@ -1123,33 +1129,33 @@ async def correlation_exclusions(db):
 
 @pytest_asyncio.fixture()
 async def object1(db, event, sharing_group):
-    object: Object = generate_object()
-    object.event_id = event.id
-    object.sharing_group_id = sharing_group.id
+    misp_object: Object = generate_object()
+    misp_object.event_id = event.id
+    misp_object.sharing_group_id = sharing_group.id
 
-    db.add(object)
+    db.add(misp_object)
     await db.commit()
-    await db.refresh(object)
+    await db.refresh(misp_object)
 
-    yield object
+    yield misp_object
 
-    await db.delete(object)
+    await db.delete(misp_object)
     await db.commit()
 
 
 @pytest_asyncio.fixture()
 async def object2(db, event, sharing_group):
-    object: Object = generate_object()
-    object.event_id = event.id
-    object.sharing_group_id = sharing_group.id
+    misp_object: Object = generate_object()
+    misp_object.event_id = event.id
+    misp_object.sharing_group_id = sharing_group.id
 
-    db.add(object)
+    db.add(misp_object)
     await db.commit()
-    await db.refresh(object)
+    await db.refresh(misp_object)
 
-    yield object
+    yield misp_object
 
-    await db.delete(object)
+    await db.delete(misp_object)
     await db.commit()
 
 
@@ -1171,7 +1177,6 @@ async def default_correlation(db, correlating_value):
 @pytest_asyncio.fixture()
 async def user(db, instance_owner_org, site_admin_role):
     user = generate_user()
-    user.email = f"user_id:{user.id}@bonobo.com"
 
     user.org_id = instance_owner_org.id
     user.server_id = 0
