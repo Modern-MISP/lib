@@ -1025,6 +1025,43 @@ async def event_with_attributes(db, event):
 
 
 @pytest_asyncio.fixture()
+async def two_event_with_same_attribute_values(db, event, event2, attribute, attribute2):
+    # attribute values are hardcoded
+    attribute.event_id = event.id
+    attribute2.event_id = event2.id
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    db.add(attribute)
+    await db.commit()
+    await db.refresh(attribute)
+
+    qry2 = (
+        select(Event)
+        .filter(Event.id == event2.id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry2)
+
+    db.add(attribute2)
+    await db.commit()
+    await db.refresh(attribute2)
+
+    yield list[(event, attribute), (event2, attribute2)]
+
+    await db.delete(attribute)
+    await db.delete(attribute2)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
 async def post(db):
     post: Post = generate_post()
     db.add(post)
