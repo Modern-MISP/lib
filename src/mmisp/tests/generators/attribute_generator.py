@@ -24,7 +24,7 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
         distribution=generate_number_as_str(),
         sharing_group_id=generate_ids_as_str(),
         comment=generate_random_str(),
-        deleted=bool(random.getrandbits(1)),
+        deleted=False,
         disable_correlation=bool(random.getrandbits(1)),
         first_seen=datetime.now().isoformat(),
         last_seen=datetime.now().isoformat(),

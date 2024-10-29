@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from time import time
 from uuid import uuid4
 
@@ -13,4 +14,6 @@ def generate_sharing_group() -> SharingGroup:
         sync_user_id=0,
         active=False,
         local=True,
+        created=datetime.now(UTC),
+        modified=datetime.now(UTC)
     )

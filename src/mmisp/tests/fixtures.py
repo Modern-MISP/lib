@@ -16,12 +16,6 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -49,6 +43,11 @@ from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
 
 
 @pytest.fixture(scope="session")
@@ -296,10 +295,6 @@ async def event(db, organisation, site_admin_user, sharing_group):
     await db.commit()
     await db.refresh(event)
 
-    statement = select(Event).where(Event.id == event.id)
-    search_result: Event | None = (await db.execute(statement)).scalars().first()
-    print("bananenbieger, event_id: ", search_result.id)
-
     yield event
 
     await db.delete(event)
@@ -403,11 +398,11 @@ async def attribute_multi2(db, event):
 
 
 @pytest_asyncio.fixture
-async def tag(db):
+async def tag(db, site_admin_user):
     tag = generate_tag()
 
-    tag.user_id = 1
-    tag.org_id = 1
+    tag.user_id = site_admin_user.id
+    tag.org_id = site_admin_user.org_id
     tag.is_galaxy = True
     tag.exportable = True
 
@@ -971,19 +966,18 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
 @pytest_asyncio.fixture()
 async def event_with_normal_tag(db, event, normal_tag):
     assert not normal_tag.local_only
-    qry = (
-        select(Event)
-        .filter(Event.id == event.id)
-        .options(selectinload(Event.eventtags))
-        .execution_options(populate_existing=True)
-    )
-    await db.execute(qry)
 
     event_tag: EventTag = await event.add_tag(db, normal_tag)
     assert not event_tag.local
 
     await db.commit()
     await db.refresh(event)
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.eventtags))
+        .execution_options(populate_existing=True)
+    )
     await db.execute(qry)
 
     yield event
