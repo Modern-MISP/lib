@@ -1,9 +1,7 @@
 import asyncio
-import string
 
 import pytest
 import pytest_asyncio
-from nanoid import generate
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -16,6 +14,12 @@ from mmisp.db.models.tag import Tag
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -43,11 +47,6 @@ from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
 
 
 @pytest.fixture(scope="session")
@@ -491,7 +490,8 @@ async def galaxy(db):
 
 @pytest_asyncio.fixture()
 async def auth_key(db, site_admin_user):
-    clear_key = generate(string.ascii_letters + string.digits, size=40)
+    #    clear_key = generate(string.ascii_letters + string.digits, size=40)
+    clear_key = "siteadminuser".ljust(40, "0")
 
     auth_key = generate_auth_key()
     auth_key.user_id = site_admin_user.id
