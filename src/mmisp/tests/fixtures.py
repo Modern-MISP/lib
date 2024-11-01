@@ -1048,7 +1048,7 @@ async def two_event_with_same_attribute_values(db, event, event2, attribute, att
     await db.commit()
     await db.refresh(attribute2)
 
-    yield list[(event, attribute), (event2, attribute2)]
+    yield [(event, attribute), (event2, attribute2)]
 
     await db.delete(attribute)
     await db.delete(attribute2)
