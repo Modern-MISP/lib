@@ -971,7 +971,7 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
 async def event_with_normal_tag(db, event, normal_tag):
     assert not normal_tag.local_only
 
-    event_tag: EventTag = await event.add_tag(db, normal_tag)
+    event_tag: EventTag = await event.add_tag(db, normal_tag, relationship_type="test_me", local=True)
     assert not event_tag.local
 
     await db.commit()
