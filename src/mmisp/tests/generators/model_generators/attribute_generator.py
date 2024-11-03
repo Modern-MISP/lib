@@ -1,6 +1,5 @@
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.attributes import AttributeCategories
-from mmisp.tests.fixtures import sharing_group
 
 
 def generate_attribute(event_id) -> Attribute:
