@@ -1,5 +1,6 @@
 from mmisp.db.models.attribute import Attribute
 from mmisp.lib.attributes import AttributeCategories
+from mmisp.tests.fixtures import sharing_group
 
 
 def generate_attribute(event_id) -> Attribute:
@@ -7,7 +8,8 @@ def generate_attribute(event_id) -> Attribute:
 
 
 def generate_text_attribute(event_id, value: str) -> Attribute:
-    return Attribute(value=value, type="text", category=AttributeCategories.OTHER.value, event_id=event_id)
+    return Attribute(value=value, type="text", category=AttributeCategories.OTHER.value, event_id=event_id,
+                     sharing_group_id=0)
 
 
 def generate_domain_attribute(event_id, value: str) -> Attribute:
