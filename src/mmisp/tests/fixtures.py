@@ -815,10 +815,10 @@ async def normal_tag(db, instance_owner_org):
         colour="#123456",
         exportable=True,
         hide_tag=False,
-        numerical_value=1,
+        numerical_value=None,
         local_only=False,
-        user_id=1,
-        org_id=instance_owner_org.id,
+        user_id=0,
+        org_id=0,
     )
 
     db.add(tag)
