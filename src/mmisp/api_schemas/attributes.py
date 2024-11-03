@@ -127,7 +127,7 @@ class SearchAttributesBody(RestSearchFilter):
     score: str | None = None
     first_seen: str | None = None
     last_seen: str | None = None
-    include_event_uuid: Annotated[bool | None, Field(alias="includeEventUuid")] = None
+    include_event_uuid: bool | None = Field(alias="includeEventUuid", default=None)
     include_event_tags: Annotated[bool | None, Field(alias="includeEventTags")] = None
     include_proposals: Annotated[bool | None, Field(alias="includeProposals")] = None
     requested_attributes: list[str] | None = None
