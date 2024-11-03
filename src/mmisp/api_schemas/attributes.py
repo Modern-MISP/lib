@@ -107,6 +107,9 @@ class RestSearchFilter(BaseModel):
 
 
 class SearchAttributesBody(RestSearchFilter):
+    class Config:
+        allow_population_by_field_name = True
+
     returnFormat: str = "json"
     page: int | None = None
     limit: int | None = None

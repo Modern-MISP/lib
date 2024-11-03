@@ -897,7 +897,7 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
     print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
     print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
 
-    yield attribute
+    yield attribute, at
 
     await db.delete(at)
     await db.commit()
