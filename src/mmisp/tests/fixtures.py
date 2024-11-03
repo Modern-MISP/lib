@@ -1019,10 +1019,25 @@ async def event_with_attributes(db, event):
 
 
 @pytest_asyncio.fixture()
-async def two_event_with_same_attribute_values(db, event, event2, attribute, attribute2):
-    # attribute values are hardcoded
-    attribute.event_id = event.id
-    attribute2.event_id = event2.id
+async def two_event_with_same_attribute_values(db, event, event2):
+    event_id = event.id
+    event2_id = event2.id
+
+    assert event_id != event2_id
+
+    attribute = generate_attribute(event_id)
+    attribute2 = generate_attribute(event2_id)
+
+    db.add(attribute)
+    db.add(attribute2)
+
+    await db.commit()
+    await db.refresh(attribute)
+    await db.refresh(attribute2)
+
+    assert attribute.value == attribute2.value
+    assert attribute.event_id == event_id
+    assert attribute2.event_id == event2_id
 
     qry = (
         select(Event)
@@ -1030,23 +1045,16 @@ async def two_event_with_same_attribute_values(db, event, event2, attribute, att
         .options(selectinload(Event.attributes))
         .execution_options(populate_existing=True)
     )
-    await db.execute(qry)
-
-    db.add(attribute)
-    await db.commit()
-    await db.refresh(attribute)
-
     qry2 = (
         select(Event)
         .filter(Event.id == event2.id)
         .options(selectinload(Event.attributes))
         .execution_options(populate_existing=True)
     )
+    await db.execute(qry)
     await db.execute(qry2)
 
-    db.add(attribute2)
     await db.commit()
-    await db.refresh(attribute2)
 
     yield [(event, attribute), (event2, attribute2)]
 
