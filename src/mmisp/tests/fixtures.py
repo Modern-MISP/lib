@@ -904,6 +904,32 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
 
 
 @pytest_asyncio.fixture()
+async def attribute_with_normal_tag_local(db, attribute, normal_tag):
+    assert not normal_tag.local_only
+    qry = (
+        select(Attribute)
+        .filter(Attribute.id == attribute.id)
+        .options(selectinload(Attribute.attributetags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+    at = await attribute.add_tag(db, normal_tag, local=True)
+    assert not at.local
+
+    await db.commit()
+    await db.refresh(attribute)
+
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
+    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
+
+    yield attribute, at
+
+    await db.delete(at)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
 async def attribute_with_local_tag(db, attribute, local_only_tag):
     qry = (
         select(Attribute)
@@ -971,7 +997,30 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
 async def event_with_normal_tag(db, event, normal_tag):
     assert not normal_tag.local_only
 
-    event_tag: EventTag = await event.add_tag(db, normal_tag, relationship_type="test_me", local=True)
+    event_tag: EventTag = await event.add_tag(db, normal_tag)
+    assert not event_tag.local
+
+    await db.commit()
+    await db.refresh(event)
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.eventtags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    yield event
+
+    await db.delete(event_tag)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_with_normal_tag_local(db, event, normal_tag):
+    assert not normal_tag.local_only
+
+    event_tag: EventTag = await event.add_tag(db, normal_tag, local=True)
     assert not event_tag.local
 
     await db.commit()
