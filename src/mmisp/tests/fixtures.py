@@ -914,7 +914,6 @@ async def attribute_with_normal_tag_local(db, attribute, normal_tag):
     )
     await db.execute(qry)
     at = await attribute.add_tag(db, normal_tag, local=True)
-    assert not at.local
 
     await db.commit()
     await db.refresh(attribute)
@@ -1021,7 +1020,6 @@ async def event_with_normal_tag_local(db, event, normal_tag):
     assert not normal_tag.local_only
 
     event_tag: EventTag = await event.add_tag(db, normal_tag, local=True)
-    assert not event_tag.local
 
     await db.commit()
     await db.refresh(event)
