@@ -254,6 +254,33 @@ class AddEditGetEventObject(BaseModel):
     Attribute: list[AddEditGetEventAttribute] = []
 
 
+class AddEditGetEventRelatedEventAttributesOrg(BaseModel):
+    id: int
+    name: str
+    uuid: str
+
+
+class AddEditGetEventRelatedEventAttributes(BaseModel):
+    id: int
+    date: str
+    threat_level_id: int
+    info: str
+    published: str
+    uuid: str
+    analysis: str
+    timestamp: str
+    distribution: str
+    org_id: int
+    orgc_id: int
+    Org: AddEditGetEventRelatedEventAttributesOrg
+    Orgc: AddEditGetEventRelatedEventAttributesOrg
+
+
+class AddEditGetEventRelatedEvent(BaseModel):
+    Event: AddEditGetEventRelatedEventAttributes
+    RelationshipInbound: list
+
+
 class AddEditGetEventDetails(BaseModel):
     id: int
     orgc_id: int
@@ -279,14 +306,14 @@ class AddEditGetEventDetails(BaseModel):
     Orgc: AddEditGetEventOrg
     Attribute: list[AddEditGetEventAttribute] = []
     ShadowAttribute: list[AddEditGetEventShadowAttribute] = []
-    RelatedEvent: list[AddEditGetEventEventReport] = []
+    RelatedEvent: list[AddEditGetEventRelatedEvent] = []
     Galaxy: list[AddEditGetEventGalaxy] = []
     Object: list[AddEditGetEventObject] = []
     EventReport: list[AddEditGetEventEventReport] = []
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
-    @validator('uuid', 'extends_uuid', pre=True)
+    @validator("uuid", "extends_uuid", pre=True)
     @classmethod
     def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
@@ -303,7 +330,7 @@ class AddEditGetEventDetails(BaseModel):
 
         return value
 
-    @validator('event_creator_email', pre=True)
+    @validator("event_creator_email", pre=True)
     @classmethod
     def empty_str_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         """
@@ -318,7 +345,7 @@ class AddEditGetEventDetails(BaseModel):
 
         return str(value)
 
-    @validator('sharing_group_id', pre=True)
+    @validator("sharing_group_id", pre=True)
     @classmethod
     def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         if value is not None and value == 0:
@@ -493,13 +520,6 @@ class ObjectEventResponse(BaseModel):
     orgc_id: int | None = None
 
 
-class GetAllEventsEventTagTag(BaseModel):
-    id: int
-    name: str
-    colour: str
-    is_galaxy: bool
-
-
 class GetAllEventsEventTag(BaseModel):
     id: int
     event_id: int
@@ -617,29 +637,3 @@ class AddEventBody(BaseModel):
 
 class AddEventTag(BaseModel):
     name: str
-
-
-class AddEditGetEventRelatedEventAttributesOrg(BaseModel):
-    id: int
-    name: str
-    uuid: str
-
-
-class AddEditGetEventRelatedEventAttributes(BaseModel):
-    id: int
-    date: str
-    threat_level_id: int
-    info: str
-    published: str
-    uuid: str
-    analysis: str
-    timestamp: str
-    distribution: str
-    org_id: int
-    orgc_id: int
-    Org: AddEditGetEventRelatedEventAttributesOrg
-    Orgc: AddEditGetEventRelatedEventAttributesOrg
-
-
-class AddEditGetEventRelatedEvent(BaseModel):
-    Event: list[AddEditGetEventRelatedEventAttributes] = []
