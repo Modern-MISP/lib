@@ -1205,11 +1205,14 @@ async def correlation_exclusion(db):
 async def correlation_exclusions(db):
     list_exclusions: list[CorrelationExclusions] = []
 
-    for i in range(3):
-        list_exclusions.append(generate_correlation_exclusions())
-        db.add(list_exclusions[i])
-        await db.commit()
-        await db.refresh(list_exclusions[i])
+    list_exclusions = [generate_correlation_exclusions() for _ in range(3)]
+
+    for ex in list_exclusions:
+        db.add(ex)
+    await db.commit()
+
+    for ex in list_exclusions:
+        await db.refresh(ex)
 
     yield list_exclusions
 
