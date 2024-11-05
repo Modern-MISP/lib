@@ -42,7 +42,7 @@ class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
 
 
 class SearchGetAuthKeysResponseAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
@@ -102,7 +102,7 @@ class EditAuthKeyResponseAuthKey(BaseModel):
 
 
 class EditAuthKeyResponseCompleteAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str

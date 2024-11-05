@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class GetAllSearchGalaxiesAttributes(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     type: str

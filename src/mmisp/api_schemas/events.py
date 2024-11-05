@@ -440,7 +440,7 @@ class PublishEventResponse(BaseModel):
 
 
 class GetAllEventsEventTagTag(BaseModel):
-    id: str
+    id: int
     name: str
     colour: str
     is_galaxy: bool

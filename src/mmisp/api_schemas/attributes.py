@@ -242,8 +242,9 @@ class GetAllAttributesResponse(BaseModel):
 
     @validator("sharing_group_id", always=True, allow_reuse=True)
     @classmethod
-    def check_sharing_group_id(cls: Type["GetAllAttributesResponse"], value: Any, values: Dict[str, Any]) -> Optional[
-        int]:  # noqa: ANN101
+    def check_sharing_group_id(
+        cls: Type["GetAllAttributesResponse"], value: Any, values: Dict[str, Any]
+    ) -> Optional[int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
@@ -333,7 +334,7 @@ class DeleteSelectedAttributeResponse(BaseModel):
 
 
 class DeleteSelectedAttributeBody(BaseModel):
-    id: int  # id = "all" deletes all attributes in the event
+    id: str  # ids can be space separated, id = "all" deletes all attributes in the event
     allow_hard_delete: bool | None = None
 
     class Config:

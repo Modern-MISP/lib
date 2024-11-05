@@ -5,8 +5,9 @@ from pydantic import BaseModel
 
 from mmisp.lib.serialisation_helper import timestamp_or_empty_string
 
+
 class BaseOrganisation(BaseModel):
-    id: str | None = None
+    id: int | None = None
     name: str | None = None
     nationality: str | None = None
     sector: str | None = None
@@ -30,7 +31,7 @@ class Organisation(BaseOrganisation):
 
 
 class GetOrganisationResponse(BaseModel):
-    id: str
+    id: int
     name: str
     nationality: str | None = None
     sector: str | None = None
@@ -57,7 +58,7 @@ class GetOrganisationResponse(BaseModel):
 
 
 class GetAllOrganisationsOrganisation(BaseModel):
-    id: str
+    id: int
 
 
 class GetAllOrganisationResponse(BaseModel):
@@ -93,7 +94,7 @@ class OrganisationUsersResponse(BaseModel):
 
 
 class AddOrganisation(BaseModel):
-    id: str
+    id: int
     name: str
     description: str | None = None
     type: str

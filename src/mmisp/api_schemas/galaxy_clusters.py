@@ -9,28 +9,28 @@ from mmisp.lib.distribution import DistributionLevels
 
 
 class ExportGalaxyGalaxyElement(BaseModel):
-    id: str | None = None
+    id: int | None = None
     galaxy_cluster_id: str | None = None
     key: str
     value: str
 
 
 class GetGalaxyClusterResponse(BaseModel):
-    id: str | None = None
+    id: int | None = None
     uuid: str | None = None
     collection_uuid: str
     type: str
     value: str
     tag_name: str
     description: str
-    galaxy_id: str
+    galaxy_id: int
     source: str
     authors: list[str]
     version: str
     distribution: str
     sharing_group_id: str | None
-    org_id: str
-    orgc_id: str
+    org_id: int
+    orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str | None = None
@@ -53,21 +53,21 @@ class GalaxyClusterResponse(BaseModel):
 
 
 class ExportGalaxyClusterResponse(BaseModel):
-    id: str
+    id: int
     uuid: str
     collection_uuid: str
     type: str
     value: str
     tag_name: str
     description: str
-    galaxy_id: str
+    galaxy_id: int
     source: str
     authors: list[str]
     version: str
     distribution: str
     sharing_group_id: str
-    org_id: str
-    orgc_id: str
+    org_id: int
+    orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str

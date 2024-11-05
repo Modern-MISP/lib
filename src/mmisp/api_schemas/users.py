@@ -45,7 +45,7 @@ class Config:
 
 
 class UserAttributesBody(BaseModel):
-    org_id: str | None = None
+    org_id: int | None = None
     authkey: str | None = None
     email: str | None = None
     autoalert: bool | None = None
@@ -73,7 +73,7 @@ class AddUserBody(BaseModel):
     authkey: str
     contactalert: bool
     nids_sid: int
-    org_id: str
+    org_id: int
     email: str
     termsaccepted: bool
     disabled: bool
@@ -87,7 +87,7 @@ class AddUserBody(BaseModel):
 
 
 class AddUserResponseData(BaseModel):
-    id: str
+    id: int
     org_id: int
     server_id: int
     email: str

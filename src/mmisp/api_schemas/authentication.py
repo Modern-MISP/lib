@@ -13,7 +13,7 @@ class ChangeLoginInfoResponse(BaseModel):
 
 class IdentityProviderBody(BaseModel):
     name: str
-    org_id: str
+    org_id: int
     active: bool
     base_url: str
     client_id: str
@@ -28,7 +28,7 @@ class IdentityProviderCallbackBody(BaseModel):
 
 class IdentityProviderEditBody(BaseModel):
     name: str | None = None
-    org_id: str | None = None
+    org_id: int | None = None
     active: bool | None = None
     base_url: str | None = None
     client_id: str | None = None
@@ -37,9 +37,9 @@ class IdentityProviderEditBody(BaseModel):
 
 
 class GetIdentityProviderResponse(BaseModel):
-    id: str
+    id: int
     name: str
-    org_id: str
+    org_id: int
     active: bool
     base_url: str
     client_id: str
