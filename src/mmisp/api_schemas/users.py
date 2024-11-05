@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
@@ -17,7 +19,7 @@ class User(BaseModel):
     change_pw: bool
     contactalert: bool
     disabled: bool
-    expiration: int | None = None
+    expiration: datetime | int | None = None
     current_login: int
     """time in seconds"""
     last_login: int
@@ -56,7 +58,7 @@ class UserAttributesBody(BaseModel):
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
-    expiration: str | None = None
+    expiration: datetime | str | None = None
     force_logout: bool | None = None
     external_auth_required: bool | None = None
     external_auth_key: str | None = None

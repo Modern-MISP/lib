@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 from mmisp.api_schemas.organisations import Organisation
@@ -14,8 +16,8 @@ class SharingGroup(BaseModel):
     org_id: int
     sync_user_id: int
     active: bool
-    created: str
-    modified: str
+    created: datetime | str
+    modified: datetime | str
     local: bool
     roaming: bool
 
@@ -104,9 +106,9 @@ class UpdateSharingGroupLegacyBody(BaseModel):
     """attribute will be ignored"""
     sync_user_id: int | None
     """attribute will be ignored"""
-    created: str | None = None
+    created: datetime | str | None = None
     """attribute will be ignored"""
-    modified: str | None = None
+    modified: datetime | str | None = None
     """attribute will be ignored"""
     roaming: bool | None = None
 
@@ -226,9 +228,9 @@ class CreateSharingGroupLegacyBody(BaseModel):
     org_id: int | None = Field(default=None)
     sync_user_id: int | None = Field(default=None)
     """attribute will be ignored"""
-    created: str | None = None
+    created: datetime | str | None = None
     """attribute will be ignored"""
-    modified: str | None = None
+    modified: datetime | str | None = None
     """attribute will be ignored"""
     roaming: bool | None = None
 

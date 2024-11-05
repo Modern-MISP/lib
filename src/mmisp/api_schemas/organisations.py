@@ -16,8 +16,8 @@ class BaseOrganisation(BaseModel):
 
 
 class Organisation(BaseOrganisation):
-    date_created: str
-    date_modified: str
+    date_created: datetime | str
+    date_modified: datetime | str
     description: str | None = None
     created_by: str
     contacts: str | None = None
@@ -39,8 +39,8 @@ class GetOrganisationResponse(BaseModel):
     uuid: str | None = None
     # the fallback GENERIC_MISP_ORGANISATION doesn't have this property
     # str is needed because its returned as string
-    date_created: str | None | str = None
-    date_modified: str | None | str = None
+    date_created: datetime | None | str = None
+    date_modified: datetime | None | str = None
     description: str | None = None
     created_by: str
     contacts: str | None = None
@@ -79,8 +79,8 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
 class OrganisationUsersResponse(BaseModel):
     id: int
     name: str
-    date_created: str | None = None
-    date_modified: str | None = None
+    date_created: datetime | str | None = None
+    date_modified: datetime | str | None = None
     description: str | None = None
     type: str | None = None
     nationality: str | None = None
