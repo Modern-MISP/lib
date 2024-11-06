@@ -288,7 +288,7 @@ class EditAttributeAttributes(BaseModel):
     disable_correlation: bool
     first_seen: str | None = None
     last_seen: str | None = None
-    tag: list[EditAttributeTag]
+    Tag: list[EditAttributeTag]
 
 
 class EditAttributeResponse(BaseModel):
