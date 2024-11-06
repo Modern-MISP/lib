@@ -57,8 +57,9 @@ class GetOrganisationResponse(BaseModel):
         return d
 
 
-class GetAllOrganisationsOrganisation(BaseModel):
-    id: int
+class GetAllOrganisationsOrganisation(GetOrganisationResponse):
+    user_count: int
+    created_by_email: str
 
 
 class GetAllOrganisationResponse(BaseModel):
