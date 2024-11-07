@@ -313,37 +313,22 @@ class AddEditGetEventDetails(BaseModel):
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
-    @validator("uuid", "extends_uuid", pre=True)
-    @classmethod
-    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-        """
-        Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
-
-        :param value: the value to check and possibly convert
-        :type value: Any
-        :return: returns a UUID object containing zeros if the input is an empty string,zero or None
-         otherwise the input value
-        :rtype: Any
-        """
-        if value == "" or value is None or value == "0":
-            return "00000000-0000-0000-0000-000000000000"
-
-        return value
-
-    @validator("event_creator_email", pre=True)
-    @classmethod
-    def empty_str_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-        """
-        Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
-
-        :param value: the value to check and possibly convert
-        :type value: Any
-        :return: returns a UUID object containing zeros if the input is an empty string,zero or None
-         otherwise the input value
-        :rtype: Any
-        """
-
-        return str(value)
+    #    @validator("uuid", "extends_uuid", pre=True)
+    #    @classmethod
+    #    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
+    #        """
+    #        Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
+    #
+    #        :param value: the value to check and possibly convert
+    #        :type value: Any
+    #        :return: returns a UUID object containing zeros if the input is an empty string,zero or None
+    #         otherwise the input value
+    #        :rtype: Any
+    #        """
+    #        if value == "" or value is None or value == "0":
+    #            return "00000000-0000-0000-0000-000000000000"
+    #
+    #        return value
 
     @validator("sharing_group_id", pre=True)
     @classmethod
