@@ -282,7 +282,25 @@ async def organisation(db):
 
 
 @pytest_asyncio.fixture
-async def event(db, organisation, site_admin_user, sharing_group):
+async def event(db, organisation, site_admin_user):
+    org_id = organisation.id
+    event = generate_event()
+    event.org_id = org_id
+    event.orgc_id = org_id
+    event.user_id = site_admin_user.id
+
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
+
+    yield event
+
+    await db.delete(event)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def event_with_sharing_group(db, organisation, site_admin_user, sharing_group):
     org_id = organisation.id
     event = generate_event()
     event.org_id = org_id
