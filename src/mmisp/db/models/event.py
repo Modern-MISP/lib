@@ -81,7 +81,7 @@ class Event(Base):
             event=self, tag=tag, local=local, event_id=self.id, tag_id=tag.id, relationship_type=relationship_type
         )
         db.add(event_tag)
-        await db.commit()
+        await db.flush()
         await db.refresh(event_tag)
         return event_tag
 

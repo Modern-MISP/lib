@@ -1250,6 +1250,7 @@ class ModuleTagOperation(ModuleAction):
             event_tag = EventTag(event_id=event_id, tag_id=tag_id, local=local)
 
             db.add(event_tag)
+            await db.flush()
             return True
 
         elif scope == "attribute":
