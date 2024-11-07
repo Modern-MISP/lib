@@ -52,6 +52,3 @@ class ServerViewMeResponse(BaseModel):
     Organisation: ServerOrganisation
     RemotesOrg: ServerOrganisation
     User: ServerUser
-
-
-

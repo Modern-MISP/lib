@@ -66,27 +66,25 @@ def generate_get_attribute_tag_response() -> GetAttributeTag:
         colour=random_hexcolour(6),
         numerical_value=generate_number(),
         is_galaxy=bool(random.getrandbits),
-        local=bool(random.getrandbits)
+        local=bool(random.getrandbits),
     )
 
 
 def generate_attribute_tag_with_relationship_type() -> AttributeTagWithRelationshipType:
     tag: GetAttributeTag = generate_get_attribute_tag_response()
-    return AttributeTagWithRelationshipType(**tag.dict(),
-                                            relationship_local=bool(random.getrandbits),
-                                            relationship_type=random_string())
+    return AttributeTagWithRelationshipType(
+        **tag.dict(), relationship_local=bool(random.getrandbits), relationship_type=random_string()
+    )
 
 
 def generate_exising_new_tag() -> NewTag:
-    return NewTag(tag_id=generate_ids(),
-                  local=bool(random.getrandbits),
-                  relationship_type=generate_random_str())
+    return NewTag(tag_id=generate_ids(), local=bool(random.getrandbits), relationship_type=generate_random_str())
 
 
 def generate_new_new_tag() -> NewTag:
-    return NewTag(tag=generate_valid_tag_data(),
-                  local=bool(random.getrandbits),
-                  relationship_type=generate_random_str())
+    return NewTag(
+        tag=generate_valid_tag_data(), local=bool(random.getrandbits), relationship_type=generate_random_str()
+    )
 
 
 def generate_invalid_tag_data() -> Any:

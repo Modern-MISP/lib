@@ -1,8 +1,8 @@
 import random
 from datetime import datetime
 
-from mmisp.api_schemas.attributes import GetAttributeAttributes, AddAttributeBody
-from mmisp.lib.attributes import mapper_val_safe_clsname, AttributeCategories
+from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
+from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
 from mmisp.tests.generators.feed_generator import generate_number_as_str
@@ -52,7 +52,7 @@ def generate_get_attribute_attributes_response() -> GetAttributeAttributes:
         last_seen=generate_random_date_str(),
         event_uuid=uuid(),
         data=generate_random_str(),
-        Tag=[generate_get_attribute_tag_response()]
+        Tag=[generate_get_attribute_tag_response()],
     )
 
 
@@ -60,8 +60,11 @@ def generate_attribute_with_tag_relationship() -> AttributeWithTagRelationship:
     attribute: GetAttributeAttributes = generate_get_attribute_attributes_response()
     tags: list[AttributeTagWithRelationshipType] = []
     for tag in attribute.Tag or []:
-        tags.append(AttributeTagWithRelationshipType(**tag.dict(), relationship_local=bool(random.getrandbits),
-                                                     relationship_type=generate_random_str()))
+        tags.append(
+            AttributeTagWithRelationshipType(
+                **tag.dict(), relationship_local=bool(random.getrandbits), relationship_type=generate_random_str()
+            )
+        )
 
     return AttributeWithTagRelationship(
         id=attribute.id,

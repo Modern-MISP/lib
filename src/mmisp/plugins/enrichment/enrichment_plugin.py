@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import confrozenset, BaseModel, conlist
+from pydantic import BaseModel, confrozenset, conlist
 
 from mmisp.plugins.plugin_info import PluginInfo
 
@@ -11,10 +11,10 @@ class EnrichmentPluginType(str, Enum):
     """
 
     EXPANSION = "expansion"
-    """Enrichment Plugins of this type generate new attributes that can be attached to a MISP-Event 
+    """Enrichment Plugins of this type generate new attributes that can be attached to a MISP-Event
     to add additional information permanently."""
     HOVER = "hover"
-    """Enrichment Plugins of this type generate information that is usually only displayed once 
+    """Enrichment Plugins of this type generate information that is usually only displayed once
     and should not be stored permanently in the database."""
 
 

@@ -64,7 +64,7 @@ class ObjectWithAttributesResponse(BaseModel):
     event_id: int | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: int | None = None # is none if distribution is not 4, see validator
+    sharing_group_id: int | None = None  # is none if distribution is not 4, see validator
     comment: str | None = None
     deleted: bool | None = None
     first_seen: str | None = None
@@ -74,8 +74,9 @@ class ObjectWithAttributesResponse(BaseModel):
 
     @validator("sharing_group_id", always=True)
     @classmethod
-    def check_sharing_group_id(cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]) -> \
-    Optional[int]:  # noqa: ANN101
+    def check_sharing_group_id(
+        cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]
+    ) -> Optional[int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """

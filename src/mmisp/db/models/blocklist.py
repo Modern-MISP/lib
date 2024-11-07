@@ -8,7 +8,7 @@ from ..database import Base
 
 
 class GalaxyClusterBlocklist(Base):
-    __tablename__ = 'galaxy_cluster_blocklists'
+    __tablename__ = "galaxy_cluster_blocklists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     cluster_uuid: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
@@ -19,7 +19,7 @@ class GalaxyClusterBlocklist(Base):
 
 
 class EventBlocklist(Base):
-    __tablename__ = 'event_blocklists'
+    __tablename__ = "event_blocklists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     event_uuid: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
@@ -30,7 +30,7 @@ class EventBlocklist(Base):
 
 
 class OrgBlocklist(Base):
-    __tablename__ = 'org_blocklists'
+    __tablename__ = "org_blocklists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     org_uuid: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)

@@ -13,5 +13,5 @@ def generate_sighting(event_id: int, attribute_id: int, org_id: int) -> Sighting
         org_id=org_id,
         date_sighting=int(time.time()),
         source=generate_random_str(),
-        type=0
+        type=0,
     )

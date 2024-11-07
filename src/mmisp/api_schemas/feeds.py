@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 
 from pydantic import BaseModel, Field, validator
 
@@ -67,7 +67,7 @@ class FeedAttributesResponse(BaseModel):
 
     @validator("sharing_group_id", always=True)
     @classmethod
-    def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> int | None:
         """
         If distribution equals 4, sharing_group_id will be shown.
         """

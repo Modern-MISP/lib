@@ -9,6 +9,7 @@ class OverCorrelatingValue(Base):
     """
     Class to represent the table of the over correlating values in the misp_sql database.
     """
+
     __tablename__ = "over_correlating_values"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -20,6 +21,7 @@ class CorrelationValue(Base):
     """
     Class to represent the table of the correlation values in the misp_sql database.
     """
+
     __tablename__ = "correlation_values"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -27,7 +29,7 @@ class CorrelationValue(Base):
 
 
 class CorrelationExclusions(Base):
-    __tablename__ = 'correlation_exclusions'
+    __tablename__ = "correlation_exclusions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     value: Mapped[str] = mapped_column(String(255), nullable=False, index=True, unique=True)
@@ -36,7 +38,7 @@ class CorrelationExclusions(Base):
 
 
 class DefaultCorrelation(Base):
-    __tablename__ = 'default_correlations'
+    __tablename__ = "default_correlations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     attribute_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)

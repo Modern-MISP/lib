@@ -15,5 +15,5 @@ def generate_sharing_group() -> SharingGroup:
         active=True,
         local=True,
         created=datetime.now(UTC),
-        modified=datetime.now(UTC)
+        modified=datetime.now(UTC),
     )

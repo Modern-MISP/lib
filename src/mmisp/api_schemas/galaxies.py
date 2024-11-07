@@ -3,7 +3,7 @@ from typing import Any, List
 from pydantic import BaseModel
 
 from mmisp.api_schemas.common import TagAttributesResponse
-from mmisp.api_schemas.events import GetAllEventsGalaxyClusterGalaxy, AddEditGetEventGalaxyClusterRelation
+from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.organisations import Organisation
 
 
@@ -148,6 +148,19 @@ class ExportGalaxyClusterResponse(BaseModel):
         orm_mode = True
 
 
+class TargetingClusterRelation(BaseModel):
+    id: int
+    galaxy_cluster_id: int
+    referenced_galaxy_cluster_id: int
+    referenced_galaxy_cluster_uuid: str
+    referenced_galaxy_cluster_type: str
+    galaxy_cluster_uuid: str
+    distribution: int
+    sharing_group_id: int | None = None
+    default: bool
+    Tag: list[TagAttributesResponse]
+
+
 class GalaxyClustersViewResponse(BaseModel):
     id: int
     uuid: str
@@ -175,20 +188,8 @@ class GalaxyClustersViewResponse(BaseModel):
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
     Org: Organisation
     Orgc: Organisation
-    TargetingClusterRelation: list[TargetingClusterRelation] | None = None
+    TargetingClusterRelation: list["TargetingClusterRelation"] | None = None
     RelationshipInbound: list[Any] | None = None  # Unknown what is stored in the list, so far only receiving empty list
-
-class TargetingClusterRelation(BaseModel):
-    id: int
-    galaxy_cluster_id: int
-    referenced_galaxy_cluster_id: int
-    referenced_galaxy_cluster_uuid: str
-    referenced_galaxy_cluster_type: str
-    galaxy_cluster_uuid: str
-    distribution: int
-    sharing_group_id: int | None = None
-    default: bool
-    Tag: list[TagAttributesResponse]
 
 
 class ExportGalaxyAttributes(BaseModel):

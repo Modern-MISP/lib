@@ -7,7 +7,7 @@ from ..database import Base
 
 
 class Post(Base):
-    __tablename__ = 'posts'
+    __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     date_created: Mapped[DateTime] = mapped_column(DateTime, nullable=False)

@@ -11,9 +11,10 @@ from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.uuid import uuid
+
+from ..database import Base
 from .event import Event
 from .tag import Tag
-from ..database import Base
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
@@ -162,7 +163,7 @@ class AttributeTag(Base):
 
 class AttributeMeta(DeclarativeMeta):
     def __new__(cls: Type[type], clsname: str, bases: tuple, dct: dict) -> "AttributeMeta":
-        key = clsname[len("Attribute"):]
+        key = clsname[len("Attribute") :]
         dct["default_category"] = default_category[mapper_safe_clsname_val[key]]
         dct["categories"] = categories[mapper_safe_clsname_val[key]]
         dct["default_to_ids"] = to_ids[mapper_safe_clsname_val[key]]

@@ -6,7 +6,7 @@ from ..database import Base
 
 
 class ThreatLevel(Base):
-    __tablename__ = 'threat_levels'
+    __tablename__ = "threat_levels"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)

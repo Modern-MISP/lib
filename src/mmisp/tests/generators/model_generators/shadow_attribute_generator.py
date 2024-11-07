@@ -4,7 +4,7 @@ import time
 from mmisp.db.models.shadow_attribute import ShadowAttribute
 from mmisp.lib.attributes import mapper_val_safe_clsname
 from mmisp.lib.uuid import uuid
-from mmisp.tests.generators.object_generator import generate_random_str, generate_random_date_str
+from mmisp.tests.generators.object_generator import generate_random_date_str, generate_random_str
 
 
 def generate_shadow_attribute(org_id: int, event_id: int, event_uuid: str, event_org_id: int) -> ShadowAttribute:
@@ -27,5 +27,5 @@ def generate_shadow_attribute(org_id: int, event_id: int, event_uuid: str, event
         disable_correlation=False,
         timestamp=int(time.time()),
         first_seen=generate_random_date_str(),
-        last_seen=generate_random_date_str()
+        last_seen=generate_random_date_str(),
     )

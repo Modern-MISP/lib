@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, ForeignKey, String, Text, Boolean, BigInteger
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
 
 from mmisp.db.database import Base
 from mmisp.db.models.event import Event
 from mmisp.db.models.organisation import Organisation
-from mmisp.db.mypy import mapped_column, Mapped
+from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
 
