@@ -121,9 +121,9 @@ class AddServerResponse(BaseModel):
 
 
 class RemoveServer(BaseModel):
-    id: str
-    sharing_group_id: str
-    server_id: str
+    id: int
+    sharing_group_id: int
+    server_id: int
     all_orgs: bool
 
 

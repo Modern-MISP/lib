@@ -2,12 +2,12 @@ from pydantic import BaseModel
 
 
 class TagAttributesResponse(BaseModel):
-    id: str
+    id: int
     name: str
     colour: str
     exportable: bool
-    org_id: str | None = None
-    user_id: str | None = None
+    org_id: int | None = None
+    user_id: int | None = None
     hide_tag: bool | None = None
     numerical_value: str | None = None
     is_galaxy: bool | None = None

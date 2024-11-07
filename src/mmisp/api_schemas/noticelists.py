@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class NoticelistAttributes(BaseModel):
-    id: str
+    id: int
     name: str
     expanded_name: str
     ref: list[str]
@@ -23,8 +23,8 @@ class Data(BaseModel):
 
 
 class NoticelistEntryResponse(BaseModel):
-    id: str
-    noticelist_id: str
+    id: int
+    noticelist_id: int
     data: Data
 
 

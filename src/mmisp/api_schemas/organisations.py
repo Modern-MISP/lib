@@ -7,7 +7,7 @@ from mmisp.lib.serialisation_helper import timestamp_or_empty_string
 
 
 class BaseOrganisation(BaseModel):
-    id: str | None = None
+    id: int | None = None
     name: str | None = None
     nationality: str | None = None
     sector: str | None = None
@@ -16,14 +16,14 @@ class BaseOrganisation(BaseModel):
 
 
 class Organisation(BaseOrganisation):
-    date_created: datetime
-    date_modified: datetime
+    date_created: datetime | str
+    date_modified: datetime | str
     description: str | None = None
     created_by: str
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: str | None = None
+    restricted_to_domain: str | list | None = None
     landingpage: str | None = None
 
     class Config:
@@ -31,7 +31,7 @@ class Organisation(BaseOrganisation):
 
 
 class GetOrganisationResponse(BaseModel):
-    id: str
+    id: int
     name: str
     nationality: str | None = None
     sector: str | None = None
@@ -57,21 +57,7 @@ class GetOrganisationResponse(BaseModel):
         return d
 
 
-class GetAllOrganisationsOrganisation(BaseModel):
-    id: str
-    name: str
-    date_created: datetime
-    date_modified: datetime
-    description: str | None = None
-    type: str | None = None
-    nationality: str | None = None
-    sector: str | None = None
-    created_by: str
-    uuid: str | None = None
-    contacts: str | None = None
-    local: bool
-    restricted_to_domain: str | None = None
-    landingpage: str | None = None
+class GetAllOrganisationsOrganisation(GetOrganisationResponse):
     user_count: int
     created_by_email: str
 
@@ -94,8 +80,8 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
 class OrganisationUsersResponse(BaseModel):
     id: int
     name: str
-    date_created: datetime | None = None
-    date_modified: datetime | None = None
+    date_created: datetime | str | None = None
+    date_modified: datetime | str | None = None
     description: str | None = None
     type: str | None = None
     nationality: str | None = None
@@ -104,12 +90,12 @@ class OrganisationUsersResponse(BaseModel):
     uuid: str | None = None
     contacts: str | None = None
     local: bool | None = None
-    restricted_to_domain: str | None = None
+    restricted_to_domain: str | list | None = None
     landingpage: str | None = None
 
 
 class AddOrganisation(BaseModel):
-    id: str
+    id: int
     name: str
     description: str | None = None
     type: str
@@ -140,3 +126,18 @@ class EditOrganisation(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ShadowAttributeOrganisation(BaseModel):
+    name: str
+    uuid: str
+    id: int
+
+
+class ServerOrganisation(BaseModel):
+    id: int
+    name: str
+    uuid: str
+    nationality: str
+    sector: str
+    type: str

@@ -1,13 +1,11 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 
 
 class Role(BaseModel):
-    id: str
+    id: int
     name: str
-    created: datetime
-    modified: datetime
+    created: str | None = None
+    modified: str | None = None
     perm_add: bool
     perm_modify: bool
     """Manage Own Events."""
@@ -74,8 +72,8 @@ class Role(BaseModel):
 class RoleUsersResponse(BaseModel):
     id: int
     name: str
-    created: datetime | None = None
-    modified: datetime | None = None
+    created: str | None = None
+    modified: str | None = None
     perm_add: bool | None = None
     perm_modify: bool | None = None
     perm_modify_org: bool | None = None
@@ -110,8 +108,8 @@ class RoleUsersResponse(BaseModel):
 class RoleAttributeResponse(BaseModel):
     id: int
     name: str
-    created: datetime | None = None
-    modified: datetime | None = None
+    created: str | None = None
+    modified: str | None = None
     perm_add: bool
     perm_modify: bool
     perm_modify_org: bool

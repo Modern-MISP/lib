@@ -120,6 +120,7 @@ class Attribute(Base, DictMixin):
         attribute_tag = AttributeTag(attribute=self, tag=tag, event_id=self.event_id, local=local)
         db.add(attribute_tag)
         await db.commit()
+        await db.refresh(attribute_tag)
         return attribute_tag
 
     @property
@@ -154,7 +155,7 @@ class AttributeTag(Base):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
+    relationship_type: Mapped[str] = mapped_column(String(191), nullable=False, default="")
 
     attribute = relationship("Attribute", back_populates="attributetags", lazy="raise_on_sql")
     tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")

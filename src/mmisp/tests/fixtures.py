@@ -1,9 +1,7 @@
 import asyncio
-import string
 
 import pytest
 import pytest_asyncio
-from nanoid import generate
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -17,18 +15,35 @@ from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
+from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
+from .generators.model_generators.correlation_value_generator import (
+    generate_correlation_value,
+)
+from .generators.model_generators.default_correlation_generator import generate_default_correlation
 from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_generator import generate_galaxy
+from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.organisation_generator import generate_organisation
+from .generators.model_generators.over_correlating_value_generator import (
+    generate_over_correlating_value,
+)
+from .generators.model_generators.post_generator import generate_post
 from .generators.model_generators.role_generator import (
     generate_org_admin_role,
     generate_read_only_role,
     generate_site_admin_role,
 )
 from .generators.model_generators.server_generator import generate_server
+from .generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
 from .generators.model_generators.sharing_group_generator import generate_sharing_group
+from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
@@ -60,6 +75,7 @@ async def site_admin_role(db):
     role = generate_site_admin_role()
     db.add(role)
     await db.commit()
+    await db.refresh(role)
     yield role
     await db.delete(role)
     await db.commit()
@@ -90,6 +106,7 @@ async def instance_owner_org(db):
     instance_owner_org = generate_organisation()
     db.add(instance_owner_org)
     await db.commit()
+    await db.refresh(instance_owner_org)
     yield instance_owner_org
     await db.delete(instance_owner_org)
     await db.commit()
@@ -283,6 +300,40 @@ async def event(db, organisation, site_admin_user):
 
 
 @pytest_asyncio.fixture
+async def event_with_sharing_group(db, organisation, site_admin_user, sharing_group):
+    org_id = organisation.id
+    event = generate_event()
+    event.org_id = org_id
+    event.orgc_id = org_id
+    event.user_id = site_admin_user.id
+    event.sharing_group_id = sharing_group.id
+
+    db.add(event)
+    await db.commit()
+    await db.refresh(event)
+
+    yield event
+
+    await db.delete(event)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def sighting(db, organisation, event_with_attributes):
+    attribute: Attribute = event_with_attributes.attributes[0]
+    sighting: Sighting = generate_sighting(event_with_attributes.id, attribute.id, organisation.id)
+
+    db.add(sighting)
+    await db.commit()
+    await db.refresh(sighting)
+
+    yield sighting
+
+    await db.delete(sighting)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
 async def event2(db, organisation, site_admin_user):
     org_id = organisation.id
     event = generate_event()
@@ -311,6 +362,7 @@ async def attribute(db, event):
     await db.refresh(attribute)
 
     yield attribute
+    await db.refresh(event)
 
     await db.delete(attribute)
     event.attribute_count -= 1
@@ -363,11 +415,11 @@ async def attribute_multi2(db, event):
 
 
 @pytest_asyncio.fixture
-async def tag(db):
+async def tag(db, site_admin_user):
     tag = generate_tag()
 
-    tag.user_id = 1
-    tag.org_id = 1
+    tag.user_id = site_admin_user.id
+    tag.org_id = site_admin_user.org_id
     tag.is_galaxy = True
     tag.exportable = True
 
@@ -378,6 +430,20 @@ async def tag(db):
     yield tag
 
     await db.delete(tag)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def shadow_attribute(db, organisation, event):
+    shadow_attribute = generate_shadow_attribute(organisation.id, event.id, event.uuid, event.org_id)
+
+    db.add(shadow_attribute)
+    await db.commit()
+    await db.refresh(shadow_attribute)
+
+    yield shadow_attribute
+
+    await db.delete(shadow_attribute)
     await db.commit()
 
 
@@ -442,7 +508,8 @@ async def galaxy(db):
 
 @pytest_asyncio.fixture()
 async def auth_key(db, site_admin_user):
-    clear_key = generate(string.ascii_letters + string.digits, size=40)
+    #    clear_key = generate(string.ascii_letters + string.digits, size=40)
+    clear_key = "siteadminuser".ljust(40, "0")
 
     auth_key = generate_auth_key()
     auth_key.user_id = site_admin_user.id
@@ -766,10 +833,10 @@ async def normal_tag(db, instance_owner_org):
         colour="#123456",
         exportable=True,
         hide_tag=False,
-        numerical_value=1,
+        numerical_value=None,
         local_only=False,
-        user_id=1,
-        org_id=instance_owner_org.id,
+        user_id=0,
+        org_id=0,
     )
 
     db.add(tag)
@@ -842,7 +909,38 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
     assert not at.local
 
     await db.commit()
-    yield attribute
+    await db.refresh(attribute)
+
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
+    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
+
+    yield attribute, at
+
+    await db.delete(at)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def attribute_with_normal_tag_local(db, attribute, normal_tag):
+    assert not normal_tag.local_only
+    qry = (
+        select(Attribute)
+        .filter(Attribute.id == attribute.id)
+        .options(selectinload(Attribute.attributetags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+    at = await attribute.add_tag(db, normal_tag, local=True)
+
+    await db.commit()
+    await db.refresh(attribute)
+
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
+    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
+    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
+
+    yield attribute, at
 
     await db.delete(at)
     await db.commit()
@@ -861,6 +959,8 @@ async def attribute_with_local_tag(db, attribute, local_only_tag):
     assert at.local
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -880,6 +980,8 @@ async def attribute_with_non_exportable_local_tag(db, attribute, non_exportable_
     at = await attribute.add_tag(db, non_exportable_local_only_tag)
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
@@ -900,7 +1002,303 @@ async def attribute_with_galaxy_cluster_one_tag(db, attribute, galaxy_cluster_on
     assert not at.local
 
     await db.commit()
+    await db.refresh(attribute)
+
     yield attribute
 
     await db.delete(at)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_with_normal_tag(db, event, normal_tag):
+    assert not normal_tag.local_only
+
+    event_tag: EventTag = await event.add_tag(db, normal_tag)
+    assert not event_tag.local
+
+    await db.commit()
+    await db.refresh(event)
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.eventtags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    yield event
+
+    await db.delete(event_tag)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_with_normal_tag_local(db, event, normal_tag):
+    assert not normal_tag.local_only
+
+    event_tag: EventTag = await event.add_tag(db, normal_tag, local=True)
+
+    await db.commit()
+    await db.refresh(event)
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.eventtags))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    yield event
+
+    await db.delete(event_tag)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_with_attributes(db, event):
+    event_id = event.id
+    attribute = generate_attribute(event_id)
+    attribute_2 = generate_attribute(event_id)
+    event.attribute_count += 2
+
+    db.add(attribute)
+    db.add(attribute_2)
+    await db.commit()
+    await db.refresh(event)
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event_id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+
+    await db.refresh(attribute)
+    await db.refresh(attribute_2)
+
+    yield event
+
+    await db.delete(attribute)
+    await db.delete(attribute_2)
+    event.attribute_count -= 2
+
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def two_event_with_same_attribute_values(db, event, event2):
+    event_id = event.id
+    event2_id = event2.id
+
+    assert event_id != event2_id
+
+    attribute = generate_attribute(event_id)
+    attribute2 = generate_attribute(event2_id)
+
+    db.add(attribute)
+    db.add(attribute2)
+
+    await db.commit()
+    await db.refresh(attribute)
+    await db.refresh(attribute2)
+
+    assert attribute.value == attribute2.value
+    assert attribute.event_id == event_id
+    assert attribute2.event_id == event2_id
+
+    qry = (
+        select(Event)
+        .filter(Event.id == event.id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    qry2 = (
+        select(Event)
+        .filter(Event.id == event2.id)
+        .options(selectinload(Event.attributes))
+        .execution_options(populate_existing=True)
+    )
+    await db.execute(qry)
+    await db.execute(qry2)
+
+    await db.commit()
+
+    yield [(event, attribute), (event2, attribute2)]
+
+    await db.delete(attribute)
+    await db.delete(attribute2)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def post(db):
+    post: Post = generate_post()
+    db.add(post)
+    await db.commit()
+    await db.refresh(post)
+
+    yield post
+
+    await db.delete(post)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def over_correlating_value(db):
+    ocv: OverCorrelatingValue = generate_over_correlating_value()
+    db.add(ocv)
+    await db.commit()
+    await db.refresh(ocv)
+
+    yield ocv
+
+    await db.delete(ocv)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def correlating_value(db):
+    cv: CorrelationValue = generate_correlation_value()
+    db.add(cv)
+    await db.commit()
+    await db.refresh(cv)
+
+    yield cv
+
+    await db.delete(cv)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def correlating_values(db):
+    list_c_v: list[CorrelationValue] = []
+
+    for i in range(3):
+        list_c_v.append(generate_correlation_value())
+        db.add(list_c_v[i])
+        await db.commit()
+        await db.refresh(list_c_v[i])
+
+    yield list_c_v
+
+    for list_c_v_item in list_c_v:
+        await db.delete(list_c_v_item)
+        await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def over_correlating_values(db):
+    list_o_c_v: list[OverCorrelatingValue] = []
+
+    for i in range(3):
+        list_o_c_v.append(generate_over_correlating_value())
+        db.add(list_o_c_v[i])
+        await db.commit()
+        await db.refresh(list_o_c_v[i])
+
+    yield list_o_c_v
+
+    for list_o_c_v_item in list_o_c_v:
+        await db.delete(list_o_c_v_item)
+        await db.commit()
+
+
+@pytest_asyncio.fixture
+async def correlation_exclusion(db):
+    exclusion: CorrelationExclusions = generate_correlation_exclusions()
+
+    db.add(exclusion)
+    await db.commit()
+    await db.refresh(exclusion)
+
+    yield exclusion
+
+    await db.delete(exclusion)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def correlation_exclusions(db):
+    list_exclusions: list[CorrelationExclusions] = []
+
+    list_exclusions = [generate_correlation_exclusions() for _ in range(3)]
+
+    for ex in list_exclusions:
+        db.add(ex)
+    await db.commit()
+
+    for ex in list_exclusions:
+        await db.refresh(ex)
+
+    yield list_exclusions
+
+    for exclusion in list_exclusions:
+        await db.delete(exclusion)
+        await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def object1(db, event, sharing_group):
+    misp_object: Object = generate_object()
+    misp_object.event_id = event.id
+    misp_object.sharing_group_id = sharing_group.id
+
+    db.add(misp_object)
+    await db.commit()
+    await db.refresh(misp_object)
+
+    yield misp_object
+
+    await db.delete(misp_object)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def object2(db, event, sharing_group):
+    misp_object: Object = generate_object()
+    misp_object.event_id = event.id
+    misp_object.sharing_group_id = sharing_group.id
+
+    db.add(misp_object)
+    await db.commit()
+    await db.refresh(misp_object)
+
+    yield misp_object
+
+    await db.delete(misp_object)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def default_correlation(db, correlating_value):
+    dc: DefaultCorrelation = generate_default_correlation()
+    dc.value_id = correlating_value.id
+
+    db.add(dc)
+    await db.commit()
+    await db.refresh(dc)
+
+    yield dc
+
+    await db.delete(dc)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def user(db, instance_owner_org, site_admin_role):
+    user = generate_user()
+
+    user.org_id = instance_owner_org.id
+    user.server_id = 0
+    user.role_id = site_admin_role.id
+
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    yield user
+
+    await db.delete(user)
     await db.commit()

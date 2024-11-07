@@ -4,6 +4,7 @@ import time
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.objects import ObjectCreateBody, ObjectSearchBody
+from mmisp.lib.attributes import mapper_val_safe_clsname
 
 
 def generate_random_date_str() -> str:
@@ -66,7 +67,7 @@ def generate_valid_object_data() -> ObjectCreateBody:
 # Generate random object data
 def generate_valid_random_object_create_attributes() -> AddAttributeBody:
     return AddAttributeBody(
-        type=generate_random_str(),
+        type=random.choice(list(mapper_val_safe_clsname.keys())),
         value=generate_random_str(),
         value1=generate_random_str(),
         value2=generate_random_str(),

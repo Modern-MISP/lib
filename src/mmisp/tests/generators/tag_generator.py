@@ -4,8 +4,12 @@ from typing import Any
 
 from sqlalchemy import func
 
+from mmisp.api_schemas.attributes import GetAttributeTag
 from mmisp.api_schemas.tags import TagCreateBody
 from mmisp.db.models.tag import Tag
+from mmisp.plugins.enrichment.data import NewTag
+from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType
+from mmisp.tests.generators.object_generator import generate_random_str
 
 
 def generate_number() -> int:
@@ -13,9 +17,13 @@ def generate_number() -> int:
     return number
 
 
-def generate_ids_as_str() -> str:
+def generate_ids() -> str:
     id_str = random.randint(1, 10)
     return str(id_str)
+
+
+def generate_ids_as_str() -> str:
+    return str(generate_ids())
 
 
 def random_string_with_punctuation(length: int = 10) -> str:
@@ -51,6 +59,34 @@ def generate_valid_tag_data() -> TagCreateBody:
     )
 
 
+def generate_get_attribute_tag_response() -> GetAttributeTag:
+    return GetAttributeTag(
+        id=generate_ids_as_str(),
+        name=random_string(),
+        colour=random_hexcolour(6),
+        numerical_value=generate_number(),
+        is_galaxy=bool(random.getrandbits),
+        local=bool(random.getrandbits),
+    )
+
+
+def generate_attribute_tag_with_relationship_type() -> AttributeTagWithRelationshipType:
+    tag: GetAttributeTag = generate_get_attribute_tag_response()
+    return AttributeTagWithRelationshipType(
+        **tag.dict(), relationship_local=bool(random.getrandbits), relationship_type=random_string()
+    )
+
+
+def generate_exising_new_tag() -> NewTag:
+    return NewTag(tag_id=generate_ids(), local=bool(random.getrandbits), relationship_type=generate_random_str())
+
+
+def generate_new_new_tag() -> NewTag:
+    return NewTag(
+        tag=generate_valid_tag_data(), local=bool(random.getrandbits), relationship_type=generate_random_str()
+    )
+
+
 def generate_invalid_tag_data() -> Any:
     input_list = [
         random_string(),
@@ -66,7 +102,7 @@ def generate_invalid_tag_data() -> Any:
 
 def generate_tags(db, number: int = 10) -> list:
     tag_ids = []
-    for i in range(number):
+    for _ in range(number):
         new_tag = Tag(**generate_valid_tag_data().dict())
         db.add(new_tag)
         db.commit()
@@ -91,7 +127,7 @@ def get_non_existing_tags(db, number: int = 10) -> list:
 def get_invalid_tags(number: int = 10) -> list:
     length = 5
     invalid_tags = []
-    for i in range(number):
+    for _ in range(number):
         invalid_tags.append("".join(random.choices(string.ascii_letters, k=length)))
     return invalid_tags
 

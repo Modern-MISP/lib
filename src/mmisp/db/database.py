@@ -7,6 +7,7 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from mmisp.db.config import config
 
@@ -17,6 +18,8 @@ Session: TypeAlias = AsyncSession
 
 Base = declarative_base()
 
+_no_database: str = "DatabaseSessionManager is not initialized"
+
 
 class DatabaseSessionManager:
     def __init__(self: Self, db_url: str = config.DATABASE_URL) -> None:
@@ -25,23 +28,28 @@ class DatabaseSessionManager:
 
         self._url = make_url(db_url)
 
-    def init(self: Self) -> None:
+    def init(self: Self, nullpool: bool = False) -> None:
         retries = 0
         while retries < config.MAX_RETRIES:
             try:
-                self._engine = create_async_engine(self._url, echo=config.DEBUG)
+                if nullpool:
+                    self._engine = create_async_engine(
+                        self._url, echo=False, hide_parameters=not (config.DEBUG), poolclass=NullPool
+                    )
+                else:
+                    self._engine = create_async_engine(self._url, echo=False, hide_parameters=not (config.DEBUG))
                 break
             except OperationalError as e:
                 retries += 1
                 print(f"Attempt {retries} failed: {e}")
                 time.sleep(config.RETRY_SLEEP)
         self._sessionmaker = sessionmaker(
-            autocommit=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
+            autocommit=False, autoflush=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
 
     async def close(self: Self) -> None:
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
         await self._engine.dispose()
         self._engine = None
         self._sessionmaker = None
@@ -49,7 +57,7 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def connect(self: Self) -> AsyncIterator[AsyncConnection]:
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
 
         async with self._engine.begin() as connection:
             try:
@@ -61,7 +69,7 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def session(self: Self) -> AsyncIterator[AsyncSession]:
         if self._sessionmaker is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise Exception(_no_database)
 
         session = self._sessionmaker()
         try:

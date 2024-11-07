@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Self
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
@@ -69,6 +71,19 @@ class Event(Base):
         overlaps="tags, events",
         viewonly=True,
     )
+
+    async def add_tag(
+        self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
+    ) -> "EventTag":
+        if tag.local_only:
+            local = True
+        event_tag: EventTag = EventTag(
+            event=self, tag=tag, local=local, event_id=self.id, tag_id=tag.id, relationship_type=relationship_type
+        )
+        db.add(event_tag)
+        await db.flush()
+        await db.refresh(event_tag)
+        return event_tag
 
 
 class EventReport(Base):

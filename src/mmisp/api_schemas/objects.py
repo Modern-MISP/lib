@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Field, validator
 
@@ -10,7 +10,7 @@ class ObjectSearchBody(BaseModel):
     object_name: str | None = None
     object_template_uuid: str | None = None
     object_template_version: str | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     category: str | None = None
     comment: str | None = None
     first_seen: str | None = None
@@ -23,7 +23,7 @@ class ObjectSearchBody(BaseModel):
     date: str | None = None
     last: str | None = None
     event_timestamp: str | None = None
-    org_id: str | None = None
+    org_id: int | None = None
     uuid: str | None = None
     value1: str | None = None
     value2: str | None = None
@@ -36,8 +36,9 @@ class ObjectSearchBody(BaseModel):
     return_format: str | None = "json"
     limit: str | None = "25"
 
-    @validator("limit")
-    def check_limit(cls, value: Any) -> str:  # noqa: ANN101
+    @validator("limit", allow_reuse=True)
+    @classmethod
+    def check_limit(cls: Type["ObjectSearchBody"], value: Any) -> str:  # noqa: ANN101
         if value:
             try:
                 limit_int = int(value)
@@ -53,17 +54,17 @@ class ObjectSearchBody(BaseModel):
 
 
 class ObjectWithAttributesResponse(BaseModel):
-    id: str
+    id: int
     uuid: str
     name: str
     meta_category: str | None = None
     description: str | None = None
     template_uuid: str | None = None
     template_version: str | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     timestamp: str | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
+    sharing_group_id: int | None = None  # is none if distribution is not 4, see validator
     comment: str | None = None
     deleted: bool | None = None
     first_seen: str | None = None
@@ -72,7 +73,10 @@ class ObjectWithAttributesResponse(BaseModel):
     Event: ObjectEventResponse | None = None
 
     @validator("sharing_group_id", always=True)
-    def check_sharing_group_id(cls, value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    @classmethod
+    def check_sharing_group_id(
+        cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]
+    ) -> Optional[int]:  # noqa: ANN101
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
@@ -98,7 +102,7 @@ class ObjectCreateBody(BaseModel):
     meta_category: str | None = None
     description: str | None = None
     distribution: str | None = None
-    sharing_group_id: str = Field(min_length=1)
+    sharing_group_id: int
     comment: str = Field(min_length=1)
     deleted: bool | None = None
     first_seen: str | None = None

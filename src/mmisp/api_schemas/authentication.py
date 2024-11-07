@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 
 class TokenResponse(BaseModel):
@@ -13,11 +13,11 @@ class ChangeLoginInfoResponse(BaseModel):
 
 class IdentityProviderBody(BaseModel):
     name: str
-    org_id: str
+    org_id: int
     active: bool
     base_url: str
     client_id: str
-    client_secret: str
+    client_secret: SecretStr
     scope: str | None = None
 
 
@@ -28,27 +28,26 @@ class IdentityProviderCallbackBody(BaseModel):
 
 class IdentityProviderEditBody(BaseModel):
     name: str | None = None
-    org_id: str | None = None
+    org_id: int | None = None
     active: bool | None = None
     base_url: str | None = None
     client_id: str | None = None
-    client_secret: str | None = None
+    client_secret: SecretStr | None = None
     scope: str | None = None
 
 
 class GetIdentityProviderResponse(BaseModel):
-    id: str
+    id: int
     name: str
-    org_id: str
+    org_id: int
     active: bool
     base_url: str
     client_id: str
-    client_secret: str
     scope: str | None = None
 
 
 class IdentityProviderInfo(BaseModel):
-    id: str
+    id: int
     name: str
     url: str | None = None
 
@@ -67,17 +66,17 @@ class StartLoginBody(BaseModel):
 
 class PasswordLoginBody(BaseModel):
     email: str
-    password: str
+    password: SecretStr
 
 
 class SetPasswordBody(BaseModel):
-    password: str
+    password: SecretStr
 
 
 class ChangePasswordBody(BaseModel):
     email: str
-    password: str
-    oldPassword: str | None = None
+    password: SecretStr
+    oldPassword: SecretStr | None = None
 
 
 class ExchangeTokenLoginBody(BaseModel):

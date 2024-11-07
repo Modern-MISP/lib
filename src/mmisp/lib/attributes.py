@@ -2324,6 +2324,33 @@ AttributeType(
     to_ids=True,
 )
 
+AttributeType(
+    dbkey="dom-hash",
+    safe_clsname="DomHash",
+    default_category=AttributeCategories.NETWORK_ACTIVITY,
+    categories=frozenset(
+        {
+            AttributeCategories.EXTERNAL_ANALYSIS,
+            AttributeCategories.NETWORK_ACTIVITY,
+        }
+    ),
+    to_ids=True,
+)
+
+AttributeType(
+    dbkey="onion-address",
+    safe_clsname="OnionAddress",
+    default_category=AttributeCategories.NETWORK_ACTIVITY,
+    categories=frozenset(
+        {
+            AttributeCategories.EXTERNAL_ANALYSIS,
+            AttributeCategories.NETWORK_ACTIVITY,
+            AttributeCategories.PAYLOAD_DELIVERY,
+        }
+    ),
+    to_ids=True,
+)
+
 
 mapper_val_safe_clsname = {x.dbkey: x.safe_clsname for x in AttributeType.all_attributes}
 mapper_safe_clsname_val = dict((v, k) for k, v in mapper_val_safe_clsname.items())

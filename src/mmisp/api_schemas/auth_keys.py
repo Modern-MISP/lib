@@ -1,23 +1,22 @@
-from datetime import datetime
 from typing import List, Self, Union
 
 from pydantic import BaseModel, PositiveInt, conint, validator
 
 
 class SearchGetAuthKeysResponseItemUser(BaseModel):
-    id: str
+    id: int
     email: str
 
 
 class ViewAuthKeyResponseWrapper(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
+    created: str
     expiration: int
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
@@ -29,21 +28,21 @@ class ViewAuthKeysResponse(BaseModel):
 
 
 class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
     created: str
     expiration: str
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str | None
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
 
 
 class SearchGetAuthKeysResponseAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
@@ -76,34 +75,34 @@ class SearchGetAuthKeysResponse(BaseModel):
 class SearchAuthKeyBody(BaseModel):
     page: PositiveInt = 1
     limit: conint(gt=0, lt=500) = 25  # type: ignore
-    id: str | None = None
+    id: int | None = None
     uuid: str | None = None
     authkey_start: str | None = None
     authkey_end: str | None = None
     created: str | None = None
     expiration: str | None = None
     read_only: bool | None = None
-    user_id: str | None = None
+    user_id: int | None = None
     comment: str | None = None
     allowed_ips: str | list[str] | None = None
     last_used: str | None = None  # deprecated
 
 
 class EditAuthKeyResponseAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
     created: str
     expiration: str
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str
     allowed_ips: str | None = None
 
 
 class EditAuthKeyResponseCompleteAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
@@ -117,8 +116,8 @@ class EditAuthKeyResponseCompleteAuthKey(BaseModel):
 
 
 class EditAuthKeyResponseUser(BaseModel):
-    id: str
-    org_id: str
+    id: int
+    org_id: int
 
 
 class EditAuthKeyResponse(BaseModel):
@@ -145,14 +144,14 @@ class EditAuthKeyBody(BaseModel):
 
 
 class AddAuthKeyResponseAuthKey(BaseModel):
-    id: str
+    id: int
     uuid: str
     authkey_start: str
     authkey_end: str
     created: str
     expiration: str | None = "0"
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str | None = None
     allowed_ips: list[str] | None = None
     unique_ips: list[str]

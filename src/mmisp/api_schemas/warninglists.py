@@ -19,20 +19,20 @@ class WarninglistListType(StrEnum):
 
 
 class WarninglistTypeResponse(BaseModel):
-    id: str
+    id: int
     type: str
-    warninglist_id: str
+    warninglist_id: int
 
 
 class WarninglistEntryResponse(BaseModel):
-    id: str
+    id: int
     value: str = Field(max_length=65535)
-    warninglist_id: str
+    warninglist_id: int
     comment: str | None = None
 
 
 class WarninglistBaseResponse(BaseModel):
-    id: str
+    id: int
     name: str = Field(max_length=255)
     type: str
     description: str = Field(max_length=65535)
@@ -69,7 +69,7 @@ class ToggleEnableWarninglistsResponse(BaseModel):
 
 
 class ToggleEnableWarninglistsBody(BaseModel):
-    id: str | list[str]
+    id: int | list[int]
     name: str | list[str]
     enabled: bool
 
@@ -99,7 +99,7 @@ class GetSelectedAllWarninglistsResponse(BaseModel):
 class DeleteWarninglistResponse(BaseModel):
     saved: bool
     success: bool
-    id: str
+    id: int
     name: str
     message: str
     url: str
@@ -123,7 +123,7 @@ class CreateWarninglistBody(BaseModel):
 
 
 class NameWarninglist(BaseModel):
-    id: str
+    id: int
     name: str
     matched: str
 

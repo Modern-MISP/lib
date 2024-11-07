@@ -2,43 +2,43 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.organisations import OrganisationUsersResponse
-from mmisp.api_schemas.roles import RoleUsersResponse
+from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
+from mmisp.api_schemas.roles import Role, RoleUsersResponse
 
 
 class User(BaseModel):
-    id: str
-    org_id: str
+    id: int
+    org_id: int
     email: str
     autoalert: bool
-    invited_by: str
+    invited_by: int
     gpgkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool
-    role_id: str
+    role_id: int
     change_pw: bool
     contactalert: bool
     disabled: bool
-    expiration: datetime | None = None
-    current_login: str
+    expiration: datetime | int | None = None
+    current_login: int
     """time in seconds"""
-    last_login: str
+    last_login: int
     """time in seconds"""
     force_logout: bool
-    date_created: str
+    date_created: int
     """time in seconds"""
-    date_modified: str
+    date_modified: int
     """time in seconds"""
     external_auth_required: bool
     external_auth_key: str | None = None
-    last_api_access: str
+    last_api_access: int
     """time in seconds"""
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
     totp: str | None = None
-    hotp_counter: str | None = None
-    last_pw_change: str | None = None
+    hotp_counter: int | None = None
+    last_pw_change: int | None = None
     """time in seconds"""
 
 
@@ -47,7 +47,7 @@ class Config:
 
 
 class UserAttributesBody(BaseModel):
-    org_id: str | None = None
+    org_id: int | None = None
     authkey: str | None = None
     email: str | None = None
     autoalert: bool | None = None
@@ -58,7 +58,7 @@ class UserAttributesBody(BaseModel):
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
-    expiration: datetime | None = None
+    expiration: datetime | str | None = None
     force_logout: bool | None = None
     external_auth_required: bool | None = None
     external_auth_key: str | None = None
@@ -75,7 +75,7 @@ class AddUserBody(BaseModel):
     authkey: str
     contactalert: bool
     nids_sid: int
-    org_id: str
+    org_id: int
     email: str
     termsaccepted: bool
     disabled: bool
@@ -89,7 +89,7 @@ class AddUserBody(BaseModel):
 
 
 class AddUserResponseData(BaseModel):
-    id: str
+    id: int
     org_id: int
     server_id: int
     email: str
@@ -117,7 +117,7 @@ class AddUserResponseData(BaseModel):
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
-    totp: bool | None = None
+    totp: str | None = None
     hotp_counter: int | None = None
     last_pw_change: int | None = None
 
@@ -129,7 +129,7 @@ class AddUserResponse(BaseModel):
 class GetUsersUser(BaseModel):
     id: int
     org_id: int
-    server_id: int
+    server_id: int = 0
     email: str
     autoalert: bool
     auth_key: str | None
@@ -151,7 +151,7 @@ class GetUsersUser(BaseModel):
     date_created: int | None
     date_modified: int | None
     last_pw_change: int | None
-    totp: bool | None
+    totp: str | None
     """detailed information bellow"""
     hotp_counter: int | None
     notification_daily: bool | None
@@ -160,10 +160,10 @@ class GetUsersUser(BaseModel):
     external_auth_required: bool | None
     external_auth_key: str | None
     sub: str | None
-    """new contents bellow"""
-    name: str
-    contact: bool
-    notification: bool
+    """new contents bellow"""  # not in the database, all 3 fields to none now, so no error will be raised
+    name: str | None
+    contact: bool | None
+    notification: bool | None
 
 
 class GetUsersElement(BaseModel):
@@ -180,3 +180,17 @@ class GetAllUsersResponse(BaseModel):
 class UserWithName(BaseModel):
     user: User
     name: str
+
+
+class UsersViewMeResponse(BaseModel):
+    User: User
+    Role: Role
+    UserSetting: list = []
+    Organisation: Organisation
+
+
+class ServerUser(BaseModel):
+    id: int
+    org_id: int
+    email: str
+    server_id: int

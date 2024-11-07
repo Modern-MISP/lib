@@ -1,6 +1,6 @@
 [project]
 name = "mmisp-lib"
-version = "0.6.4"
+version = "0.7.0"
 description = ""
 authors = []
 readme = "README.md"
@@ -41,6 +41,8 @@ dev = [
   "mysql-connector-python==8.3.0",
   "icecream",
   "asyncio",
+  "twine",
+  "build",
 ]
 
 [tool.setuptools.package-data]

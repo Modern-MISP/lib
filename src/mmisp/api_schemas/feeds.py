@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Type
 
 from pydantic import BaseModel, Field, validator
 
@@ -10,13 +10,13 @@ class FeedUpdateBody(BaseModel):
     rules: str | None = None
     enabled: bool | None = None
     distribution: str | None = None
-    sharing_group_id: str | None = None
-    tag_id: str | None = None
+    sharing_group_id: int | None = None
+    tag_id: int | None = None
     default: bool | None = None
     source_format: str | None = None
     fixed_event: bool | None = None
     delta_merge: bool | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     publish: bool | None = None
     override_ids: bool | None = None
     settings: str | None = None
@@ -26,7 +26,7 @@ class FeedUpdateBody(BaseModel):
     headers: str | None = None
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
-    orgc_id: str | None = None
+    orgc_id: int | None = None
 
     class Config:
         orm_mode = True
@@ -40,20 +40,20 @@ class FeedToggleBody(BaseModel):
 
 
 class FeedAttributesResponse(BaseModel):
-    id: str
+    id: int
     name: str
     provider: str
     url: str
     rules: str | None = None
     enabled: bool | None = None
     distribution: str
-    sharing_group_id: str | None = None
-    tag_id: str
+    sharing_group_id: int | None = None
+    tag_id: int
     default: bool | None = None
     source_format: str | None = None
     fixed_event: bool
     delta_merge: bool
-    event_id: str
+    event_id: int
     publish: bool
     override_ids: bool
     settings: str | None = None
@@ -63,10 +63,11 @@ class FeedAttributesResponse(BaseModel):
     headers: str | None = None
     caching_enabled: bool
     force_to_ids: bool
-    orgc_id: str
+    orgc_id: int
 
     @validator("sharing_group_id", always=True)
-    def check_sharing_group_id(cls, value: Any, values: Dict[str, Any]) -> Optional[int]:  # noqa: ANN101
+    @classmethod
+    def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> int | None:
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
@@ -107,12 +108,12 @@ class FeedCreateBody(BaseModel):
     enabled: bool | None = None
     distribution: str | None = None
     sharing_group_id: str | None = None
-    tag_id: str | None = None
+    tag_id: int | None = None
     default: bool | None = None
     source_format: str | None = None
     fixed_event: bool | None = None
     delta_merge: bool | None = None
-    event_id: str | None = None
+    event_id: int | None = None
     publish: bool | None = None
     override_ids: bool | None = None
     settings: str | None = None
@@ -122,7 +123,7 @@ class FeedCreateBody(BaseModel):
     headers: str | None = None
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
-    orgc_id: str | None = None
+    orgc_id: int | None = None
 
     class Config:
         orm_mode = True

@@ -22,7 +22,7 @@ class TaxonomyTagEntrySchema(BaseModel):
 
 
 class GetTagTaxonomyResponse(BaseModel):
-    id: str
+    id: int
     namespace: str
     description: str
     version: str
@@ -37,7 +37,7 @@ class GetTagTaxonomyResponse(BaseModel):
 
 
 class TaxonomyView(BaseModel):
-    id: str
+    id: int
     namespace: str
     description: str
     version: str
@@ -57,7 +57,7 @@ class ViewTaxonomyResponse(BaseModel):
 
 
 class GetIdTaxonomyResponse(BaseModel):
-    id: str
+    id: int
     namespace: str
     description: str
     version: str
