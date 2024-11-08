@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+from pydantic.types import UUID4
 
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
@@ -17,7 +18,7 @@ class ExportGalaxyGalaxyElement(BaseModel):
 
 class GetGalaxyClusterResponse(BaseModel):
     id: int | None = None
-    uuid: str | None = None
+    uuid: UUID4 | None = None
     collection_uuid: str
     type: str
     value: str
@@ -86,6 +87,12 @@ class AddGalaxyElement(BaseModel):
     value: str
 
 
+class AddUpdateGalaxyElement(BaseModel):
+    id: int | None = None
+    key: str
+    value: str
+
+
 class AddGalaxyClusterRequest(BaseModel):
     value: str
     description: str
@@ -93,6 +100,19 @@ class AddGalaxyClusterRequest(BaseModel):
     authors: list[str]
     distribution: DistributionLevels
     GalaxyElement: list[AddGalaxyElement]
+
+
+class PutGalaxyClusterRequest(BaseModel):
+    id: int
+    value: str
+    description: str
+    source: str
+    type: str
+    uuid: UUID4
+    version: int
+    authors: list[str]
+    distribution: DistributionLevels
+    GalaxyElement: list[AddUpdateGalaxyElement]
 
 
 class AddGalaxyClusterResponse(BaseModel):

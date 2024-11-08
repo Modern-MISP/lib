@@ -1,18 +1,24 @@
+import json
+from typing import Self
+
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .galaxy import Galaxy
 
 
-class GalaxyCluster(Base):
+class GalaxyCluster(Base, UpdateMixin, DictMixin):
     __tablename__ = "galaxy_clusters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True, default="")
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
@@ -22,7 +28,7 @@ class GalaxyCluster(Base):
         Integer, ForeignKey(Galaxy.id, ondelete="CASCADE"), nullable=False, index=True
     )
     source: Mapped[str] = mapped_column(String(255), nullable=False, default="")
-    authors: Mapped[str] = mapped_column(Text, nullable=False)
+    _authors: Mapped[str] = mapped_column("authors", Text, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=0, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, nullable=True, default=None)
@@ -69,8 +75,22 @@ class GalaxyCluster(Base):
         uselist=False,
     )  # type:ignore[assignment,var-annotated]
 
+    def __init__(self: Self, *arg, **kwargs) -> None:
+        if "authors" in kwargs:
+            self._authors = json.dumps(kwargs["authors"])
+            del kwargs["authors"]
+        super().__init__(*arg, **kwargs)
 
-class GalaxyElement(Base):
+    @hybrid_property
+    def authors(self: Self) -> list[str]:
+        return json.loads(self._authors)
+
+    @authors.setter  # type: ignore[no-redef]
+    def authors(self: Self, value: list[str]) -> None:
+        self._authors = json.dumps(value)
+
+
+class GalaxyElement(Base, DictMixin, UpdateMixin):
     __tablename__ = "galaxy_elements"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
