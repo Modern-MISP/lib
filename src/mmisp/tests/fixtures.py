@@ -135,6 +135,8 @@ async def instance_two_owner_org(db):
 
 @pytest_asyncio.fixture
 async def site_admin_user(db, site_admin_role, instance_owner_org):
+    assert instance_owner_org.local
+
     user = generate_user()
     user.org_id = instance_owner_org.id
     user.server_id = 0

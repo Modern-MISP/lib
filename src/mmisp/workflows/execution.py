@@ -8,6 +8,7 @@ import sqlalchemy as sa
 from jinja2 import BaseLoader, Environment
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import true
 
 from ..db.models.admin_setting import AdminSetting
 from ..db.models.organisation import Organisation
@@ -109,10 +110,10 @@ async def walk_nodes(
 
 async def create_virtual_root_user(db: AsyncSession) -> User:
     god_mode_role_id = (await db.execute(select(Role.id).filter(Role.perm_site_admin == 1))).scalars().first()
-    local_org_id = (await db.execute(select(Organisation.id).filter(Organisation.local))).scalars().first()
-    if not god_mode_role_id:
+    local_org_id = (await db.execute(select(Organisation.id).filter(Organisation.local == true()))).scalars().first()
+    if god_mode_role_id is None:
         raise ValueError("No site admin role found")
-    if not local_org_id:
+    if local_org_id is None:
         raise ValueError("No local_org_id found")
 
     return User(

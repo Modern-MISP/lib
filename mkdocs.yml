@@ -9,7 +9,9 @@ theme:
 nav:
   - introduction.md
   - design_overview_for_workflows.md
-  - db_package.md
+  - DB:
+    - DB Package: db_package.md
+    - Mixins: db/mixins.db
   - db_models_package.md
   - api_schemas_package.md
   - lib_package.md
