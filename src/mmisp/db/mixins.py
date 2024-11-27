@@ -6,6 +6,15 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 class DictMixin:
     def asdict(self: Self, omit: set[str] | None = None) -> dict:
+        """
+        Return the object as dictionary.
+        Note that attributes starting with `_` are always omited.
+        Omit keys present in *omit*.
+
+        Args:
+            omit: Set of keys to be omitted in the dictionary.
+                If none, all attributes are returned.
+        """
         if omit is None:
             omit = set()
 

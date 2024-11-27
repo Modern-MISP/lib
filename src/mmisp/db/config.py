@@ -1,3 +1,14 @@
+"""This module handels the parameters to connect to the database.
+
+The following environment variables are supported:
+
+- DATABASE_URL
+- DEBUG
+- DB_RETRY: Time to wait before trying new connection attempt. (Default 5)
+- DB_MAX_RETRIES: Limit for retry attempts. (Default 100)
+
+"""
+
 import logging
 from dataclasses import dataclass
 from os import getenv
