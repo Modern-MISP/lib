@@ -11,7 +11,7 @@ nav:
   - design_overview_for_workflows.md
   - DB:
     - DB Package: db_package.md
-    - Mixins: db/mixins.db
+    - Mixins: db/mixins.md
   - db_models_package.md
   - api_schemas_package.md
   - lib_package.md
