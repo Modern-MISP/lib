@@ -45,6 +45,9 @@ dev = [
   "build",
 ]
 
+[project.scripts]
+mmisp-db = "mmisp.commandline_tool.main:main"
+
 [tool.setuptools.package-data]
 "mmisp.lib" = ["py.typed"]
 "mmisp.api_schemas" = ["py.typed"]

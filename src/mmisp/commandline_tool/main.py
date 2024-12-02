@@ -1,5 +1,6 @@
 import fire
 
+import mmisp.db.all_models  # noqa
 from mmisp.commandline_tool import organisation, setup, user
 from mmisp.db.database import sessionmanager
 
@@ -163,7 +164,8 @@ async def delete_user(email: str) -> str:
     return "User deleted with email: {} ".format(email)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Main entrypoint for mmisp-db"""
     fire.Fire(
         {
             "setup": setup_db,
@@ -177,3 +179,7 @@ if __name__ == "__main__":
             "delete-user": delete_user,
         }
     )
+
+
+if __name__ == "__main__":
+    main()
