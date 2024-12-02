@@ -8,12 +8,15 @@ from mmisp.db.database import sessionmanager
 # and organisations and changing their details.
 
 
-async def setup_db() -> str:
+async def setup_db(create_init_values: bool = True) -> str:
     """setup"""
     sessionmanager.init()
     await sessionmanager.create_all()
-    async with sessionmanager.session() as session:
-        await setup.setup(session)
+
+    if create_init_values:
+        async with sessionmanager.session() as session:
+            await setup.setup(session)
+
     await sessionmanager.close()
     return "Database setup"
 
