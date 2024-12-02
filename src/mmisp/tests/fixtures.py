@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 
 import pytest
 import pytest_asyncio
@@ -11,6 +12,7 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.tag import Tag
+from mmisp.lib.distribution import DistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
@@ -28,7 +30,6 @@ from .generators.model_generators.correlation_value_generator import (
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
 from .generators.model_generators.event_generator import generate_event
-from .generators.model_generators.galaxy_generator import generate_galaxy
 from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
@@ -496,7 +497,18 @@ async def server(db, instance_owner_org):
 
 @pytest_asyncio.fixture
 async def galaxy(db):
-    galaxy = generate_galaxy()
+    galaxy = Galaxy(
+        name="test galaxy",
+        type="test type",
+        description="test",
+        version="version",
+        kill_chain_order="test kill_chain_order",
+        org_id=0,
+        orgc_id=0,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
+        created=datetime.now(),
+        modified=datetime.now(),
+    )
 
     db.add(galaxy)
     await db.commit()
@@ -567,6 +579,11 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         uuid=uuid(),
         enabled=True,
         local_only=False,
+        org_id=0,
+        orgc_id=0,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
+        created=datetime.now(),
+        modified=datetime.now(),
     )
 
     db.add(galaxy)
@@ -679,6 +696,11 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
         uuid=uuid(),
         enabled=True,
         local_only=False,
+        org_id=instance_owner_org.id,
+        orgc_id=instance_owner_org.id,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
+        created=datetime.now(),
+        modified=datetime.now(),
     )
 
     db.add(galaxy)

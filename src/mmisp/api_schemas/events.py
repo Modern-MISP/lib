@@ -4,6 +4,7 @@ from typing import Any, Type
 from pydantic import BaseModel, PositiveInt, conint, validator
 
 from mmisp.api_schemas.organisations import Organisation
+from mmisp.lib.distribution import DistributionLevels
 
 
 class GetAllEventsGalaxyClusterGalaxy(BaseModel):
@@ -18,6 +19,12 @@ class GetAllEventsGalaxyClusterGalaxy(BaseModel):
     enabled: bool
     local_only: bool
     kill_chain_order: str | None = None
+    created: datetime | str
+    modified: datetime | str
+    org_id: int
+    orgc_id: int
+    default: bool
+    distribution: DistributionLevels
 
 
 class AddEditGetEventGalaxyClusterMeta(BaseModel):
@@ -167,6 +174,12 @@ class AddEditGetEventGalaxy(BaseModel):
     enabled: bool
     local_only: bool
     kill_chain_order: str | None = None
+    created: datetime | str
+    modified: datetime | str
+    org_id: int
+    orgc_id: int
+    default: bool
+    distribution: DistributionLevels
     GalaxyCluster: list[AddEditGetEventGalaxyCluster] = []
 
 
