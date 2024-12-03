@@ -12,6 +12,7 @@ nav:
   - DB:
     - DB Package: db_package.md
     - Mixins: db/mixins.md
+  - Commandline Client mmisp-db: mmisp-db_cli.md
   - db_models_package.md
   - api_schemas_package.md
   - lib_package.md

@@ -1,5 +1,6 @@
 import fire
 
+import mmisp.db.all_models  # noqa
 from mmisp.commandline_tool import organisation, setup, user
 from mmisp.db.database import sessionmanager
 
@@ -7,12 +8,15 @@ from mmisp.db.database import sessionmanager
 # and organisations and changing their details.
 
 
-async def setup_db() -> str:
+async def setup_db(create_init_values: bool = True) -> str:
     """setup"""
     sessionmanager.init()
     await sessionmanager.create_all()
-    async with sessionmanager.session() as session:
-        await setup.setup(session)
+
+    if create_init_values:
+        async with sessionmanager.session() as session:
+            await setup.setup(session)
+
     await sessionmanager.close()
     return "Database setup"
 
@@ -163,7 +167,8 @@ async def delete_user(email: str) -> str:
     return "User deleted with email: {} ".format(email)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Main entrypoint for mmisp-db"""
     fire.Fire(
         {
             "setup": setup_db,
@@ -177,3 +182,7 @@ if __name__ == "__main__":
             "delete-user": delete_user,
         }
     )
+
+
+if __name__ == "__main__":
+    main()

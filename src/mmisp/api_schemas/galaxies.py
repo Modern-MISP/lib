@@ -1,10 +1,13 @@
+from datetime import datetime
 from typing import Any, List
 
 from pydantic import BaseModel
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
+from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import Organisation
+from mmisp.lib.distribution import DistributionLevels
 
 
 class SearchGalaxiesBody(BaseModel):
@@ -72,20 +75,6 @@ class ImportGalaxyBody(BaseModel):
         orm_mode = True
 
 
-class GetAllSearchGalaxiesAttributes(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    type: str
-    description: str
-    version: str
-    icon: str
-    namespace: str
-    kill_chain_order: str | None = None
-    enabled: bool
-    local_only: bool
-
-
 class GetAllSearchGalaxiesResponse(BaseModel):
     Galaxy: GetAllSearchGalaxiesAttributes
 
@@ -111,6 +100,12 @@ class GalaxySchema(BaseModel):
     icon: str
     namespace: str
     kill_chain_order: List[str]
+    created: datetime | str
+    modified: datetime | str
+    org_id: int
+    orgc_id: int
+    default: bool
+    distribution: DistributionLevels
 
     class Config:
         orm_mode = True

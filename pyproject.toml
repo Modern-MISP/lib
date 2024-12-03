@@ -1,6 +1,6 @@
 [project]
 name = "mmisp-lib"
-version = "0.7.4"
+version = "0.7.5"
 description = ""
 authors = []
 readme = "README.md"
@@ -44,6 +44,9 @@ dev = [
   "twine",
   "build",
 ]
+
+[project.scripts]
+mmisp-db = "mmisp.commandline_tool.main:main"
 
 [tool.setuptools.package-data]
 "mmisp.lib" = ["py.typed"]
