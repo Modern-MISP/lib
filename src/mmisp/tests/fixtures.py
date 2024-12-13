@@ -23,12 +23,6 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
@@ -52,6 +46,11 @@ from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
 
 
 class DBManager:
@@ -586,7 +585,12 @@ async def galaxy(db):
     await db.commit()
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(name="auth_key")
+async def fixture_auth_key(db, site_admin_user):
+    async for e in auth_key(db, site_admin_user):
+        yield e
+
+
 async def auth_key(db, site_admin_user):
     clear_key = "siteadminuser".ljust(40, "0")
 
@@ -965,10 +969,6 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
     await db.commit()
     await db.refresh(attribute)
 
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
-    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
-
     yield attribute, at
 
     await db.delete(at)
@@ -989,10 +989,6 @@ async def attribute_with_normal_tag_local(db, attribute, normal_tag):
 
     await db.commit()
     await db.refresh(attribute)
-
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
-    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
 
     yield attribute, at
 
@@ -1081,7 +1077,7 @@ async def event_with_normal_tag(db, event, normal_tag):
     )
     await db.execute(qry)
 
-    yield event
+    yield event, event_tag
 
     await db.delete(event_tag)
     await db.commit()
