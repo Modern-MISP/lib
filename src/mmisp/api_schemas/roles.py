@@ -147,46 +147,36 @@ class RoleAttributeResponse(BaseModel):
     default: bool | None = None
 
 
-"""
-Class representing the response of a list of roles.
-"""
-
-
 class GetRolesResponse(BaseModel):
-    Role: RoleAttributeResponse
-
-
-"""
-Class representing the response of a single role.
-"""
+    """
+    Class representing the response of a list of roles.
+    """
+    pass
 
 
 class GetRoleResponse(Role):
-    Role: RoleAttributeResponse
-
-
-"""
-Class representing the response after creating a new role.
-"""
+    """
+    Class representing the response of a single role.
+    """
+    pass
 
 
 class AddRoleResponse(Role):
-    Role: RoleAttributeResponse
-
-
-"""
-Class representing the response after deleting a new role.
-"""
+    """
+    Class representing the response after creating a new role.
+    """
+    pass
 
 
 class DeleteRoleResponse(Role):
-    Role: RoleAttributeResponse
-
-
-"""
-Class representing the response after changing role.
-"""
+    """
+    Class representing the response after deleting a new role.
+    """
+    pass
 
 
 class EditRoleResponse(Role):
-    Role: RoleAttributeResponse
+    """
+    Class representing the response after changing role.
+    """
+    pass

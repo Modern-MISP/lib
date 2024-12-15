@@ -73,7 +73,7 @@ class Event(Base):
     )
 
     async def add_tag(
-        self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
+            self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
     ) -> "EventTag":
         if tag.local_only:
             local = True
@@ -84,6 +84,16 @@ class Event(Base):
         await db.flush()
         await db.refresh(event_tag)
         return event_tag
+
+    async def can_edit(self, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an event based on whether he or someone of his organisation created the event.
+        """
+
+    async def can_access(self, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an event based on whether the event is part of the same group or organisation and the publishing status of the event.
+        """
 
 
 class EventReport(Base):
