@@ -198,3 +198,25 @@ class AttachClusterGalaxyAttributes(BaseModel):
 class AttachClusterGalaxyBody(BaseModel):
     Galaxy: AttachClusterGalaxyAttributes
     model_config = ConfigDict(from_attributes=True)
+
+    class Config:
+        orm_mode = True
+
+
+class RestSearchGalaxyBody(BaseModel):
+    id: int
+    uuid: str | None = None
+    name: str | None = None
+    type: str | None = None
+    description: str | None = None
+    version: str | None = None
+    icon: str | None = None
+    namespace: str | None = None
+    enable: bool | None = None
+    local_only: bool | None = None
+    default: bool | None = None
+    org_id: int | None = None
+    orgc_id: int | None = None
+    created: str | None = None
+    modified: str | None = None
+    distribution: str | None = None

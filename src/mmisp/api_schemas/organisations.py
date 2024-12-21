@@ -135,3 +135,20 @@ class ServerOrganisation(BaseModel):
     nationality: str
     sector: str
     type: str
+
+
+class GalaxyClusterOrganisationResponse(BaseModel):
+    id: int
+    name: str
+    date_created: datetime | str | None = None
+    date_modified: datetime | str | None = None
+    description: str | None = None
+    type: str | None = None
+    nationality: str | None = None
+    sector: str | None = None
+    created_by: int | None = None
+    uuid: str | None = None
+    contacts: str | None = None
+    local: bool | None = None
+    restricted_to_domain: str | list | None = None
+    landingpage: str | None = None

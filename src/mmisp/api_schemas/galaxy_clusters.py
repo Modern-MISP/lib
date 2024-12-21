@@ -1,4 +1,6 @@
 from typing import Literal
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -7,6 +9,9 @@ from mmisp.api_schemas.common import NoneTag, TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
+from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
+from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation, GalaxyClusterOrganisationResponse
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -133,3 +138,75 @@ class PutGalaxyClusterRequest(BaseModel):
 
 class AddGalaxyClusterResponse(BaseModel):
     pass
+
+
+class GalaxyClusterRelation(BaseModel):
+    id: int
+    galaxy_cluster_id: int
+    referenced_galaxy_cluster_id: int
+    referenced_galaxy_cluster_uuid: str
+    referenced_galaxy_cluster_type: str
+    galaxy_cluster_uuid: str
+    distribution: str
+    sharing_group_id: int | None = None
+    default: bool
+
+
+class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
+    id: int | None = None
+    uuid: str
+    collection_uuid: str | None = None
+    type: str | None = None
+    value: str | None = None
+    tag_name: str | None = None
+    description: str | None = None
+    galaxy_id: int | None = None
+    source: str | None = None
+    authors: list[str] | None = None
+    version: str
+    distribution: str | None = None
+    sharing_group_id: int | None = None
+    org_id: int | None = None
+    orgc_id: int | None = None
+    default: bool | None = None
+    locked: bool | None = None
+    extends_uuid: str | None = None
+    extends_version: str | None = None
+    published: bool | None = None
+    deleted: bool | None = None
+    GalaxyElement: Optional[list[ExportGalaxyGalaxyElement]] = None
+    Galaxy: RestSearchGalaxyBody
+    GalaxyClusterRelation: Optional[GalaxyClusterRelation] = None
+    Org: Optional[GalaxyClusterOrganisationResponse] = None
+    Orgc: Optional[GalaxyClusterOrganisationResponse] = None
+
+
+class SearchGalaxyClusterGalaxyClusters(BaseModel):
+    GalaxyCluster: SearchGalaxyClusterGalaxyClustersDetails
+
+
+class GalaxyClusterSearchResponse(BaseModel):
+    response: list[SearchGalaxyClusterGalaxyClusters]
+
+    class Config:
+        orm_mode = True
+
+
+class GalaxyClusterSearchBody(BaseModel):
+    limit: int | None = None
+    page: int | None = None
+    id: int | None = None
+    uuid: UUID | None = None
+    galaxy_id: int | None = None
+    galaxy_uuid: UUID | None = None
+    published: bool | None = None
+    value: str | None = None
+    extends_uuid: str | None = None
+    extends_version: str | None = None
+    version: int | None = None
+    distribution: int | None = None
+    org_id: int | None = None
+    orgc_id: int | None = None
+    tag_name: str | None = None
+    custom: bool | None = None  # not sure if bool
+    minimal: bool | None = None
