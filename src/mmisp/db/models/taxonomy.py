@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 
 from mmisp.db.mypy import Mapped, mapped_column
@@ -9,13 +11,13 @@ class Taxonomy(Base):
     __tablename__ = "taxonomies"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    namespace: Mapped[int] = mapped_column(String(255), nullable=False)
+    namespace: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    exclusive: Mapped[bool] = mapped_column(Boolean, default=False)
+    exclusive: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
     required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    highlighted: Mapped[bool] = mapped_column(Boolean)
+    highlighted: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
 
 
 class TaxonomyPredicate(Base):
@@ -24,11 +26,11 @@ class TaxonomyPredicate(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     taxonomy_id: Mapped[int] = mapped_column(Integer, ForeignKey(Taxonomy.id), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
-    expanded: Mapped[str] = mapped_column(Text)
-    colour: Mapped[str] = mapped_column(String(7))
-    description: Mapped[str] = mapped_column(Text)
-    exclusive: Mapped[bool] = mapped_column(Boolean, default=False)
-    numerical_value: Mapped[int] = mapped_column(Integer, index=True)
+    expanded: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    colour: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    exclusive: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
+    numerical_value: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
 
 
 class TaxonomyEntry(Base):
@@ -39,7 +41,7 @@ class TaxonomyEntry(Base):
         Integer, ForeignKey(TaxonomyPredicate.id), nullable=False, index=True
     )
     value: Mapped[str] = mapped_column(Text, nullable=False)
-    expanded: Mapped[str] = mapped_column(Text)
-    colour: Mapped[str] = mapped_column(String(7))
-    description: Mapped[str] = mapped_column(Text)
-    numerical_value: Mapped[int] = mapped_column(Integer, index=True)
+    expanded: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    colour: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    numerical_value: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
