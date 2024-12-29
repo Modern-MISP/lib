@@ -148,6 +148,7 @@ class RoleAttributeResponse(BaseModel):
 
 
 class GetRolesResponse(BaseModel):
+    Role: RoleAttributeResponse
     """
     Class representing the response of a list of roles.
     """
@@ -158,6 +159,7 @@ class GetRoleResponse(Role):
     """
     Class representing the response of a single role.
     """
+
     pass
 
 
@@ -165,6 +167,7 @@ class AddRoleResponse(Role):
     """
     Class representing the response after creating a new role.
     """
+
     pass
 
 
@@ -172,6 +175,7 @@ class DeleteRoleResponse(Role):
     """
     Class representing the response after deleting a new role.
     """
+
     pass
 
 
@@ -179,4 +183,5 @@ class EditRoleResponse(Role):
     """
     Class representing the response after changing role.
     """
+
     pass
