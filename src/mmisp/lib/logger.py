@@ -3,8 +3,10 @@ import logging
 from contextvars import ContextVar
 from typing import Self, TypeVar
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 request_log: ContextVar[list] = ContextVar("request_log")
-# db_log: ContextVar[list] = ContextVar("db_log")
+db_log: ContextVar[list] = ContextVar("db_log")
 
 
 T = TypeVar("T")
@@ -56,20 +58,47 @@ class InMemoryContextHandler(logging.Handler):
         request_log.get([]).append(self.format(record))
 
 
+class InMemoryDBLogContextHandler(logging.Handler):
+    def emit(self: Self, record: logging.LogRecord) -> None:
+        if hasattr(record, "dbmodel"):
+            dbmodel_class = getattr(record, "dbmodel")
+            instance = dbmodel_class(
+                title=self.format(record),
+                **record.__dict__,
+            )
+            db_log.get([]).append(instance)
+
+
 def print_request_log() -> None:
     print(*request_log.get([]), sep="\n")
+
+
+async def save_db_log(db: AsyncSession) -> None:
+    db.add_all(db_log.get([]))
+    await db.flush()
 
 
 def reset_request_log() -> None:
     request_log.set([])
 
 
+def reset_db_log() -> None:
+    db_log.set([])
+
+
 # Set up the logger
 logger = logging.getLogger("mmisp")
 in_memory_handler = InMemoryContextHandler()
+in_memory_db_log_handler = InMemoryDBLogContextHandler()
 log_formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+dblog_formatter = logging.Formatter("%(message)s")
 in_memory_handler.setFormatter(log_formatter)
+in_memory_db_log_handler.setFormatter(dblog_formatter)
 logger.addHandler(in_memory_handler)
+logger.addHandler(in_memory_db_log_handler)
+
+# adapter
+
 
 sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
 sqlalchemy_logger.addHandler(in_memory_handler)
