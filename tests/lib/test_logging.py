@@ -1,56 +1,86 @@
 import uuid
-from unittest.mock import Mock
 
 import pytest
 
 from mmisp.db.models.workflow import Workflow
-from mmisp.lib.logging import ApplicationLogger
+from mmisp.lib.logger import db_log, print_request_log, reset_db_log, reset_request_log
 from mmisp.workflows.graph import Apperance, Trigger, WorkflowGraph
 from mmisp.workflows.modules import Overhead
 
 
-def test_no_log(workflow: Workflow) -> None:
+def test_no_log(workflow: Workflow, capsys) -> None:
+    reset_request_log()
     workflow.debug_enabled = False
 
-    mock = Mock()
-    logger = ApplicationLogger(mock)
+    logger = workflow.get_logger()
+    logger.debug(workflow, "Something happened")
 
-    log_entry = logger.log_workflow_debug_message(workflow, "Something happened")
-
-    assert log_entry is None
-    assert mock.add.called == 0
-
-
-def test_log(workflow: Workflow) -> None:
-    mock = Mock()
-    logger = ApplicationLogger(mock)
-
-    log_entry = logger.log_workflow_debug_message(workflow, "Something happened")
-
-    assert mock.add.called == 1
-    mock.add.assert_called_with(log_entry)
-
-    assert log_entry.model_id == 23
-    assert log_entry.action == "execute_workflow"
-    assert log_entry.user_id == 0
-    assert log_entry.title == "Something happened"
+    print_request_log()
+    captured = capsys.readouterr()
+    assert "Something happened" not in captured.out
 
 
-def test_error_log(workflow: Workflow) -> None:
-    # Make sure that this gets written regardless of
-    # whether or not debugging is enabled.
-    for debug in [True, False]:
-        workflow.debug_enabled = debug
-        mock = Mock()
-        logger = ApplicationLogger(mock)
+def test_log(workflow: Workflow, capsys) -> None:
+    reset_request_log()
+    reset_db_log()
+    logger = workflow.get_logger()
 
-        log_entry = logger.log_workflow_execution_error(workflow, "Something happened")
+    logger.debug("Something happened")
 
-        assert mock.add.called == 1
-        mock.add.assert_called_with(log_entry)
+    print_request_log()
+    captured = capsys.readouterr()
+    assert "Something happened" in captured.out
 
+    assert db_log.get([])
+
+    for log_entry in db_log.get([]):
         assert log_entry.model_id == 23
         assert log_entry.action == "execute_workflow"
+        assert log_entry.user_id == 0
+        assert log_entry.title == "Something happened"
+
+
+def test_error_log_no_debug(workflow: Workflow, capsys) -> None:
+    reset_request_log()
+    reset_db_log()
+    debug = False
+    workflow.debug_enabled = debug
+
+    logger = workflow.get_logger()
+    logger.error("Something happened")
+
+    print_request_log()
+    captured = capsys.readouterr()
+    assert "Something happened" in captured.out
+
+    assert db_log.get([])
+
+    for log_entry in db_log.get([]):
+        assert log_entry.model_id == 23
+        assert log_entry.action == "execute_workflow"
+        assert log_entry.user_id == 0
+        assert log_entry.title == "Something happened"
+
+
+def test_error_log_debug(workflow: Workflow, capsys) -> None:
+    reset_request_log()
+    reset_db_log()
+    debug = True
+    workflow.debug_enabled = debug
+
+    logger = workflow.get_logger()
+    logger.error("Something happened")
+    print_request_log()
+    captured = capsys.readouterr()
+    assert "Something happened" in captured.out
+
+    assert db_log.get([])
+
+    for log_entry in db_log.get([]):
+        assert log_entry.model_id == 23
+        assert log_entry.action == "execute_workflow"
+        assert log_entry.user_id == 0
+        assert log_entry.title == "Something happened"
 
 
 @pytest.fixture

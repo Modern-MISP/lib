@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Self
 
 from sqlalchemy import DateTime, Integer, String, Text
 
@@ -31,3 +32,37 @@ class Log(Base):
     org: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     ip: Mapped[str] = mapped_column(String(45), nullable=True)
+
+    def __init__(
+        self: Self,
+        *,
+        model: str,
+        model_id: int,
+        action: str,
+        user_id: int,
+        email: str,
+        org: str,
+        title: str | None = None,
+        change: str | None = None,
+        description: str | None = None,
+        ip: str | None = None,
+        created: datetime | None = None,
+        **kwargs,
+    ) -> None:
+        if created is None:
+            created = datetime.now()
+        if isinstance(created, float):
+            created = datetime.fromtimestamp(created)
+        super().__init__(
+            title=title,
+            created=created,
+            model=model,
+            model_id=model_id,
+            action=action,
+            user_id=user_id,
+            change=change,
+            email=email,
+            org=org,
+            description=description,
+            ip=ip,
+        )

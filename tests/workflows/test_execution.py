@@ -13,7 +13,7 @@ from mmisp.db.models.event import Event
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.role import Role
 from mmisp.db.models.workflow import Workflow
-from mmisp.lib.logging import ApplicationLogger
+from mmisp.lib.logger import print_request_log, reset_request_log
 from mmisp.workflows.execution import (
     VerbatimWorkflowInput,
     _increase_workflow_execution_count,
@@ -40,20 +40,19 @@ async def test_trigger_disabled(trigger: Trigger, empty_wf: Workflow) -> None:
 
     db = AsyncMock()
     user = Mock()
-    logger = ApplicationLogger(db)
-    assert (await execute_workflow(empty_wf, user, {}, db, logger))[0]
+    assert (await execute_workflow(empty_wf, user, {}, db))[0]
 
 
 @pytest.mark.asyncio
-async def test_nothing_to_do(empty_wf: Workflow) -> None:
+async def test_nothing_to_do(empty_wf: Workflow, capsys) -> None:
+    reset_request_log()
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
-    assert (await execute_workflow(empty_wf, user, {}, db, logger))[0]
+    assert (await execute_workflow(empty_wf, user, {}, db))[0]
+    print_request_log()
 
-    # we went a little further and thus a first log message should've been received.
-    assert logger.log_workflow_debug_message.called == 1
-    logger.log_workflow_debug_message.assert_called_with(empty_wf, "Started executing workflow for trigger `demo` (23)")
+    captured = capsys.readouterr()
+    assert "Started executing workflow for trigger `demo` (23)" in captured.out
 
 
 @pytest.mark.asyncio
@@ -96,76 +95,72 @@ async def org(db: AsyncSession) -> AsyncGenerator[Organisation, None]:
 
 
 @pytest.mark.asyncio
-async def test_normalization_error(wf: Workflow) -> None:
+async def test_normalization_error(wf: Workflow, capsys) -> None:
+    reset_request_log()
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
 
-    assert not (await execute_workflow(wf, user, Mock(), db, logger))[0]
-    assert logger.log_workflow_execution_error.called == 1
-    logger.log_workflow_execution_error.assert_called_with(
-        wf,
-        (
-            "Error while normalizing data for trigger. Error: \nNo dict was passed "
-            + "to default normalize_data implementation of a trigger. Override your trigger "
-            + "if other inputs shall be accepted. Got: <class 'unittest.mock.Mock'>"
-        ),
+    assert not (await execute_workflow(wf, user, Mock(), db))[0]
+
+    print_request_log()
+    captured = capsys.readouterr()
+    expected_str = (
+        "Error while normalizing data for trigger. Error: \nNo dict was passed "
+        "to default normalize_data implementation of a trigger. Override your trigger "
+        "if other inputs shall be accepted. Got: <class 'unittest.mock.Mock'>"
     )
+    assert expected_str in captured.out
 
 
 @pytest.mark.asyncio
-async def test_execute(wf: Workflow) -> None:
+async def test_execute(wf: Workflow, capsys) -> None:
+    reset_request_log()
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
 
-    result = await execute_workflow(wf, user, {}, db, logger)
+    result = await execute_workflow(wf, user, {}, db)
     assert result[0]
-    assert logger.log_workflow_debug_message.call_count == 4
-    assert not logger.log_workflow_execution_error.called
 
-    logger.log_workflow_debug_message.assert_called_with(
-        wf, ("Finished executing workflow for trigger `demo` (24). Outcome: success")
+    print_request_log()
+    captured = capsys.readouterr()
+    assert "Finished executing workflow for trigger `demo` (24). Outcome: success" in captured.out
+
+    expected_str = (
+        "Executed node `demo`\nNode `demo` from Workflow `Demo workflow` (24) "
+        "executed successfully with status: success"
     )
-    logger.log_workflow_debug_message.assert_any_call(
-        wf,
-        (
-            "Executed node `demo`\nNode `demo` from Workflow `Demo workflow` (24) "
-            "executed successfully with status: success"
-        ),
-    )
+
+    assert expected_str in captured.out
 
 
 @pytest.mark.asyncio
-async def test_execute_error(wf_fail: Workflow) -> None:
+async def test_execute_error(wf_fail: Workflow, capsys) -> None:
+    reset_request_log()
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
 
-    result = await execute_workflow(wf_fail, user, {}, db, logger)
+    result = await execute_workflow(wf_fail, user, {}, db)
     assert not result[0]
+
+    print_request_log()
+    captured = capsys.readouterr()
     assert "Hello World" in result[1]
-    assert logger.log_workflow_debug_message.call_count == 3
-    assert not logger.log_workflow_execution_error.called
 
-    logger.log_workflow_debug_message.assert_any_call(
-        wf_fail,
-        (
-            "Executed node `demo`\nNode `demo` from Workflow `Demo workflow` (25) "
-            "executed successfully with status: partial-success"
-        ),
+    expected_str = (
+        "Executed node `demo`\nNode `demo` from Workflow `Demo workflow` (25) "
+        "executed successfully with status: partial-success"
     )
+    assert expected_str in captured.out
 
-    logger.log_workflow_debug_message.assert_called_with(
-        wf_fail, ("Finished executing workflow for trigger `demo` (25). Outcome: failure")
-    )
+    expected_str = "Finished executing workflow for trigger `demo` (25). Outcome: failure"
+    assert expected_str in captured.out
 
 
 @pytest.mark.asyncio
 async def test_failing_workflow_rolls_back_transaction(publish_wf: Workflow, event: Event, db: AsyncSession) -> None:
     await db.commit()
     await db.refresh(event)
-    result = await execute_workflow(publish_wf, Mock(), event, db, Mock())
+    result = await execute_workflow(publish_wf, Mock(), event, db)
     await db.commit()
     assert not result[0]
     assert result[1] == ["Execution stopped"]
@@ -246,13 +241,12 @@ async def publish_wf(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
 async def test_execute_unsupported(wf: Workflow) -> None:
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
     wf.data.nodes[1].id = "mod-1"
     wf.data.nodes[1].supported = False
     wf.data.nodes[2].id = "mod-2"
     wf.data.nodes[2].supported = False
 
-    status, messages = await execute_workflow(wf, user, {}, db, logger)
+    status, messages = await execute_workflow(wf, user, {}, db)
     assert not status
     # Python set iterates its elements in a random order, since we only list the detected node id and don't care
     # about the order in which they are displayed, we leave it like that.
@@ -341,7 +335,6 @@ async def wf_in_db(db: AsyncSession) -> AsyncGenerator[Workflow, None]:
 async def test_jinja2(wf: Workflow, module_jinja2: Dict[int, Module]) -> None:
     db = AsyncMock()
     user = Mock()
-    logger = Mock()
 
     wf.data.nodes[1] = module_jinja2
     del wf.data.nodes[2]
@@ -350,7 +343,7 @@ async def test_jinja2(wf: Workflow, module_jinja2: Dict[int, Module]) -> None:
     # exceptions are already handled in `walk_nodes()`. The easiest way
     # to get assertion errors from `MockupModule` is by adding `raise e`
     # to the `except` clause that wraps the jinja2 invocations.
-    assert (await execute_workflow(wf, user, {"whom": "Misp"}, db, logger))[0]
+    assert (await execute_workflow(wf, user, {"whom": "Misp"}, db))[0]
 
 
 @pytest.fixture

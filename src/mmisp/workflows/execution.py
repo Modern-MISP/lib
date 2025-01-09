@@ -15,7 +15,6 @@ from ..db.models.organisation import Organisation
 from ..db.models.role import Role
 from ..db.models.user import User
 from ..db.models.workflow import Workflow
-from ..lib.logging import ApplicationLogger
 from .graph import Module, Trigger, VerbatimWorkflowInput
 from .input import WorkflowInput
 from .modules import ModuleLogic
@@ -45,7 +44,6 @@ async def walk_nodes(
     input: WorkflowInput,
     current_node: Module,
     workflow: Workflow,
-    logger: ApplicationLogger,
     db: AsyncSession,
     jinja2_engine: Environment,
 ) -> Tuple[bool, List[str]]:
@@ -59,8 +57,6 @@ async def walk_nodes(
         input:          Workflow payload for `current_node`.
         current_node:   Node to resume execution with.
         workflow:       Workflow entity. Used for logging.
-        logger:         Application logger to write debug messages and errors
-            from the execution.
         db:             Database session.
         jinja2_engine:  Instantiated templating engine to substitute placeholders
             in module configuration with values from the payload.
@@ -85,13 +81,12 @@ async def walk_nodes(
                         current_config[config_key] = [_render(v) for v in value]
         result, next_node = await current_node.exec(input, db)
     except Exception as e:
-        logger.log_workflow_execution_error(workflow, f"Error while executing module {current_node.id}. Error: {e}")
+        workflow.get_logger().error(f"Error while executing module {current_node.id}. Error: {e}")
         return False, []
 
     success_type = "partial-success" if not result and not isinstance(current_node, ModuleLogic) else "success"
 
-    logger.log_workflow_debug_message(
-        workflow,
+    workflow.get_logger().debug(
         f"Executed node `{current_node.id}`\n"
         + f"Node `{current_node.id}` from Workflow `{workflow.name}` ({workflow.id}) executed "
         + f"successfully with status: {success_type}",
@@ -105,7 +100,7 @@ async def walk_nodes(
 
     # At this stage we don't do any cycle detection, but assume that only
     # valid graphs w/o cycles in it were saved by the API.
-    return await walk_nodes(input, next_node, workflow, logger, db, jinja2_engine)
+    return await walk_nodes(input, next_node, workflow, db, jinja2_engine)
 
 
 async def create_virtual_root_user(db: AsyncSession) -> User:
@@ -141,7 +136,7 @@ async def workflow_by_trigger_id(trigger: str, db: AsyncSession) -> Workflow | N
 
 
 async def execute_workflow(
-    workflow: Workflow, user: User, input: VerbatimWorkflowInput, db: AsyncSession, logger: ApplicationLogger
+    workflow: Workflow, user: User, input: VerbatimWorkflowInput, db: AsyncSession
 ) -> Tuple[bool, List[str]]:
     """
     Provides the functionality for executing a workflow, which consists of traversing
@@ -169,7 +164,6 @@ async def execute_workflow(
         workflow: The Graph representation of the workflow to be executed.
         input:    Initial payload for the workflow.
         db:       SQLAlchemy session.
-        logger:   Application logger to notify about errors or (if debug is enabled) execution steps.
     """
 
     if not workflow.enabled:
@@ -188,8 +182,7 @@ async def execute_workflow(
 
     if len(unsupported_modules_id) != 0:
         unsupported_modules_str = ", ".join(unsupported_modules_id)
-        logger.log_workflow_execution_error(
-            workflow,
+        workflow.get_logger().error(
             "Workflow was not executed, because it contained unsupported modules with the following IDs: "
             + unsupported_modules_str,
         )
@@ -198,9 +191,7 @@ async def execute_workflow(
             + unsupported_modules_str
         ]
 
-    logger.log_workflow_debug_message(
-        workflow, f"Started executing workflow for trigger `{trigger.name}` ({workflow.id})"
-    )
+    workflow.get_logger().debug(f"Started executing workflow for trigger `{trigger.name}` ({workflow.id})")
 
     next_step = next(iter(trigger.outputs.values()), None)
     # Nothing to do.
@@ -211,7 +202,7 @@ async def execute_workflow(
         roaming_data = await trigger.normalize_data(db, input)
     except Exception as e:
         await db.rollback()
-        logger.log_workflow_execution_error(workflow, f"Error while normalizing data for trigger. Error: \n{e}")
+        workflow.get_logger().error(f"Error while normalizing data for trigger. Error: \n{e}")
         return False, [f"Internal error: {e}"]
 
     input = WorkflowInput(
@@ -222,17 +213,15 @@ async def execute_workflow(
 
     await _increase_workflow_execution_count(db, workflow.id)
 
-    result = await walk_nodes(
-        input, _as_module(next_step[0][1]), workflow, logger, db, Environment(loader=BaseLoader())
-    )
+    result = await walk_nodes(input, _as_module(next_step[0][1]), workflow, db, Environment(loader=BaseLoader()))
 
     if result[0]:
         outcome = "success"
     else:
         outcome = "blocked" if trigger.blocking else "failure"
 
-    logger.log_workflow_debug_message(
-        workflow, f"Finished executing workflow for trigger `{trigger.name}` ({workflow.id}). Outcome: {outcome}"
+    workflow.get_logger().debug(
+        f"Finished executing workflow for trigger `{trigger.name}` ({workflow.id}). Outcome: {outcome}"
     )
 
     if not result[0]:
