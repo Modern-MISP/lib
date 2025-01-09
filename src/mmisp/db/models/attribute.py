@@ -15,6 +15,7 @@ from mmisp.lib.uuid import uuid
 from ..database import Base
 from .event import Event
 from .tag import Tag
+from .user import User
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
@@ -122,6 +123,33 @@ class Attribute(Base, DictMixin):
         await db.commit()
         await db.refresh(attribute_tag)
         return attribute_tag
+
+    async def can_edit(self, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an attribute based on
+        whether he or someone of his organisation created the attribute.
+
+        args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has editing permission
+        """
+
+    async def can_access(self, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an attribute based on
+        whether the attribute is part of the same group or organisation and or creating organosation and the publishing status of the attribute with 
+        consideration of the event the attribute is associated with.
+
+         args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has access permission
+        """
 
     @property
     def event_uuid(self: "Attribute") -> str:
