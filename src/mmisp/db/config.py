@@ -33,7 +33,6 @@ class DatabaseConfig(BaseSettings):
 
         return values
 
-
 load_dotenv(getenv("ENV_FILE", ".env"))
 
 
