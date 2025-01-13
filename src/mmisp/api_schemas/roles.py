@@ -185,3 +185,10 @@ class EditRoleResponse(Role):
     """
 
     pass
+
+class ReinstateRoleResponse(Role):
+    """
+    Class representing the response after reinstating the role.
+    """
+
+    pass
