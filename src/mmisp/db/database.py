@@ -114,4 +114,6 @@ async def create_all_models() -> None:
     await sessionmanager.create_all()
 
 
-sessionmanager = DatabaseSessionManager()
+sessionmanager = None
+if config.CONNECTION_INIT:
+    sessionmanager = DatabaseSessionManager()

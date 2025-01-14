@@ -10,33 +10,38 @@ The following environment variables are supported:
 """
 
 import logging
-from dataclasses import dataclass
 from os import getenv
 
 from dotenv import load_dotenv
+from pydantic import BaseSettings, Field, root_validator
 
 
-@dataclass
-class DatabaseConfig:
-    DATABASE_URL: str
-    DEBUG: bool
-    RETRY_SLEEP: int
-    MAX_RETRIES: int
+class DatabaseConfig(BaseSettings):
+    DATABASE_URL: str | None = None
+    DEBUG: bool = False
+    RETRY_SLEEP: int = Field(5, env="DB_RETRY")
+    MAX_RETRIES: int = Field(100, env="DB_MAX_RETRIES")
+    CONNECTION_INIT: bool = True
     DB_LOGLEVEL: str | None = None
+
+    @root_validator(skip_on_failure=True)
+    def require_db_url_or_no_connection(cls: "DatabaseConfig", values: dict) -> dict:
+        db_url = values.get("DATABASE_URL")
+        connection_init = values.get("CONNECTION_INIT")
+        if db_url is None and connection_init:
+            raise ValueError("Environment variable DATABASE_URL is required when CONNECTION_INIT is not False")
+
+        return values
 
 
 load_dotenv(getenv("ENV_FILE", ".env"))
 
 
-config: DatabaseConfig = DatabaseConfig(
-    DATABASE_URL=getenv("DATABASE_URL", ""),
-    DEBUG=bool(getenv("DEBUG", False)),
-    RETRY_SLEEP=int(getenv("DB_RETRY", 5)),
-    MAX_RETRIES=int(getenv("DB_MAX_RETRIES", 100)),
-    DB_LOGLEVEL=getenv("DB_LOGLEVEL", None),
-)
+config: DatabaseConfig = DatabaseConfig()
+
 sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
 sqlalchemy_logger.setLevel(logging.WARNING)
+
 if config.DEBUG:
     sqlalchemy_logger.setLevel(logging.INFO)
 
