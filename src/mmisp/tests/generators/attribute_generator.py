@@ -4,6 +4,7 @@ from datetime import datetime
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
 from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname, AttributeType
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
 from mmisp.tests.generators.object_generator import generate_ids_as_str, generate_random_date_str, generate_random_str
@@ -11,8 +12,10 @@ from mmisp.tests.generators.tag_generator import generate_get_attribute_tag_resp
 
 
 def generate_valid_random_create_attribute_data() -> AddAttributeBody:
+    type: AttributeType = random.choice(list(AttributeType.all_attributes))
+    category: AttributeCategories = random.choice(list(type.categories))
     return AddAttributeBody(
-        type="other",
+        type=type.dbkey,
         value=generate_random_str(),
         value1=generate_random_str(),
         value2=generate_random_str(),
