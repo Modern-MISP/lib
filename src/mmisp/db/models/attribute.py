@@ -3,7 +3,7 @@ from typing import Self, Type
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -11,6 +11,8 @@ from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.db.uuid_type import DBUUID
+from mmisp.lib.uuid import uuid
+from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -125,7 +127,6 @@ class Attribute(Base, DictMixin):
         await db.refresh(attribute_tag)
         return attribute_tag
 
-
     @hybrid_method
     async def can_edit(self, user: User) -> bool:
         """
@@ -139,18 +140,19 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has editing permission
         """
-        return user.role.check_permission(Permission.ADMIN) \
-               or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG)) \
-               or (user.id == user.org.created_by)
-
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.id == user.org.created_by)
+        )
 
     @hybrid_method
     async def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
-        whether the user  is part of the same group or organisation and/or creater organisation
-        as well as the publishing status of the attribute with consideration of the event,
-        the attribute is associated with.
+        whether the attribute is part of the same group or organisation and or creating organisation and
+        the publishing status of the attribute with
+        consideration of the event the attribute is associated with.
 
          args:
             self: the attribute
@@ -159,9 +161,11 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has access permission
         """
-        return user.role.check_permission(Permission.ADMIN) \
-               or (user.org_id == self.event.org_id and self.event.published) \
-               or (user.id == user.org.created_by)
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.org_id == self.event.org_id and self.event.published)
+            or (user.id == user.org.created_by)
+        )
 
     @property
     def event_uuid(self: "Attribute") -> str:
