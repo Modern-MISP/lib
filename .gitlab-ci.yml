@@ -35,7 +35,7 @@ build_image:
       /kaniko/executor
       --context "${CI_PROJECT_DIR}/"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_BRANCH}
+      --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:$(echo $CI_COMMIT_BRANCH | tr -c '[:alnum:]_' '_')
       --destination ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
 
 compare_db:
