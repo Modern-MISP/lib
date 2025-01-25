@@ -3,7 +3,7 @@ from typing import Self, Type
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -125,6 +125,8 @@ class Attribute(Base, DictMixin):
         await db.refresh(attribute_tag)
         return attribute_tag
 
+
+    @hybrid_method
     async def can_edit(self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an attribute based on
@@ -137,7 +139,12 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has editing permission
         """
+        return user.role.check_permission(Permission.ADMIN) \
+               or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG)) \
+               or (user.id == user.org.created_by)
 
+
+    @hybrid_method
     async def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
@@ -152,6 +159,9 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has access permission
         """
+        return user.role.check_permission(Permission.ADMIN) \
+               or (user.org_id == self.event.org_id and self.event.published) \
+               or (user.id == user.org.created_by)
 
     @property
     def event_uuid(self: "Attribute") -> str:

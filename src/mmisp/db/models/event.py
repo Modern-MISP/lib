@@ -3,6 +3,7 @@ from typing import Self
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
@@ -74,7 +75,7 @@ class Event(Base):
     )
 
     async def add_tag(
-        self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
+            self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
     ) -> "EventTag":
         """
         FIXME *Insert page break right here*
@@ -90,6 +91,7 @@ class Event(Base):
         await db.refresh(event_tag)
         return event_tag
 
+    @hybrid_method
     async def can_edit(self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an event based on
@@ -103,6 +105,12 @@ class Event(Base):
             true if the user has editing permission
         """
 
+        return user.role.check_permission(Permission.ADMIN) \
+               or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY)) \
+               or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG)) \
+               or (user.id == user.org.created_by)
+
+    @hybrid_method
     async def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an event based on
@@ -115,6 +123,10 @@ class Event(Base):
         returns:
             true if the user has access permission
         """
+        return user.role.check_permission(Permission.ADMIN) \
+               or (user.id == self.user_id) \
+               or (user.org_id == self.org_id and self.published) \
+               or (user.id == user.org.created_by)
 
 
 class EventReport(Base):
