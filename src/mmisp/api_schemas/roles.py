@@ -157,6 +157,7 @@ class GetRolesResponse(BaseModel):
 
 
 class GetRoleResponse(BaseModel):
+    Role: RoleAttributeResponse | None = None
     """
     Class representing the response of a single role.
     """
@@ -206,6 +207,9 @@ class EditRoleBody(BaseModel):
 
     pass
 
+    class Config:
+        orm_mode = True
+        
 
 class EditRoleResponse(Role):
     """
