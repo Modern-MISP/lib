@@ -147,23 +147,23 @@ class RoleAttributeResponse(BaseModel):
     default: bool | None = None
 
 
+
 class GetRolesResponse(BaseModel):
     """
     Class representing the response of a list of roles.
     """
-
     Role: RoleAttributeResponse
     pass
 
 
 class GetRoleResponse(BaseModel):
-    Role: RoleAttributeResponse | None = None
     """
     Class representing the response of a single role.
     """
 
-    Role: RoleAttributeResponse | None = None
+    Role: RoleAttributeResponse | None = None   
     pass
+
 
 
 class AddRoleBody(BaseModel):
@@ -182,11 +182,11 @@ class AddRoleResponse(Role):
     pass
 
 
+
 class DeleteRoleResponse(Role):
     """
     Class representing the response after deleting a role.
     """
-
     Role: RoleAttributeResponse | None = None
     saved: bool
     success: bool | None = None
@@ -200,6 +200,7 @@ class DeleteRoleResponse(Role):
         orm_mode = True
 
 
+
 class EditRoleBody(BaseModel):
     """
     Class representing the body of an edit/update role request.
@@ -207,9 +208,6 @@ class EditRoleBody(BaseModel):
 
     pass
 
-    class Config:
-        orm_mode = True
-        
 
 class EditRoleResponse(Role):
     """
@@ -217,6 +215,67 @@ class EditRoleResponse(Role):
     """
 
     pass
+
+
+
+class ReinstateRoleBody(BaseModel):
+    """
+    Class representing the body of an reinstate role request.
+    """
+
+    pass
+
+
+class ReinstateRoleResponse(Role):
+    """
+    Class representing the response after reinstatiting a role.
+    """
+
+    pass
+
+
+
+class FilterRoleBody(BaseModel):
+    """
+    Class representing the body of an filter roles request.
+    """
+
+    pass
+
+
+class FilterRoleResponse(Role):
+    """
+    Class representing the result of a single role, which was filtered out.
+    """
+
+    pass
+
+
+
+class EditUserRoleBody(BaseModel):
+    """
+    Class representing the body of an edit user role request.
+    """
+
+    role_id: int
+
+
+class EditUserRoleResponse(Role):
+    """
+    Class representing the response after changing/updating the role of a user.
+    """
+
+    saved: bool  
+    success: bool | None = None
+    name: str  
+    message: str  
+    url: str  
+    id: str  
+    Role: str  
+
+    class Config:
+        orm_mode = True
+
 
 
 class ReinstateRoleBody(BaseModel):
@@ -288,3 +347,11 @@ class DefaultRoleResponse(Role):
 
     class Config:
         orm_mode = True
+
+
+
+
+
+
+
+    
