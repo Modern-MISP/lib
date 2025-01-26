@@ -140,8 +140,9 @@ class Attribute(Base, DictMixin):
     async def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
-        whether the attribute is part of the same group or organisation and or creating organosation and the publishing status of the attribute with 
-        consideration of the event the attribute is associated with.
+        whether the user  is part of the same group or organisation and/or creater organisation
+        as well as the publishing status of the attribute with consideration of the event,
+        the attribute is associated with.
 
          args:
             self: the attribute

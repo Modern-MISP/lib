@@ -36,14 +36,13 @@ class Role(RoleModel):  # type:ignore[misc,valid-type]
 
     def check_permission(self: Self, permission: Permission) -> bool:
         """
-            Checks whether the role has the specified permission
+        Checks whether the role has the specified permission
 
-            args:
-                self: the role itself
-                permission: the permission to check
+        args:
+            self: the role itself
+            permission: the permission to check
 
-            returns:
-                true if role has permission
+        returns:
+            true if role has permission
         """
         return getattr(self, "perm_" + permission.value)
-        

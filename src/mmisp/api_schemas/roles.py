@@ -148,16 +148,26 @@ class RoleAttributeResponse(BaseModel):
 
 
 class GetRolesResponse(BaseModel):
-    Role: RoleAttributeResponse
     """
     Class representing the response of a list of roles.
     """
+
+    Role: RoleAttributeResponse
     pass
 
 
-class GetRoleResponse(Role):
+class GetRoleResponse(BaseModel):
     """
     Class representing the response of a single role.
+    """
+
+    Role: RoleAttributeResponse | None = None
+    pass
+
+
+class AddRoleBody(BaseModel):
+    """
+    Class representing the body of an add role request.
     """
 
     pass
@@ -173,7 +183,25 @@ class AddRoleResponse(Role):
 
 class DeleteRoleResponse(Role):
     """
-    Class representing the response after deleting a new role.
+    Class representing the response after deleting a role.
+    """
+
+    Role: RoleAttributeResponse | None = None
+    saved: bool
+    success: bool | None = None
+    name: str
+    message: str
+    url: str
+    id: int
+    errors: str | None = None
+
+    class Config:
+        orm_mode = True
+
+
+class EditRoleBody(BaseModel):
+    """
+    Class representing the body of an edit/update role request.
     """
 
     pass
@@ -181,14 +209,78 @@ class DeleteRoleResponse(Role):
 
 class EditRoleResponse(Role):
     """
-    Class representing the response after changing role.
+    Class representing the response after editing/updating a role.
     """
 
     pass
+
+
+class ReinstateRoleBody(BaseModel):
+    """
+    Class representing the body of an reinstate role request.
+    """
+
+    pass
+
 
 class ReinstateRoleResponse(Role):
     """
-    Class representing the response after reinstating the role.
+    Class representing the response after reinstatiting a role.
     """
 
     pass
+
+
+class FilterRoleBody(BaseModel):
+    """
+    Class representing the body of an filter roles request.
+    """
+
+    pass
+
+
+class FilterRoleResponse(Role):
+    """
+    Class representing the result of a single role, which was filtered out.
+    """
+
+    pass
+
+
+class EditUserRoleBody(BaseModel):
+    """
+    Class representing the body of an edit user role request.
+    """
+
+    role_id: int
+
+
+class EditUserRoleResponse(Role):
+    """
+    Class representing the response after changing/updating the role of a user.
+    """
+
+    saved: bool
+    success: bool | None = None
+    name: str
+    message: str
+    url: str
+    id: str
+    Role: str
+
+    class Config:
+        orm_mode = True
+
+
+class DefaultRoleResponse(Role):
+    Role: RoleAttributeResponse | None = None
+    saved: bool
+    success: bool | None = None
+    name: str
+    message: str
+    url: str
+    id: int
+    errors: str | None = None
+
+    class Config:
+        orm_mode = True
