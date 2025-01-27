@@ -236,6 +236,7 @@ class ReinstateRoleResponse(Role):
 
 
 class FilterRoleBody(BaseModel):
+    # filter can be expanded by adding more criteria to filter for 
     permissions: list[Permission] | None = None
 
     class Config:
