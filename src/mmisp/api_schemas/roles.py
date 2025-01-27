@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+
 from mmisp.lib.permissions import Permission
+from mmisp.db.models.user import User
 
 
 class Role(BaseModel):
@@ -150,21 +152,11 @@ class RoleAttributeResponse(BaseModel):
 
 
 class GetRolesResponse(BaseModel):
-    """
-    Class representing the response of a list of roles.
-    """
     Role: RoleAttributeResponse
-    pass
 
 
 class GetRoleResponse(BaseModel):
-    """
-    Class representing the response of a single role.
-    """
-
     Role: RoleAttributeResponse | None = None   
-    pass
-
 
 
 class AddRoleBody(BaseModel):
@@ -175,7 +167,7 @@ class AddRoleBody(BaseModel):
     pass
 
 
-class AddRoleResponse(Role):
+class AddRoleResponse(BaseModel):
     """
     Class representing the response after creating a new role.
     """
@@ -184,10 +176,7 @@ class AddRoleResponse(Role):
 
 
 
-class DeleteRoleResponse(Role):
-    """
-    Class representing the response after deleting a role.
-    """
+class DeleteRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
     saved: bool
     success: bool | None = None
@@ -196,9 +185,6 @@ class DeleteRoleResponse(Role):
     url: str
     id: int
     errors: str | None = None
-
-    class Config:
-        orm_mode = True
 
 
 class EditRoleBody(BaseModel):
@@ -209,7 +195,7 @@ class EditRoleBody(BaseModel):
     pass
 
 
-class EditRoleResponse(Role):
+class EditRoleResponse(BaseModel):
     """
     Class representing the response after editing/updating a role.
     """
@@ -226,7 +212,7 @@ class ReinstateRoleBody(BaseModel):
     pass
 
 
-class ReinstateRoleResponse(Role):
+class ReinstateRoleResponse(BaseModel):
     """
     Class representing the response after reinstatiting a role.
     """
@@ -234,38 +220,20 @@ class ReinstateRoleResponse(Role):
     pass
 
 
-
 class FilterRoleBody(BaseModel):
     # filter can be expanded by adding more criteria to filter for 
     permissions: list[Permission] | None = None
 
-    class Config:
-        orm_mode = True
 
-
-class FilterRoleResponse(Role):
+class FilterRoleResponse(BaseModel):
     Role: RoleAttributeResponse
-
-    class Config:
-        orm_mode = True
 
 
 class EditUserRoleBody(BaseModel):
-    """
-    Class representing the body of an edit user role request.
-    """
-
     role_id: int
 
-    class Config:
-        orm_mode = True
 
-
-class EditUserRoleResponse(Role):
-    """
-    Class representing the response after changing/updating the role of a user.
-    """
-
+class EditUserRoleResponse(BaseModel):
     saved: bool  
     success: bool | None = None
     name: str  
@@ -274,69 +242,12 @@ class EditUserRoleResponse(Role):
     id: str  
     Role: str  
 
-    class Config:
-        orm_mode = True
+
+class GetUserRoleResponse(BaseModel):
+    user: User
 
 
-
-class ReinstateRoleBody(BaseModel):
-    """
-    Class representing the body of an reinstate role request.
-    """
-
-    pass
-
-
-class ReinstateRoleResponse(Role):
-    """
-    Class representing the response after reinstatiting a role.
-    """
-
-    pass
-
-
-class FilterRoleBody(BaseModel):
-    """
-    Class representing the body of an filter roles request.
-    """
-
-    pass
-
-
-class FilterRoleResponse(Role):
-    """
-    Class representing the result of a single role, which was filtered out.
-    """
-
-    pass
-
-
-class EditUserRoleBody(BaseModel):
-    """
-    Class representing the body of an edit user role request.
-    """
-
-    role_id: int
-
-
-class EditUserRoleResponse(Role):
-    """
-    Class representing the response after changing/updating the role of a user.
-    """
-
-    saved: bool
-    success: bool | None = None
-    name: str
-    message: str
-    url: str
-    id: str
-    Role: str
-
-    class Config:
-        orm_mode = True
-
-
-class DefaultRoleResponse(Role):
+class DefaultRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
     saved: bool
     success: bool | None = None
@@ -345,7 +256,4 @@ class DefaultRoleResponse(Role):
     url: str
     id: int
     errors: str | None = None
-
-    class Config:
-        orm_mode = True
     
