@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+from mmisp.lib.permissions import Permission
 
 
 class Role(BaseModel):
@@ -200,7 +201,6 @@ class DeleteRoleResponse(Role):
         orm_mode = True
 
 
-
 class EditRoleBody(BaseModel):
     """
     Class representing the body of an edit/update role request.
@@ -236,20 +236,17 @@ class ReinstateRoleResponse(Role):
 
 
 class FilterRoleBody(BaseModel):
-    """
-    Class representing the body of an filter roles request.
-    """
+    permissions: list[Permission] | None = None
 
-    pass
+    class Config:
+        orm_mode = True
 
 
 class FilterRoleResponse(Role):
-    """
-    Class representing the result of a single role, which was filtered out.
-    """
+    Role: RoleAttributeResponse
 
-    pass
-
+    class Config:
+        orm_mode = True
 
 
 class EditUserRoleBody(BaseModel):
@@ -258,6 +255,9 @@ class EditUserRoleBody(BaseModel):
     """
 
     role_id: int
+
+    class Config:
+        orm_mode = True
 
 
 class EditUserRoleResponse(Role):
@@ -347,11 +347,4 @@ class DefaultRoleResponse(Role):
 
     class Config:
         orm_mode = True
-
-
-
-
-
-
-
     
