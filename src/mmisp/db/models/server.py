@@ -1,12 +1,13 @@
 from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.orm import relationship
 
+from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 
 from ..database import Base
 
 
-class Server(Base):
+class Server(Base, DictMixin):
     __tablename__ = "servers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
