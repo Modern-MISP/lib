@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
@@ -30,8 +30,10 @@ class Galaxy(Base, DictMixin, UpdateMixin):
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
     orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
-    created: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    modified: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now(timezone.utc))
+    modified: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
+    )
     distribution: Mapped[int] = mapped_column(Integer, nullable=False)
 
     galaxy_clusters = relationship(
