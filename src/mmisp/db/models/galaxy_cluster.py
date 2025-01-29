@@ -96,6 +96,7 @@ class GalaxyElement(Base, DictMixin, UpdateMixin):
     )  # type:ignore[assignment,var-annotated]
 
 
+# TODO delete this class and rewrite dependent code in mmisp/api/routers/galaxies_cluster.py
 class GalaxyReference(Base):
     __tablename__ = "galaxy_reference"
 
