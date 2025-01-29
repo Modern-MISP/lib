@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+import json
+from typing import Optional, Self
+
+>>>>>>> 2d94c6b (Fix galaxies-related ORM models to better correspond to db schema)
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
@@ -15,8 +21,8 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     __tablename__ = "galaxy_clusters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
-    collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True, default="")
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
+    collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     tag_name: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
@@ -28,7 +34,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     authors: Mapped[list[str]] = mapped_column(DBListJson, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=0, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, nullable=True, default=None)
+    sharing_group_id: Mapped[Optional[int]] = mapped_column(Integer, index=True, nullable=True, default=None)
     org_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     orgc_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)

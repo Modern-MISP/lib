@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
@@ -8,6 +9,7 @@ from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
+from .organisation import Organisation
 
 
 class Galaxy(Base, DictMixin, UpdateMixin):
@@ -24,16 +26,12 @@ class Galaxy(Base, DictMixin, UpdateMixin):
     kill_chain_order: Mapped[str | None] = mapped_column(String(255))
     """must be serialized"""
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    local_only: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    default: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    org_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    orgc_id: Mapped[int] = mapped_column(Integer, nullable=False)
-
+    local_only: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
+    orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
     created: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     modified: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-
     distribution: Mapped[int] = mapped_column(Integer, nullable=False)
 
     galaxy_clusters = relationship(
