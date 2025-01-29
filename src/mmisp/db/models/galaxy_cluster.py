@@ -96,6 +96,22 @@ class GalaxyElement(Base, DictMixin, UpdateMixin):
     )  # type:ignore[assignment,var-annotated]
 
 
+class GalaxyClusterRelation(Base, DictMixin, UpdateMixin):
+    __tablename__ = "galaxy_cluster_relations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    galaxy_cluster_id: Mapped[int] = mapped_column(Integer, ForeignKey(GalaxyCluster.id), nullable=False, index=True)
+    referenced_galaxy_cluster_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    referenced_galaxy_cluster_type: Mapped[str] = mapped_column(Text, nullable=False)
+    galaxy_cluster_uuid: Mapped[str] = mapped_column(
+        String(40), ForeignKey(GalaxyCluster.uuid), nullable=False, index=True
+    )
+    distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sharing_group_id: Mapped[Optional[int]] = mapped_column(Integer, index=True, nullable=True, default=None)
+    default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+
+
 # TODO delete this class and rewrite dependent code in mmisp/api/routers/galaxies_cluster.py
 class GalaxyReference(Base):
     __tablename__ = "galaxy_reference"
