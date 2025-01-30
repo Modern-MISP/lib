@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, Field
@@ -20,6 +21,28 @@ class SharingGroup(BaseModel):
     modified: datetime | str
     local: bool
     roaming: bool
+
+
+#    org_count: int = 0
+
+
+class ShortSharingGroup(BaseModel):
+    id: int
+    name: str
+    releasability: str
+    description: str
+    uuid: str
+    active: bool
+    local: bool
+    roaming: bool
+
+    org_count: int = 0
+
+
+class ShortOrganisation(BaseModel):
+    id: int
+    name: str
+    uuid: uuid.UUID
 
 
 class SharingGroupServer(BaseModel):
@@ -81,11 +104,38 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
 
-class ViewUpdateSharingGroupLegacyResponse(BaseModel):
+class SharingGroupResponse(BaseModel):
+    SharingGroup: ShortSharingGroup
+    Organisation: ShortOrganisation
+    SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
+    SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
+
+    editable: bool | None = None
+    deletable: bool | None = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+class SingleSharingGroupResponse(BaseModel):
     SharingGroup: SharingGroup
     Organisation: Organisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+class ViewUpdateSharingGroupLegacyResponse(SharingGroupResponse):
+    pass
+
+
+class GetSharingGroupsIndex(BaseModel):
+    response: list[SharingGroupResponse]
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class UpdateSharingGroupLegacyBody(BaseModel):
