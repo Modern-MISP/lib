@@ -43,7 +43,7 @@ async def create_organisation(
     sector: str | None = None,
     contacts_email: str | None = None,
     local: bool | None = None,
-    restricted_domain: str | None = None,
+    restricted_domain: list[str] | None = None,
     landingpage: str | None = None,
 ) -> str:
     """create-organisation <name> [-admin_email <admin_email>] [- description <description>] [-type <type>]
@@ -115,7 +115,7 @@ async def edit_organisation(
     sector: str | None = None,
     contacts_email: str | None = None,
     local: bool | None = None,
-    restricted_domain: str | None = None,
+    restricted_domain: list[str] | None = None,
     landingpage: str | None = None,
 ) -> str:
     """edit-organisation <organisation> [-new_name <new_name>] [-admin_email <admin_email>] [-description <description>]

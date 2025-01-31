@@ -55,7 +55,7 @@ async def test_create_organisation(db, site_admin_user) -> None:
     sector = time_now
     contacts_email = time_now
     local = False
-    restricted_domain = False
+    restricted_domain: list[str] = []
     landingpage = time_now
     await main.create_organisation(
         name, admin_email, description, type, nationality, sector, contacts_email, local, restricted_domain, landingpage
@@ -157,7 +157,7 @@ async def test_edit_organisation(db, organisation, site_admin_user) -> None:
     new_sector = time_now
     new_contacts_email = time_now
     new_local = False
-    new_restricted_domain = "{}"
+    new_restricted_domain: list[str] = []
     new_landingpage = time_now
     await main.edit_organisation(
         organisation.name,
@@ -181,7 +181,7 @@ async def test_edit_organisation(db, organisation, site_admin_user) -> None:
     assert organisation.sector == new_sector
     assert organisation.contacts == new_contacts_email
     assert bool(organisation.local) is new_local
-    assert str(organisation.restricted_to_domain) == new_restricted_domain
+    assert organisation.restricted_to_domain == new_restricted_domain
     assert organisation.landingpage == new_landingpage
 
     try:

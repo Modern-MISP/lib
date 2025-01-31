@@ -23,7 +23,7 @@ class Organisation(BaseOrganisation):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: str | list | None = None
+    restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
     class Config:
@@ -45,7 +45,7 @@ class GetOrganisationResponse(BaseModel):
     created_by: str
     contacts: str | None = None
     local: bool
-    restricted_to_domain: str | list | None = None
+    restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
     def dict(self: Self, *args, **kwargs) -> dict:
@@ -90,7 +90,7 @@ class OrganisationUsersResponse(BaseModel):
     uuid: str | None = None
     contacts: str | None = None
     local: bool | None = None
-    restricted_to_domain: str | list | None = None
+    restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
 
@@ -105,7 +105,7 @@ class AddOrganisation(BaseModel):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: str | None = None
+    restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
 
     class Config:
@@ -121,7 +121,7 @@ class EditOrganisation(BaseModel):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: str | None = None
+    restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
 
     class Config:
