@@ -8,7 +8,7 @@ def generate_user() -> User:
     """These fields need to be set manually: org_id, role_id"""
     return User(
         password=hash_secret("test"),
-        email=f"generated-user+{time_ns()}@test.com",
+        email=f"generated-user{time_ns()}@test.com",
         autoalert=False,
         authkey="auth key",
         invited_by=0,
