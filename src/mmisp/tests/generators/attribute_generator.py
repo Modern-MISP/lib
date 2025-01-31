@@ -7,7 +7,9 @@ from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname, AttributeType
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
-from mmisp.tests.generators.object_generator import generate_ids_as_str, generate_random_date_str, generate_random_str
+from mmisp.tests.generators.feed_generator import generate_number_as_str
+from mmisp.tests.generators.object_generator import generate_ids_as_str, generate_random_date_str, generate_random_str, \
+    generate_random_value
 from mmisp.tests.generators.tag_generator import generate_get_attribute_tag_response
 
 
@@ -16,9 +18,9 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
     category: AttributeCategories = random.choice(list(type.categories))
     return AddAttributeBody(
         type=type.dbkey,
-        value=generate_random_str(),
-        value1=generate_random_str(),
-        value2=generate_random_str(),
+        value=generate_random_value(),
+        value1=generate_random_value(),
+        value2=generate_random_value(),
         event_id=generate_ids_as_str(),
         category=AttributeCategories.OTHER,
         to_ids=bool(random.getrandbits(1)),
