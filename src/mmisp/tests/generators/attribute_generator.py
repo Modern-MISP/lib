@@ -14,10 +14,10 @@ from mmisp.tests.generators.tag_generator import generate_get_attribute_tag_resp
 
 
 def generate_valid_random_create_attribute_data() -> AddAttributeBody:
-    type: AttributeType = random.choice(list(AttributeType.all_attributes))
-    category: AttributeCategories = random.choice(list(type.categories))
+    #hardcoded attribute type ip-src
+    category: AttributeCategories = AttributeCategories.EXTERNAL_ANALYSIS
     return AddAttributeBody(
-        type=type.dbkey,
+        type="ip-src",
         value=generate_random_value(),
         value1=generate_random_value(),
         value2=generate_random_value(),
