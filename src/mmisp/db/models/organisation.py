@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
+from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -26,7 +27,7 @@ class Organisation(Base, DictMixin):
     uuid: Mapped[str] = mapped_column(String(255), unique=True)
     contacts: Mapped[str] = mapped_column(Text)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    restricted_to_domain: Mapped[str] = mapped_column(Text)
+    restricted_to_domain: Mapped[list[str]] = mapped_column(DBListJson)
     landingpage: Mapped[str] = mapped_column(Text)
 
     # Relationship to users

@@ -1,3 +1,5 @@
+import json
+
 import httpx
 from deepdiff import DeepDiff
 from icecream import ic
@@ -61,5 +63,16 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
         }
         if diff["dictionary_item_removed"] == {}:
             del diff["dictionary_item_removed"]
+
+    # somehow misp manages to maintain the json encoded restricted_to_domain str in GalaxyCluster only.
+    # we will ignore this, this is too broken
+    if diff.get("type_changes", False):
+        diff["type_changes"] = {
+            k: v
+            for k, v in diff["type_changes"].items()
+            if not ("restricted_to_domain" in k and v["new_value"] == json.dumps(v["old_value"]))
+        }
+        if diff["type_changes"] == {}:
+            del diff["type_changes"]
 
     return diff

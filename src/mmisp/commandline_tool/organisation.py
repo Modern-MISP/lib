@@ -18,7 +18,7 @@ async def create(
     sector: str | None,
     contacts_email: str | None,
     local: bool | None,
-    restricted_domain: str | None,
+    restricted_domain: list[str] | None,
     landingpage: str | None,
 ) -> None:
     organisation = Organisation()
@@ -67,7 +67,7 @@ async def edit_organisation(
     sector: str | None,
     contacts_email: str | None,
     local: bool | None,
-    restricted_domain: str | None,
+    restricted_domain: list[str] | None,
     landingpage: str | None,
 ) -> None:
     if isinstance(organisation, str):
@@ -109,7 +109,7 @@ async def set_attributes(
     sector: str | None,
     contacts_email: str | None,
     local: bool | None,
-    restricted_domain: str | None,
+    restricted_domain: list[str] | None,
     landingpage: str | None,
 ) -> None:
     if name is not None:
