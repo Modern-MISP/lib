@@ -203,21 +203,12 @@ class EditRoleResponse(BaseModel):
     pass
 
 
-
-class ReinstateRoleBody(BaseModel):
-    """
-    Class representing the body of an reinstate role request.
-    """
-
-    pass
-
-
 class ReinstateRoleResponse(BaseModel):
-    """
-    Class representing the response after reinstatiting a role.
-    """
-
-    pass
+    Role: RoleAttributeResponse
+    success: bool
+    message: str
+    url: str
+    id: int
 
 
 class FilterRoleBody(BaseModel):
