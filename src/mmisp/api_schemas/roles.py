@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from mmisp.api_schemas.users import User
 from mmisp.lib.permissions import Permission
-from mmisp.db.models.user import User
 
 
 class Role(BaseModel):
@@ -150,30 +150,51 @@ class RoleAttributeResponse(BaseModel):
     default: bool | None = None
 
 
-
 class GetRolesResponse(BaseModel):
     Role: RoleAttributeResponse
 
 
 class GetRoleResponse(BaseModel):
-    Role: RoleAttributeResponse | None = None   
+    Role: RoleAttributeResponse | None = None
 
 
 class AddRoleBody(BaseModel):
-    """
-    Class representing the body of an add role request.
-    """
-
-    pass
+    name: str
+    perm_add: bool
+    perm_modify: bool
+    perm_modify_org: bool
+    perm_publish: bool
+    perm_delegate: bool
+    perm_sync_actions: bool
+    perm_admin: bool
+    perm_audit: bool
+    perm_auth: bool
+    perm_site_admin: bool
+    perm_regexp_access: bool
+    perm_tagger: bool
+    perm_template: bool
+    perm_sharing_group: bool
+    perm_tag_editor: bool
+    perm_sighting: bool
+    perm_object_template: bool
+    default_role: bool
+    memory_limit: str | None = None
+    max_execution_time: str | None = None
+    restricted_to_site_admin: bool
+    perm_publish_zmq: bool
+    perm_publish_kafka: bool
+    perm_decaying: bool
+    enforce_rate_limit: bool
+    rate_limit_count: int
+    perm_galaxy_editor: bool
+    perm_warninglist: bool
+    perm_view_feed_correlations: bool
 
 
 class AddRoleResponse(BaseModel):
-    """
-    Class representing the response after creating a new role.
-    """
-
-    pass
-
+    role: Role
+    created: bool
+    message: str
 
 
 class DeleteRoleResponse(BaseModel):
@@ -188,19 +209,42 @@ class DeleteRoleResponse(BaseModel):
 
 
 class EditRoleBody(BaseModel):
-    """
-    Class representing the body of an edit/update role request.
-    """
-
-    pass
+    name: str | None = None
+    perm_add: bool | None = None
+    perm_modify: bool | None = None
+    perm_modify_org: bool | None = None
+    perm_publish: bool | None = None
+    perm_delegate: bool | None = None
+    perm_sync_actions: bool | None = None
+    perm_admin: bool | None = None
+    perm_audit: bool | None = None
+    perm_auth: bool | None = None
+    perm_site_admin: bool | None = None
+    perm_regexp_access: bool | None = None
+    perm_tagger: bool | None = None
+    perm_template: bool | None = None
+    perm_sharing_group: bool | None = None
+    perm_tag_editor: bool | None = None
+    perm_sighting: bool | None = None
+    perm_object_template: bool | None = None
+    default_role: bool | None = None
+    memory_limit: str | None = None
+    max_execution_time: str | None = None
+    restricted_to_site_admin: bool | None = None
+    perm_publish_zmq: bool | None = None
+    perm_publish_kafka: bool | None = None
+    perm_decaying: bool | None = None
+    enforce_rate_limit: bool | None = None
+    rate_limit_count: bool | None = None
+    perm_galaxy_editor: bool | None = None
+    perm_warninglist: bool | None = None
+    perm_view_feed_correlations: bool | None = None
 
 
 class EditRoleResponse(BaseModel):
-    """
-    Class representing the response after editing/updating a role.
-    """
-
-    pass
+    role: RoleAttributeResponse
+    updated: bool
+    message: str
 
 
 class ReinstateRoleResponse(BaseModel):
@@ -212,7 +256,7 @@ class ReinstateRoleResponse(BaseModel):
 
 
 class FilterRoleBody(BaseModel):
-    # filter can be expanded by adding more criteria to filter for 
+    # filter can be expanded by adding more criteria to filter for
     permissions: list[Permission] | None = None
 
 
@@ -225,13 +269,13 @@ class EditUserRoleBody(BaseModel):
 
 
 class EditUserRoleResponse(BaseModel):
-    saved: bool  
+    saved: bool
     success: bool | None = None
-    name: str  
-    message: str  
-    url: str  
-    id: str  
-    Role: str  
+    name: str
+    message: str
+    url: str
+    id: str
+    Role: str
 
 
 class GetUserRoleResponse(BaseModel):
@@ -247,4 +291,7 @@ class DefaultRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
+<<<<<<< HEAD
     
+=======
+>>>>>>> baa91c7 (fixed ruff format)

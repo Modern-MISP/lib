@@ -1,5 +1,5 @@
-
 from mmisp.db.models.role import Role
+
 
 def get_standard_roles() -> list[Role]:
     return [
@@ -242,7 +242,3 @@ def get_standard_roles() -> list[Role]:
             perm_skip_otp=False,
         ),
     ]
-
-
-        
-
