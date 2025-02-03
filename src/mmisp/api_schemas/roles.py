@@ -261,11 +261,11 @@ class FilterRoleBody(BaseModel):
 
 
 class FilterRoleResponse(BaseModel):
-    Role: RoleAttributeResponse
+    Role: RoleAttributeResponse 
 
 
 class EditUserRoleBody(BaseModel):
-    role_id: int
+    role_id: int 
 
 
 class EditUserRoleResponse(BaseModel):
@@ -274,8 +274,8 @@ class EditUserRoleResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: str
-    Role: str
+    id: int
+    Role: str | None = None
 
 
 class GetUserRoleResponse(BaseModel):
