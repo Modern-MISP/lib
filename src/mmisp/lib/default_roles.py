@@ -11,7 +11,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=True,
             perm_publish=True,
             perm_delegate=True,
-            perm_sync_actions=True,
+            perm_sync=True,
             perm_admin=True,
             perm_audit=True,
             perm_auth=True,
@@ -34,8 +34,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=True,
             perm_warninglist=False,
-            perm_view_feed_correlations=True,
-            perm_skip_otp=True,
+            perm_view_feed_correlations=True
         ),
         Role(
             id=2,
@@ -45,7 +44,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=True,
             perm_publish=True,
             perm_delegate=True,
-            perm_sync_actions=True,
+            perm_sync=True,
             perm_admin=False,
             perm_audit=True,
             perm_auth=False,
@@ -68,8 +67,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=True,
             perm_warninglist=False,
-            perm_view_feed_correlations=True,
-            perm_skip_otp=True,
+            perm_view_feed_correlations=True
         ),
         Role(
             id=3,
@@ -79,7 +77,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=False,
             perm_publish=True,
             perm_delegate=False,
-            perm_sync_actions=False,
+            perm_sync=False,
             perm_admin=False,
             perm_audit=False,
             perm_auth=False,
@@ -102,8 +100,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=False,
             perm_warninglist=False,
-            perm_view_feed_correlations=False,
-            perm_skip_otp=False,
+            perm_view_feed_correlations=False
         ),
         Role(
             id=4,
@@ -113,7 +110,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=True,
             perm_publish=True,
             perm_delegate=True,
-            perm_sync_actions=False,
+            perm_sync=False,
             perm_admin=False,
             perm_audit=False,
             perm_auth=False,
@@ -136,8 +133,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=False,
             perm_warninglist=False,
-            perm_view_feed_correlations=False,
-            perm_skip_otp=False,
+            perm_view_feed_correlations=False
         ),
         Role(
             id=5,
@@ -147,7 +143,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=True,
             perm_publish=True,
             perm_delegate=True,
-            perm_sync_actions=True,
+            perm_sync=True,
             perm_admin=False,
             perm_audit=False,
             perm_auth=True,
@@ -170,8 +166,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=False,
             perm_warninglist=False,
-            perm_view_feed_correlations=False,
-            perm_skip_otp=False,
+            perm_view_feed_correlations=False
         ),
         Role(
             id=6,
@@ -181,7 +176,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=True,
             perm_publish=True,
             perm_delegate=True,
-            perm_sync_actions=False,
+            perm_sync=False,
             perm_admin=False,
             perm_audit=False,
             perm_auth=True,
@@ -204,8 +199,7 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=False,
             perm_warninglist=False,
-            perm_view_feed_correlations=False,
-            perm_skip_otp=False,
+            perm_view_feed_correlations=False
         ),
         Role(
             id=7,
@@ -215,7 +209,7 @@ def get_standard_roles() -> list[Role]:
             perm_modify_org=False,
             perm_publish=False,
             perm_delegate=False,
-            perm_sync_actions=False,
+            perm_sync=False,
             perm_admin=False,
             perm_audit=False,
             perm_auth=False,
@@ -238,7 +232,6 @@ def get_standard_roles() -> list[Role]:
             rate_limit_count=0,
             perm_galaxy_editor=False,
             perm_warninglist=False,
-            perm_view_feed_correlations=False,
-            perm_skip_otp=False,
+            perm_view_feed_correlations=False
         ),
     ]

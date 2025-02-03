@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.users import User
+from mmisp.api_schemas.common import User
 from mmisp.lib.permissions import Permission
 
 
@@ -165,7 +165,7 @@ class AddRoleBody(BaseModel):
     perm_modify_org: bool
     perm_publish: bool
     perm_delegate: bool
-    perm_sync_actions: bool
+    perm_sync: bool
     perm_admin: bool
     perm_audit: bool
     perm_auth: bool
@@ -215,7 +215,7 @@ class EditRoleBody(BaseModel):
     perm_modify_org: bool | None = None
     perm_publish: bool | None = None
     perm_delegate: bool | None = None
-    perm_sync_actions: bool | None = None
+    perm_sync: bool | None = None
     perm_admin: bool | None = None
     perm_audit: bool | None = None
     perm_auth: bool | None = None
