@@ -1,14 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-
 from mmisp.db.models.organisation import Organisation
 from mmisp.db.models.role import Role
-from mmisp.lib.default_roles import get_standard_roles
+from mmisp.lib.standard_roles import get_standard_roles
 
 
 async def setup(session: AsyncSession) -> None:
-    
     for role in get_standard_roles():
         await add_role_if_not_exist(session, role)
 

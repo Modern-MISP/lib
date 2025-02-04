@@ -25,7 +25,7 @@ class User(Base):
     nids_sid: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     termsaccepted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     newsread: Mapped[int] = mapped_column(Integer, default=0)
-    role_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    role_id: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
     change_pw: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     contactalert: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     disabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

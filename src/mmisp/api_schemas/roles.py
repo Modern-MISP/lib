@@ -2,7 +2,6 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from mmisp.api_schemas.common import User
 from mmisp.lib.permissions import Permission
 
 
@@ -261,11 +260,11 @@ class FilterRoleBody(BaseModel):
 
 
 class FilterRoleResponse(BaseModel):
-    Role: RoleAttributeResponse 
+    Role: RoleAttributeResponse
 
 
 class EditUserRoleBody(BaseModel):
-    role_id: int 
+    role_id: int
 
 
 class EditUserRoleResponse(BaseModel):
@@ -279,7 +278,7 @@ class EditUserRoleResponse(BaseModel):
 
 
 class GetUserRoleResponse(BaseModel):
-    user: User
+    user_id: int
 
 
 class DefaultRoleResponse(BaseModel):
