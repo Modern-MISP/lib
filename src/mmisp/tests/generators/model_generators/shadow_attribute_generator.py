@@ -8,6 +8,8 @@ from mmisp.tests.generators.object_generator import generate_random_date_str, ge
 
 
 def generate_shadow_attribute(org_id: int, event_id: int, event_uuid: str, event_org_id: int) -> ShadowAttribute:
+    type: AttributeType = random.choice(AttributeType.all_attributes)
+    category: str = random.choice(list(type.categories))
     return ShadowAttribute(
         old_id=0,
         uuid=uuid(),
@@ -15,8 +17,8 @@ def generate_shadow_attribute(org_id: int, event_id: int, event_uuid: str, event
         event_id=event_id,
         event_uuid=event_uuid,
         event_org_id=event_org_id,
-        type=random.choice(list(mapper_val_safe_clsname.keys())),
-        category=AttributeCategories.OTHER,
+        type=type.dbkey,
+        category=category,
         email="test@test.de",
         value1=generate_random_str(),
         value2=generate_random_str(),
