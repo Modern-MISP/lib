@@ -22,6 +22,5 @@ class ShadowAttribute(BaseModel):
     disable_correlation: bool
     value: str
     org_uuid: str
-    old_uuid: str
     event_uuid: str
     Org: ShadowAttributeOrganisation
