@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -18,7 +19,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid, nullable=False, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
     date: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     info: Mapped[str] = mapped_column(Text, nullable=False)

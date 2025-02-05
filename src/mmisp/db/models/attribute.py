@@ -10,6 +10,7 @@ from sqlalchemy.orm.decl_api import DeclarativeMeta
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -36,7 +37,7 @@ class Attribute(Base, DictMixin):
     __tablename__ = "attributes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     event_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
     )
