@@ -47,7 +47,7 @@ compare_db:
     - while [ ! -f "$MISP_READY_FILE" ]; do sleep 10; done
     - python -m mmisp.db.print_changes
   services:
-    - name: mariadb:latest
+    - name: registry.cert.kit.edu/hub/library/mariadb:latest
       alias: db
       variables:
         HEALTHCHECK_TCP_PORT: 3306
@@ -60,7 +60,7 @@ compare_db:
         HEALTHCHECK_TCP_PORT: 80
         ENABLE_DB_SETTINGS: "false"
         DEBUG: 1
-    - name: valkey/valkey:7.2
+    - name: registry.cert.kit.edu/hub/valkey/valkey:7.2
       command: ["--requirepass 1CA9kMhX6mcuhRlRAptZdQieSX6u25SJ"]
       alias: redis
       variables:
@@ -136,7 +136,7 @@ generate_mkdocs:
     paths:
       - site
   services:
-    - name: plantuml/plantuml-server
+    - name: registry.cert.kit.edu/hub/plantuml/plantuml-server
       alias: plantuml
 
 
