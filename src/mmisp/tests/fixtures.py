@@ -1355,7 +1355,7 @@ async def user(db, instance_owner_org, site_admin_role):
     await db.delete(user)
     await db.commit()
 
-pytest_asyncio.fixture()
+@pytest_asyncio.fixture()
 async def sync_test_event(db, event, organisation, site_admin_user, sharing_group):
     org_id = organisation.id
     event.org_id = org_id
