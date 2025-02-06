@@ -5,7 +5,7 @@ def get_standard_roles() -> list[Role]:
     return [
         Role(
             id=1,
-            name="admin",
+            name="site_admin",
             perm_add=True,
             perm_modify=True,
             perm_modify_org=True,
@@ -38,7 +38,7 @@ def get_standard_roles() -> list[Role]:
         ),
         Role(
             id=2,
-            name="org_admin",
+            name="admin",
             perm_add=True,
             perm_modify=True,
             perm_modify_org=True,
