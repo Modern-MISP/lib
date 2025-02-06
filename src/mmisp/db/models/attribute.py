@@ -128,7 +128,7 @@ class Attribute(Base, DictMixin):
         return attribute_tag
 
     @hybrid_method
-    async def can_edit(self, user: User) -> bool:
+    def can_edit(self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an attribute based on
         whether he or someone of his organisation created the attribute.
@@ -146,8 +146,50 @@ class Attribute(Base, DictMixin):
             or (user.id == user.org.created_by)
         )
 
+    @can_edit.expression
+    @classmethod
+    def can_edit(cls, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an attribute based on
+        whether he or someone of his organisation created the attribute.
+
+        args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has editing permission
+        """
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.id == user.org.created_by)
+        )
+
     @hybrid_method
-    async def can_access(self, user: User) -> bool:
+    def can_access(self, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an attribute based on
+        whether the attribute is part of the same group or organisation and or creating organisation and
+        the publishing status of the attribute with
+        consideration of the event the attribute is associated with.
+
+         args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has access permission
+        """
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.org_id == self.event.org_id and self.event.published)
+            or (user.id == user.org.created_by)
+        )
+
+    @can_access.expression
+    @hybrid_method
+    def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
         whether the attribute is part of the same group or organisation and or creating organisation and

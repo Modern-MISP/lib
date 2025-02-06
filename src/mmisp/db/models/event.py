@@ -93,7 +93,7 @@ class Event(Base):
         return event_tag
 
     @hybrid_method
-    async def can_edit(self, user: User) -> bool:
+    def can_edit(self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an event based on
         whether he or someone of his organisation created the event.
@@ -113,8 +113,30 @@ class Event(Base):
             or (user.id == user.org.created_by)
         )
 
+    @can_edit.expression
+    @classmethod
+    def can_edit(cls, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an event based on
+        whether he or someone of his organisation created the event.
+
+        args:
+            self: the event
+            user: the user
+
+        returns:
+            true if the user has editing permission
+        """
+
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.id == cls.user_id and user.role.check_permission(Permission.MODIFY))
+            or (user.org_id == cls.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.id == user.org.created_by)
+        )
+
     @hybrid_method
-    async def can_access(self, user: User) -> bool:
+    def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an event based on
         whether the event is part of the same group or organisation and the publishing status of the event.
@@ -130,6 +152,27 @@ class Event(Base):
             user.role.check_permission(Permission.ADMIN)
             or (user.id == self.user_id)
             or (user.org_id == self.org_id and self.published)
+            or (user.id == user.org.created_by)
+        )
+
+    @can_access.expression
+    @classmethod
+    def can_access(cls, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an event based on
+        whether the event is part of the same group or organisation and the publishing status of the event.
+
+         args:
+            self: the event
+            user: the user
+
+        returns:
+            true if the user has access permission
+        """
+        return (
+            user.role.check_permission(Permission.ADMIN)
+            or (user.id == cls.user_id)
+            or (user.org_id == cls.org_id and cls.published)
             or (user.id == user.org.created_by)
         )
 
