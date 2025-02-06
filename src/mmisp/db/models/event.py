@@ -107,7 +107,8 @@ class Event(Base):
         """
 
         return (
-            user.role.check_permission(Permission.ADMIN)
+            user is None  # user is a worker
+            or user.role.check_permission(Permission.ADMIN)
             or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
             or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
             or (user.id == user.org.created_by)
@@ -129,10 +130,13 @@ class Event(Base):
         """
 
         return (
-            user.role.check_permission(Permission.ADMIN)
-            or (user.id == cls.user_id and user.role.check_permission(Permission.MODIFY))
-            or (user.org_id == cls.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.id == user.org.created_by)
+            user is not None  # user is not a worker
+            and (
+                user.role.check_permission(Permission.ADMIN)
+                or (user.id == cls.user_id and user.role.check_permission(Permission.MODIFY))
+                or (user.org_id == cls.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+                or (user.id == user.org.created_by)
+            )
         )
 
     @hybrid_method
@@ -149,10 +153,13 @@ class Event(Base):
             true if the user has access permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
-            or (user.id == self.user_id)
-            or (user.org_id == self.org_id and self.published)
-            or (user.id == user.org.created_by)
+            user is not None  # user is not a worker
+            and (
+                user.role.check_permission(Permission.ADMIN)
+                or (user.id == self.user_id)
+                or (user.org_id == self.org_id and self.published)
+                or (user.id == user.org.created_by)
+            )
         )
 
     @can_access.expression
@@ -170,7 +177,8 @@ class Event(Base):
             true if the user has access permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
+            user is None  # user is a worker
+            or user.role.check_permission(Permission.ADMIN)
             or (user.id == cls.user_id)
             or (user.org_id == cls.org_id and cls.published)
             or (user.id == user.org.created_by)

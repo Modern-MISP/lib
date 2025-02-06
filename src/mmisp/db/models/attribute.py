@@ -141,7 +141,8 @@ class Attribute(Base, DictMixin):
             true if the user has editing permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
+            user is None  # user is a worker
+            or user.role.check_permission(Permission.ADMIN)
             or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
             or (user.id == user.org.created_by)
         )
@@ -161,7 +162,8 @@ class Attribute(Base, DictMixin):
             true if the user has editing permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
+            user is None  # user is a worker
+            or user.role.check_permission(Permission.ADMIN)
             or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
             or (user.id == user.org.created_by)
         )
@@ -182,14 +184,17 @@ class Attribute(Base, DictMixin):
             true if the user has access permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == self.event.org_id and self.event.published)
-            or (user.id == user.org.created_by)
+            user is not None  # user is not a worker
+            and (
+                user.role.check_permission(Permission.ADMIN)
+                or (user.org_id == self.event.org_id and self.event.published)
+                or (user.id == user.org.created_by)
+            )
         )
 
     @can_access.expression
     @hybrid_method
-    def can_access(self, user: User) -> bool:
+    def can_access(cls, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
         whether the attribute is part of the same group or organisation and or creating organisation and
@@ -204,9 +209,12 @@ class Attribute(Base, DictMixin):
             true if the user has access permission
         """
         return (
-            user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == self.event.org_id and self.event.published)
-            or (user.id == user.org.created_by)
+            user is not None  # user is not a worker
+            and (
+                user.role.check_permission(Permission.ADMIN)
+                or (user.org_id == cls.event.org_id and cls.event.published)
+                or (user.id == user.org.created_by)
+            )
         )
 
     @property
