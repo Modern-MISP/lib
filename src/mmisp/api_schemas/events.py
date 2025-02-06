@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import Any, Type
+import uuid
 
 from pydantic import BaseModel, PositiveInt, conint, validator
 
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import DistributionLevels
+
 
 
 class GetAllEventsGalaxyClusterGalaxy(BaseModel):
@@ -591,7 +593,7 @@ class DeleteEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int
+    id: uuid.UUID | int
     errors: str | None = None
 
     class Config:
