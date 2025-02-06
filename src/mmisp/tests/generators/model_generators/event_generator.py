@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from mmisp.db.models.event import Event
 
@@ -8,6 +9,7 @@ def generate_event() -> Event:
         org_id=1,
         orgc_id=1,
         user_id=1,
+        uuid=uuid.uuid4(),
         sharing_group_id=1,
         threat_level_id=1,
         info="test event",

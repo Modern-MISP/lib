@@ -372,7 +372,7 @@ class UnpublishEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int | None = None
+    id: uuid.UUID | int | None = None
 
     class Config:
         orm_mode = True
@@ -433,21 +433,21 @@ class PublishEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int | None = None
+    id: uuid.UUID | int | None = None
 
     class Config:
         orm_mode = True
 
 
 class GetAllEventsEventTagTag(BaseModel):
-    id: int
+    id: uuid.UUID | int
     name: str
     colour: str
     is_galaxy: bool
 
 
 class IndexEventsEventTag(BaseModel):
-    id: int
+    id: uuid.UUID | int
     event_id: int
     tag_id: int
     local: bool
@@ -514,15 +514,15 @@ class IndexEventsBody(BaseModel):
 
 
 class ObjectEventResponse(BaseModel):
-    id: int
+    id: uuid.UUID | int
     info: str
     org_id: int | None = None
     orgc_id: int | None = None
 
 
 class GetAllEventsEventTag(BaseModel):
-    id: int
-    event_id: int
+    id: uuid.UUID | int
+    event_id: uuid.UUID | int
     tag_id: int
     local: bool
     relationship_type: bool | str | None = None

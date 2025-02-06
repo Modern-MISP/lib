@@ -136,6 +136,8 @@ class EventTag(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
+    # event_uuid: Mapped[str] = mapped_column(String(40), ForeignKey(Event.uuid, ondelete="CASCADE"), 
+    #                                         unique=True, nullable=False, default=uuid)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
