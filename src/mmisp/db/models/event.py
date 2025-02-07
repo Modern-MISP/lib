@@ -174,12 +174,6 @@ class Event(Base):
         returns:
             true if the user has access permission
         """
-        print("Event Creator ID: " + str(cls.user_id))
-        print("Event UserOrg: " + str(user.org_id))
-        print("Event Org: " + str(cls.org_id))
-        print("Event Published: " + str(cls.published))
-        print("Event OrgCID: " + str(cls.orgc_id))
-
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)

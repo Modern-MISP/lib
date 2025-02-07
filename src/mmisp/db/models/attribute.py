@@ -143,7 +143,7 @@ class Attribute(Base, DictMixin):
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == self.event.org and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
             or (user.org_id == self.event.orgc_id)
         )
 
@@ -163,8 +163,8 @@ class Attribute(Base, DictMixin):
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == cls.event.org and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.org_id == user.org.created_by)
+            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == cls.event.orgc_id)
         )
 
     @hybrid_method
@@ -186,8 +186,8 @@ class Attribute(Base, DictMixin):
             user is not None  # user is not a worker
             and (
                 user.role.check_permission(Permission.ADMIN)
-                or (user.org_id == self.event.org and self.event.published)
-                or (user.id == user.org.created_by)
+                or self.event.published
+                or (user.id == self.event.orgc_id)
             )
         )
 
@@ -210,8 +210,8 @@ class Attribute(Base, DictMixin):
             user is not None  # user is not a worker
             and (
                 user.role.check_permission(Permission.ADMIN)
-                or (user.org_id == cls.event.org and cls.event.published)
-                or (user.id == user.org.created_by)
+                or cls.event.published
+                or (user.id == cls.event.orgc_id)
             )
         )
 
