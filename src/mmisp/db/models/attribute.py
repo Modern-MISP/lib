@@ -59,7 +59,7 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
+    event = relationship("Event", back_populates="attributes", lazy="immediate")  # type:ignore[var-annotated]
     mispobject = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
@@ -185,9 +185,7 @@ class Attribute(Base, DictMixin):
         return (
             user is not None  # user is not a worker
             and (
-                user.role.check_permission(Permission.ADMIN)
-                or self.event.published
-                or (user.id == self.event.orgc_id)
+                user.role.check_permission(Permission.ADMIN) or self.event.published or (user.id == self.event.orgc_id)
             )
         )
 
@@ -208,11 +206,7 @@ class Attribute(Base, DictMixin):
         """
         return (
             user is not None  # user is not a worker
-            and (
-                user.role.check_permission(Permission.ADMIN)
-                or cls.event.published
-                or (user.id == cls.event.orgc_id)
-            )
+            and (user.role.check_permission(Permission.ADMIN) or cls.event.published or (user.id == cls.event.orgc_id))
         )
 
     @property
