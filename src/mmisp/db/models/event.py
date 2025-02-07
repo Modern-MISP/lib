@@ -107,16 +107,17 @@ class Event(Base):
         """
 
         return (
-            user is None  # user is a worker
-            or user.role.check_permission(Permission.ADMIN)
-            or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
-            or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.id == user.org.created_by)
+            user is not None  # user is a worker
+            and (
+                user.role.check_permission(Permission.ADMIN)
+                or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
+                or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+                or (user.org_id == self.orgc_id)
+            )
         )
 
     @can_edit.expression
-    @classmethod
-    def can_edit(cls, user: User) -> bool:
+    def can_edit(cls: Self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an event based on
         whether he or someone of his organisation created the event.
@@ -135,7 +136,7 @@ class Event(Base):
                 user.role.check_permission(Permission.ADMIN)
                 or (user.id == cls.user_id and user.role.check_permission(Permission.MODIFY))
                 or (user.org_id == cls.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-                or (user.id == user.org.created_by)
+                or (user.org_id == cls.orgc_id)
             )
         )
 
@@ -153,18 +154,15 @@ class Event(Base):
             true if the user has access permission
         """
         return (
-            user is not None  # user is not a worker
-            and (
-                user.role.check_permission(Permission.ADMIN)
-                or (user.id == self.user_id)
-                or (user.org_id == self.org_id and self.published)
-                or (user.id == user.org.created_by)
-            )
+            user is None  # user is not a worker
+            or user.role.check_permission(Permission.ADMIN)
+            or (user.id == self.user_id)
+            or self.published
+            or (user.org_id == self.orgc_id)
         )
 
     @can_access.expression
-    @classmethod
-    def can_access(cls, user: User) -> bool:
+    def can_access(cls: Self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an event based on
         whether the event is part of the same group or organisation and the publishing status of the event.
@@ -176,12 +174,18 @@ class Event(Base):
         returns:
             true if the user has access permission
         """
+        print("Event Creator ID: " + str(cls.user_id))
+        print("Event UserOrg: " + str(user.org_id))
+        print("Event Org: " + str(cls.org_id))
+        print("Event Published: " + str(cls.published))
+        print("Event OrgCID: " + str(cls.orgc_id))
+
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)
             or (user.id == cls.user_id)
-            or (user.org_id == cls.org_id and cls.published)
-            or (user.id == user.org.created_by)
+            or cls.published
+            or (user.org_id == cls.orgc_id)
         )
 
 

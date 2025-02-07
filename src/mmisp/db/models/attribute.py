@@ -143,13 +143,12 @@ class Attribute(Base, DictMixin):
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.id == user.org.created_by)
+            or (user.org_id == self.event.org and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == self.event.orgc_id)
         )
 
     @can_edit.expression
-    @classmethod
-    def can_edit(cls, user: User) -> bool:
+    def can_edit(cls: Self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an attribute based on
         whether he or someone of his organisation created the attribute.
@@ -164,8 +163,8 @@ class Attribute(Base, DictMixin):
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.id == user.org.created_by)
+            or (user.org_id == cls.event.org and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == user.org.created_by)
         )
 
     @hybrid_method
@@ -187,14 +186,13 @@ class Attribute(Base, DictMixin):
             user is not None  # user is not a worker
             and (
                 user.role.check_permission(Permission.ADMIN)
-                or (user.org_id == self.event.org_id and self.event.published)
+                or (user.org_id == self.event.org and self.event.published)
                 or (user.id == user.org.created_by)
             )
         )
 
     @can_access.expression
-    @hybrid_method
-    def can_access(cls, user: User) -> bool:
+    def can_access(cls: Self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
         whether the attribute is part of the same group or organisation and or creating organisation and
@@ -212,7 +210,7 @@ class Attribute(Base, DictMixin):
             user is not None  # user is not a worker
             and (
                 user.role.check_permission(Permission.ADMIN)
-                or (user.org_id == cls.event.org_id and cls.event.published)
+                or (user.org_id == cls.event.org and cls.event.published)
                 or (user.id == user.org.created_by)
             )
         )
