@@ -5,6 +5,10 @@ from typing import Self, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from mmisp.db.database import sessionmanager
+
+from ..db.models.log import Log
+
 request_log: ContextVar[list] = ContextVar("request_log")
 db_log: ContextVar[list] = ContextVar("db_log")
 
@@ -74,6 +78,12 @@ def print_request_log() -> None:
 
 
 async def save_db_log(db: AsyncSession) -> None:
+    """Save the log entries stored in the ContextVar to the database.
+
+    Args:
+        db (AsyncSession): The database session.
+
+    """
     db.add_all(db_log.get([]))
     await db.flush()
 
@@ -83,6 +93,7 @@ def reset_request_log() -> None:
 
 
 def reset_db_log() -> None:
+    """Reset the db log entries stored in the ContextVar."""
     db_log.set([])
 
 
@@ -102,3 +113,75 @@ logger.addHandler(in_memory_db_log_handler)
 
 sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
 sqlalchemy_logger.addHandler(in_memory_handler)
+
+
+def get_jobs_logger(name: str, debug: bool = False) -> logging.LoggerAdapter:
+    """
+    Returns a logger which is intended to be used for jobs.
+
+    Args:
+        name: The name of the job.
+
+    Returns:
+        logging.LoggerAdapter: The logger for the job.
+
+    """
+    logger = logging.LoggerAdapter(
+        logger=logging.getLogger(f"mmisp.jobs.{name}"),
+        extra=dict(
+            dbmodel=Log,
+            model=name,
+            model_id=0,
+            action="execute_job",
+            user_id=0,
+            email="SYSTEM",
+            org="SYSTEM",
+            description="",
+            change="",
+            ip="",
+        ),
+    )
+    if debug:
+        logger.setLevel(logging.DEBUG)
+    return logger
+
+
+def add_ajob_db_log(func):  # noqa
+    """
+    This decorator is used to add the logged entries to the database. This function is only for async functions.
+    Only works in combination with the mmsip logger.
+    """
+
+    @functools.wraps(func)
+    async def log_wrapper(*args, **kwargs):  # noqa
+        reset_request_log()
+        reset_db_log()
+        await func(*args, **kwargs)
+        async with sessionmanager.session() as db:
+            await save_db_log(db)
+        print_request_log()
+
+    return log_wrapper
+
+
+def add_job_db_log(func):  # noqa
+    """
+    This decorator is used to add the logged entries to the database.
+    This function is only for synchronous functions.
+    But the returned function is async because the database session is async.
+    Only works in combination with the mmsip logger.
+
+    """
+
+    @functools.wraps(func)
+    async def log_wrapper(*args, **kwargs):  # noqa
+        reset_request_log()
+        reset_db_log()
+        func(*args, **kwargs)
+        async with sessionmanager.session() as db:
+            await save_db_log(db)
+        print_request_log()
+
+    # Maybe add asyncio.run(log_wrapper(*args, **kwargs)) instead
+    # of log_wrapper(*args, **kwargs) in the return statement
+    return log_wrapper
