@@ -23,7 +23,8 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from .generators.model_generators.attribute_generator import generate_attribute
+from .generators.model_generators.attribute_generator import generate_attribute, generate_random_attribute
+from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
@@ -1363,8 +1364,8 @@ async def sync_test_event(db, event, organisation, site_admin_user, sharing_grou
     event.user_id = site_admin_user.id
     event.sharing_group_id = sharing_group.id
     event_id = event.id
-    attribute = generate_attribute(event_id)
-    attribute_2 = generate_attribute(event_id)
+    attribute = generate_random_attribute(event_id)
+    attribute_2 = generate_random_attribute(event_id)
     event.attribute_count += 2
 
     db.add(attribute)
