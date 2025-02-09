@@ -383,7 +383,11 @@ async def sighting(db, organisation, event_with_attributes):
     await db.commit()
     await db.refresh(sighting)
 
-    yield sighting
+    yield {
+        "sighting": sighting,
+        "organisation": organisation,
+        "event": event_with_attributes,
+    }
 
     await db.delete(sighting)
     await db.commit()
@@ -505,6 +509,24 @@ async def shadow_attribute(db, organisation, event):
     await db.refresh(shadow_attribute)
 
     yield shadow_attribute
+
+    await db.delete(shadow_attribute)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def shadow_attribute_with_organisation_event(db, organisation, event):
+    shadow_attribute = generate_shadow_attribute(organisation.id, event.id, event.uuid, event.org_id)
+
+    db.add(shadow_attribute)
+    await db.commit()
+    await db.refresh(shadow_attribute)
+
+    yield {
+        "shadow_attribute": shadow_attribute,
+        "organisation": organisation,
+        "event": event,
+    }
 
     await db.delete(shadow_attribute)
     await db.commit()
