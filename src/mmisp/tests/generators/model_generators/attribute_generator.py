@@ -6,7 +6,7 @@ from mmisp.tests.generators.feed_generator import generate_random_ipv4
 
 
 def generate_attribute(event_id) -> Attribute:
-    return Attribute(value=generate_random_ipv4(), value1=generate_random_ipv4(), type=generate_random_ipv4(),
+    return Attribute(value=generate_random_ipv4(), value1=generate_random_ipv4(), type="ip-src",
                      category="Network activity", event_id=event_id)
 
 
