@@ -196,11 +196,7 @@ class AddRoleResponse(BaseModel):
     message: str
 
 
-class DeleteRoleResponse(Role):
-    """
-    Class representing the response after deleting a role.
-    """
-
+class DeleteRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
     saved: bool
     success: bool | None = None
@@ -209,13 +205,6 @@ class DeleteRoleResponse(Role):
     url: str
     id: int
     errors: str | None = None
-
-class FilterRoleResponse(Role):
-    """
-    Class representing the result after filtering a role out.
-    """
-
-    pass
 
 
 class EditRoleBody(BaseModel):
@@ -301,4 +290,3 @@ class DefaultRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
-    

@@ -4,10 +4,10 @@ from typing import Self
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
@@ -202,7 +202,7 @@ class EventTag(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
-    # event_uuid: Mapped[str] = mapped_column(String(40), ForeignKey(Event.uuid, ondelete="CASCADE"), 
+    # event_uuid: Mapped[str] = mapped_column(String(40), ForeignKey(Event.uuid, ondelete="CASCADE"),
     #                                         unique=True, nullable=False, default=uuid)
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

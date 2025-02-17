@@ -10,9 +10,8 @@ from sqlalchemy.orm.decl_api import DeclarativeMeta
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
-from mmisp.db.uuid_type import DBUUID
-from mmisp.lib.uuid import uuid
 from mmisp.lib.permissions import Permission
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -59,7 +58,7 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="immediate")  # type:ignore[var-annotated]
+    event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
     mispobject = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
@@ -160,17 +159,14 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has editing permission
         """
-        return (
-            user is None  # user is a worker
-            or user.role.check_permission(Permission.ADMIN)
-            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.org_id == cls.event.orgc_id)
-        )
 
     @hybrid_method
     def can_access(self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
+        whether the user  is part of the same group or organisation and/or creater organisation
+        as well as the publishing status of the attribute with consideration of the event,
+        the attribute is associated with.
         whether the attribute is part of the same group or organisation and or creating organisation and
         the publishing status of the attribute with
         consideration of the event the attribute is associated with.
