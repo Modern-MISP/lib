@@ -40,7 +40,7 @@ class Attribute(Base, DictMixin):
         Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
     )
     object_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    object_relation: Mapped[str] = mapped_column(String(255), index=True)
+    object_relation: Mapped[str | None] = mapped_column(String(255), index=True)
     category: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     value1: Mapped[str] = mapped_column(Text, nullable=False)
@@ -49,11 +49,11 @@ class Attribute(Base, DictMixin):
     timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
-    comment: Mapped[str] = mapped_column(Text)
+    comment: Mapped[str | None] = mapped_column(Text)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    first_seen: Mapped[int] = mapped_column(BigInteger, index=True)
-    last_seen: Mapped[int] = mapped_column(BigInteger, index=True)
+    first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
+    last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
     event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
     mispobject = relationship(

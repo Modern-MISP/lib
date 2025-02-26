@@ -17,7 +17,7 @@ class OIDCIdentityProvider(Base):
     base_url: Mapped[str] = mapped_column(String(255), nullable=False)
     client_id: Mapped[str] = mapped_column(String(255), nullable=False)
     client_secret: Mapped[str] = mapped_column(String(255), nullable=False)
-    scope: Mapped[str] = mapped_column(String(255))
+    scope: Mapped[str] = mapped_column(String(255), default="openid")
     """Possibility to add more scopes to be requested from the idp in addition to the default scopes,
     currently not used."""
     created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)

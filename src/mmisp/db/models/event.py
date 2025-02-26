@@ -37,7 +37,7 @@ class Event(Base):
     sighting_timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     extends_uuid: Mapped[str] = mapped_column(String(40), default="", index=True)
-    protected: Mapped[bool] = mapped_column(Boolean)
+    protected: Mapped[bool] = mapped_column(Boolean, default=False)
 
     attributes = relationship("Attribute", back_populates="event")  # type:ignore[assignment,var-annotated]
     mispobjects = relationship("Object", back_populates="event")  # type:ignore[assignment,var-annotated]

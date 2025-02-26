@@ -33,8 +33,8 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     orgc_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    extends_uuid: Mapped[str] = mapped_column(String(40), index=True)
-    extends_version: Mapped[int] = mapped_column(Integer, index=True, nullable=True, default=None)
+    extends_uuid: Mapped[str | None] = mapped_column(String(40), index=True)
+    extends_version: Mapped[int | None] = mapped_column(Integer, index=True, nullable=True, default=None)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
