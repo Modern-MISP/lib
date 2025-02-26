@@ -18,6 +18,8 @@ class DictMixin:
         if omit is None:
             omit = set()
 
+        print(self.__mapper__.c.keys())
+
         unloaded = inspect(self).unloaded
         d = {}
         for key in self.__mapper__.c.keys():  # type:ignore[attr-defined]
