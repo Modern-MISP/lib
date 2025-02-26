@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.permissions import Permission
+from mmisp.lib.distribution import EventDistributionLevels
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -74,6 +75,12 @@ class Event(Base):
         overlaps="tags, events",
         viewonly=True,
     )
+    sharing_group = relationship(
+        "SharingGroup",
+        primaryjoin="Event.sharing_group_id == SharingGroup.id",
+        lazy="raise_on_sql",
+        foreign_keys="Event.sharing_group_id",
+    )
 
     async def add_tag(
         self: Self, db: AsyncSession, tag: Tag, local: bool = False, relationship_type: str | None = None
@@ -109,7 +116,7 @@ class Event(Base):
         return (
             user is not None  # user is a worker
             and (
-                user.role.check_permission(Permission.ADMIN)
+                user.role.check_permission(Permission.SITE_ADMIN)
                 or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
                 or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
                 or (user.org_id == self.orgc_id)
@@ -133,7 +140,7 @@ class Event(Base):
         return (
             user is not None  # user is not a worker
             and (
-                user.role.check_permission(Permission.ADMIN)
+                user.role.check_permission(Permission.SITE_ADMIN)
                 or (user.id == cls.user_id and user.role.check_permission(Permission.MODIFY))
                 or (user.org_id == cls.org_id and user.role.check_permission(Permission.MODIFY_ORG))
                 or (user.org_id == cls.orgc_id)
@@ -153,13 +160,30 @@ class Event(Base):
         returns:
             true if the user has access permission
         """
-        return (
-            user is None  # user is not a worker
-            or user.role.check_permission(Permission.ADMIN)
-            or (user.id == self.user_id)
-            or self.published
-            or (user.org_id == self.orgc_id)
-        )
+        user_org_id = user.org_id
+
+        if user is None or user.role.check_permission(Permission.SITE_ADMIN):
+            return True  # User is a Worker or Site Admin
+        if user.id == self.user_id:
+            return True  # User is the creator of the event
+
+        if self.distribution == EventDistributionLevels.OWN_ORGANIZATION:
+            return (user_org_id == self.org_id or user_org_id == self.orgc_id) and self.published
+            # User is part of the same organisation as the organisation of the event and event is published
+        elif self.distribution == EventDistributionLevels.COMMUNITY:
+            return self.published  # Anyone has access if event is published
+        elif self.distribution == EventDistributionLevels.CONNECTED_COMMUNITIES:
+            return self.published  # Anyone has access if event is published
+        elif self.distribution == EventDistributionLevels.ALL_COMMUNITIES:
+            return self.published  # Anyone has access if event is published
+        elif self.distribution == EventDistributionLevels.SHARING_GROUP:
+            return (
+                user_org_id == self.sharing_group.org_id  # User is in organisation which created the sharing group
+                or self.sharing_group.has(user.org_id == x.id for x in self.sharing_group.organisations)
+                # User is in a organisation which are in the sharing group
+            ) and self.published
+        else:
+            return False  # Something went wrong with the Distribution ID
 
     @can_access.expression
     def can_access(cls: Self, user: User) -> bool:
@@ -174,13 +198,30 @@ class Event(Base):
         returns:
             true if the user has access permission
         """
-        return (
-            user is None  # user is a worker
-            or user.role.check_permission(Permission.ADMIN)
-            or (user.id == cls.user_id)
-            or cls.published
-            or (user.org_id == cls.orgc_id)
-        )
+        user_org_id = user.org_id
+
+        if user is None or user.role.check_permission(Permission.SITE_ADMIN):
+            return True  # User is a Worker or Site Admin
+        if user.id == cls.user_id:
+            return True  # User is the creator of the event
+
+        if cls.distribution == EventDistributionLevels.OWN_ORGANIZATION:
+            return (user_org_id == cls.org_id or user_org_id == cls.orgc_id) and cls.published
+            # User is part of the same organisation as the organisation of the event and event is published
+        elif cls.distribution == EventDistributionLevels.COMMUNITY:
+            return cls.published  # Anyone has access if event is published
+        elif cls.distribution == EventDistributionLevels.CONNECTED_COMMUNITIES:
+            return cls.published  # Anyone has access if event is published
+        elif cls.distribution == EventDistributionLevels.ALL_COMMUNITIES:
+            return cls.published  # Anyone has access if event is published
+        elif cls.distribution == EventDistributionLevels.SHARING_GROUP:
+            return (
+                user_org_id == cls.sharing_group.org_id  # User is in organisation which created the sharing group
+                or cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations)
+                # User is in a organisation which are in the sharing group
+            ) and cls.published
+        else:
+            return False  # Something went wrong with the Distribution ID or Event can not inherit from itself
 
 
 class EventReport(Base):

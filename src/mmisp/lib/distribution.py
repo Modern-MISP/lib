@@ -6,3 +6,20 @@ class DistributionLevels(IntEnum):
     COMMUNITY = 1
     CONNECTED_COMMUNITIES = 2
     ALL_COMMUNITIES = 3
+
+
+class EventDistributionLevels(IntEnum):
+    OWN_ORGANIZATION = 0
+    COMMUNITY = 1
+    CONNECTED_COMMUNITIES = 2
+    ALL_COMMUNITIES = 3
+    SHARING_GROUP = 4
+
+
+class AttributeDistributionLevels(IntEnum):
+    OWN_ORGANIZATION = 0
+    COMMUNITY = 1
+    CONNECTED_COMMUNITIES = 2
+    ALL_COMMUNITIES = 3
+    SHARING_GROUP = 4
+    INHERIT_EVENT = 5

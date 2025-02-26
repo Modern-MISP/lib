@@ -8,7 +8,6 @@ from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import DistributionLevels
 
 
-
 class GetAllEventsGalaxyClusterGalaxy(BaseModel):
     id: int
     uuid: str
