@@ -5,6 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
+import mmisp.lib.standard_roles as standard_roles
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -92,7 +93,8 @@ async def db(db_connection):
 
 @pytest_asyncio.fixture
 async def site_admin_role(db):
-    role = generate_site_admin_role()
+    role = standard_roles.site_admin_role()
+    role.id = None
     db.add(role)
     await db.commit()
     await db.refresh(role)
