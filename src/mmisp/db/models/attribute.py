@@ -241,22 +241,22 @@ class Attribute(Base, DictMixin):
         if user.id == cls.event.user_id:
             return True  # User is the creator of the event
 
-        if cls.distribution == EventDistributionLevels.OWN_ORGANIZATION:
+        if cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION:
             return (user_org_id == cls.org_id or user_org_id == cls.orgc_id) and cls.published
             # User is part of the same organisation as the organisation of the event and event is published
-        elif cls.distribution == EventDistributionLevels.COMMUNITY:
+        elif cls.distribution == AttributeDistributionLevels.COMMUNITY:
             return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.CONNECTED_COMMUNITIES:
+        elif cls.distribution == AttributeDistributionLevels.CONNECTED_COMMUNITIES:
             return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.ALL_COMMUNITIES:
+        elif cls.distribution == AttributeDistributionLevels.ALL_COMMUNITIES:
             return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.SHARING_GROUP:
+        elif cls.distribution == AttributeDistributionLevels.SHARING_GROUP:
             return (
                 user_org_id == cls.sharing_group.org_id  # User is in organisation which created the sharing group
                 or cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations)
                 # User is in a organisation which are in the sharing group
             ) and cls.published
-        elif cls.distribution == EventDistributionLevels.INHERIT_EVENT:
+        elif cls.distribution == AttributeDistributionLevels.INHERIT_EVENT:
             return cls.event.can_access(user)
         else:
             return False  # Something went wrong with the Distribution ID
