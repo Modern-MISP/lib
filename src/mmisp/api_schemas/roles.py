@@ -191,7 +191,7 @@ class AddRoleBody(BaseModel):
 
 
 class AddRoleResponse(BaseModel):
-    role: Role
+    Role: RoleAttributeResponse
     created: bool
     message: str
 
