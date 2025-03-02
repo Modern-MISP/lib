@@ -55,7 +55,7 @@ class Event(Base):
         lazy="raise_on_sql",
     )  # type:ignore[assignment,var-annotated]
     creator = relationship("User", primaryjoin="Event.user_id == User.id", lazy="selectin")
-    tags = relationship("Tag", secondary="event_tags", lazy="raise_on_sql", viewonly=True)
+    tags = relationship("Tag", secondary="event_tags", lazy="selectin", viewonly=True)
     eventtags = relationship(
         "EventTag", primaryjoin="Event.id == EventTag.event_id", lazy="raise_on_sql", viewonly=True
     )
