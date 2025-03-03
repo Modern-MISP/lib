@@ -112,6 +112,12 @@ class Event(Base):
         returns:
             true if the user has editing permission
         """
+        print("––––––––DEBUG CAN EDIT––––––––")
+        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
+        print("Permission Modify: " + str(user.role.check_permission(Permission.MODIFY)))
+        print("Permission ModifyOrg: " + str(user.role.check_permission(Permission.MODIFY_ORG)))
+        print("User ID: " + str(user.id))
+        print("Event User ID: " + str(self.user_id))
 
         return (
             user is not None  # user is a worker
@@ -136,6 +142,12 @@ class Event(Base):
         returns:
             true if the user has editing permission
         """
+        print("––––––––DEBUG CAN EDIT––––––––")
+        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
+        print("Permission Modify: " + str(user.role.check_permission(Permission.MODIFY)))
+        print("Permission ModifyOrg: " + str(user.role.check_permission(Permission.MODIFY_ORG)))
+        print("User ID: " + str(user.id))
+        print("Event User ID: " + str(cls.user_id))
 
         return (
             user is not None  # user is not a worker
@@ -162,6 +174,15 @@ class Event(Base):
         """
         user_org_id = user.org_id
 
+        print("––––––––DEBUG CAN ACCESS––––––––")
+        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
+
+        print("User ID: " + str(user.id))
+        print("Event User ID: " + str(self.user_id))
+        print("Event Distribution ID: " + str(self.distribution))
+        print("Event Published: " + str(self.published))
+        print("User ORG ID: " + str(user_org_id))
+        print("Event ORG ID: " + str(self.org_id))
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
         if user.id == self.user_id:
@@ -199,7 +220,15 @@ class Event(Base):
             true if the user has access permission
         """
         user_org_id = user.org_id
+        print("––––––––DEBUG CAN ACCESS––––––––")
+        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
 
+        print("User ID: " + str(user.id))
+        print("Event User ID: " + str(cls.user_id))
+        print("Event Distribution ID: " + str(cls.distribution))
+        print("Event Published: " + str(cls.published))
+        print("User ORG ID: " + str(user_org_id))
+        print("Event ORG ID: " + str(cls.org_id))
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
         if user.id == cls.user_id:
