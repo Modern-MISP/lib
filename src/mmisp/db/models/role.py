@@ -6,6 +6,7 @@ from mmisp.db.mypy import mapped_column
 from mmisp.lib.permissions import Permission
 
 from ..database import Base
+from mmisp.db.mixins import DictMixin
 
 RoleAttrs = {
     "__tablename__": "roles",

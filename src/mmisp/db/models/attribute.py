@@ -67,7 +67,7 @@ class Attribute(Base, DictMixin):
         lazy="joined",
         foreign_keys="Attribute.object_id",
     )  # type:ignore[var-annotated]
-    tags = relationship("Tag", secondary="attribute_tags", lazy="raise_on_sql", viewonly=True)
+    tags = relationship("Tag", secondary="attribute_tags", lazy="selectin", viewonly=True)
     attributetags = relationship(
         "AttributeTag",
         primaryjoin="Attribute.id == AttributeTag.attribute_id",
