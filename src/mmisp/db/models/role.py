@@ -24,7 +24,7 @@ RoleAttrs = {
 RoleModel = type("RoleModel", (Base,), RoleAttrs)
 
 
-class Role(RoleModel):  # type:ignore[misc,valid-type]
+class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
     def get_permissions(self: Self) -> set[Permission]:
         d: list[Permission] = []
 
