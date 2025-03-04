@@ -19,6 +19,7 @@ from ..database import Base
 from .event import Event
 from .tag import Tag
 from .user import User
+from .sharing_group import SharingGroup
 from ...lib.distribution import EventDistributionLevels
 
 if typing.TYPE_CHECKING:
@@ -111,7 +112,7 @@ class Attribute(Base, DictMixin):
     sharing_group = relationship(
         "SharingGroup",
         primaryjoin="Attribute.sharing_group_id == SharingGroup.id",
-        lazy="selectin",
+        lazy="raise_on_sql",
         foreign_keys="Attribute.sharing_group_id",
     )
 
@@ -151,8 +152,8 @@ class Attribute(Base, DictMixin):
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.SITE_ADMIN)
-            or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.org_id == self.event.orgc_id)
+            or (self.event.org_id == user.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (self.event.orgc_id == user.org_id)
         )
 
     @can_edit.expression
@@ -171,8 +172,10 @@ class Attribute(Base, DictMixin):
         condition = []
         condition.append(user is None)
         condition.append(user.role.check_permission(Permission.SITE_ADMIN))
-        condition.append(and_(user.org_id == cls.event.org_id, user.role.check_permission(Permission.MODIFY_ORG)))
-        condition.append(user.org_id == cls.event.orgc_id)
+        condition.append(
+            and_(cls.event.has(Event.org_id == user.org_id), user.role.check_permission(Permission.MODIFY_ORG))
+        )
+        condition.append(cls.event.has(Event.orgc_id == user.org_id))
 
         return or_(*condition)
         """
@@ -206,24 +209,26 @@ class Attribute(Base, DictMixin):
 
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
-        if user.id == self.event.user_id:
+        if self.event.user_id == user.id:
             return True  # User is the creator of the event
 
         if self.distribution == AttributeDistributionLevels.OWN_ORGANIZATION:
-            return (user_org_id == self.org_id or user_org_id == self.orgc_id) and self.published
+            return (self.event.org_id == user_org_id or self.event.orgc_id == user_org_id) and self.event.published
             # User is part of the same organisation as the organisation of the event and event is published
         elif self.distribution == AttributeDistributionLevels.COMMUNITY:
-            return self.published  # Anyone has access if event is published
+            return self.event.published  # Anyone has access if event is published
         elif self.distribution == AttributeDistributionLevels.CONNECTED_COMMUNITIES:
-            return self.published  # Anyone has access if event is published
+            return self.event.published  # Anyone has access if event is published
         elif self.distribution == AttributeDistributionLevels.ALL_COMMUNITIES:
-            return self.published  # Anyone has access if event is published
+            return self.event.published  # Anyone has access if event is published
         elif self.distribution == AttributeDistributionLevels.SHARING_GROUP:
             return (
-                user_org_id == self.sharing_group.org_id  # User is in organisation which created the sharing group
+                self.sharing_group.has(
+                    SharingGroup.org_id == user_org_id
+                )  # User is in organisation which created the sharing group
                 or self.sharing_group.has(user.org_id == x.id for x in self.sharing_group.organisations)
                 # User is in a organisation which are in the sharing group
-            ) and self.published
+            ) and self.event.published
         elif self.distribution == AttributeDistributionLevels.INHERIT_EVENT:
             return self.event.can_access(user)
         else:
@@ -249,16 +254,17 @@ class Attribute(Base, DictMixin):
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
 
-        print("Event user id: ", cls.event.__getattribute__("user_id"))
-        print("Event SharingGroup org id: ", cls.sharing_group.__getattribute__("org_id"))
         condition = []
-        condition.append(user.id == cls.event.__getattribute__("user_id"))
+        condition.append(cls.event.has(Event.user_id == user.id))
         condition.append(
             and_(
                 cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
                 and_(
-                    cls.published,
-                    or_(cls.org_id == user_org_id, cls.orgc_id == user_org_id),
+                    cls.event.has(Event.published),
+                    or_(
+                        cls.event.has(Event.org_id == user_org_id),
+                        cls.event.has(Event.orgc_id == user_org_id),
+                    ),
                 ),
             )
         )
@@ -271,16 +277,16 @@ class Attribute(Base, DictMixin):
                         EventDistributionLevels.ALL_COMMUNITIES,
                     ]
                 ),
-                cls.published,
+                cls.event.has(Event.published),
             )
         )
         condition.append(
             and_(
                 cls.distribution == EventDistributionLevels.SHARING_GROUP,
                 and_(
-                    cls.published,
+                    cls.event.has(Event.published),
                     or_(
-                        cls.sharing_group.__getattribute__("org_id") == user_org_id,
+                        cls.sharing_group.has(SharingGroup.org_id == user_org_id),
                         cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
                     ),
                 ),

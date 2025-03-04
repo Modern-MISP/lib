@@ -16,6 +16,7 @@ from ..database import Base
 from .organisation import Organisation
 from .tag import Tag
 from .user import User
+from .sharing_group import SharingGroup
 
 
 class Event(Base):
@@ -78,7 +79,7 @@ class Event(Base):
     sharing_group = relationship(
         "SharingGroup",
         primaryjoin="Event.sharing_group_id == SharingGroup.id",
-        lazy="selectin",
+        lazy="raise_on_sql",
         foreign_keys="Event.sharing_group_id",
     )
 
@@ -235,7 +236,7 @@ class Event(Base):
                 and_(
                     cls.published,
                     or_(
-                        cls.sharing_group.org_id == user_org_id,
+                        cls.sharing_group.has(SharingGroup.org_id == user.org_id),
                         cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
                     ),
                 ),
