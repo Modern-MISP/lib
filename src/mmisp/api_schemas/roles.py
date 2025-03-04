@@ -49,8 +49,8 @@ class Role(BaseModel):
     perm_object_template: bool
     """Create or modify MISP Object templates."""
     default_role: bool
-    memory_limit: str
-    max_execution_time: str
+    memory_limit: str | None
+    max_execution_time: str | None
     restricted_to_site_admin: bool
     perm_publish_zmq: bool
     """Allow users to publish data to the ZMQ pubsub channel via the publish event to ZMQ button."""
@@ -132,8 +132,8 @@ class RoleAttributeResponse(BaseModel):
     perm_sighting: bool
     perm_object_template: bool
     default_role: bool
-    memory_limit: str
-    max_execution_time: str
+    memory_limit: str | None
+    max_execution_time: str | None
     restricted_to_site_admin: bool
     perm_publish_zmq: bool
     perm_publish_kafka: bool
@@ -147,6 +147,9 @@ class RoleAttributeResponse(BaseModel):
     permission: int | None = None
     permission_description: str | None = None
     default: bool | None = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class GetRolesResponse(BaseModel):
