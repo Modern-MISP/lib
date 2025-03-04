@@ -60,7 +60,7 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
+    event = relationship("Event", back_populates="attributes", lazy="selectin")  # type:ignore[var-annotated]
     mispobject = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
@@ -111,7 +111,7 @@ class Attribute(Base, DictMixin):
     sharing_group = relationship(
         "SharingGroup",
         primaryjoin="Attribute.sharing_group_id == SharingGroup.id",
-        lazy="raise_on_sql",
+        lazy="selectin",
         foreign_keys="Attribute.sharing_group_id",
     )
 
@@ -249,8 +249,10 @@ class Attribute(Base, DictMixin):
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
 
+        print("Event user id: ", cls.event.__getattribute__("user_id"))
+        print("Event SharingGroup org id: ", cls.sharing_group.__getattribute__("org_id"))
         condition = []
-        condition.append(user.id == cls.event.user_id)
+        condition.append(user.id == cls.event.__getattribute__("user_id"))
         condition.append(
             and_(
                 cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
@@ -278,7 +280,7 @@ class Attribute(Base, DictMixin):
                 and_(
                     cls.published,
                     or_(
-                        cls.sharing_group.org_id == user_org_id,
+                        cls.sharing_group.__getattribute__("org_id") == user_org_id,
                         cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
                     ),
                 ),

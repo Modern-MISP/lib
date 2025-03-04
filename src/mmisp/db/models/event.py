@@ -78,7 +78,7 @@ class Event(Base):
     sharing_group = relationship(
         "SharingGroup",
         primaryjoin="Event.sharing_group_id == SharingGroup.id",
-        lazy="raise_on_sql",
+        lazy="selectin",
         foreign_keys="Event.sharing_group_id",
     )
 
