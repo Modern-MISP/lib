@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
@@ -112,13 +112,6 @@ class Event(Base):
         returns:
             true if the user has editing permission
         """
-        print("––––––––DEBUG CAN EDIT––––––––")
-        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
-        print("Permission Modify: " + str(user.role.check_permission(Permission.MODIFY)))
-        print("Permission ModifyOrg: " + str(user.role.check_permission(Permission.MODIFY_ORG)))
-        print("User ID: " + str(user.id))
-        print("Event User ID: " + str(self.user_id))
-
         return (
             user is not None  # user is a worker
             and (
@@ -142,13 +135,13 @@ class Event(Base):
         returns:
             true if the user has editing permission
         """
-        print("––––––––DEBUG CAN EDIT––––––––")
-        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
-        print("Permission Modify: " + str(user.role.check_permission(Permission.MODIFY)))
-        print("Permission ModifyOrg: " + str(user.role.check_permission(Permission.MODIFY_ORG)))
-        print("User ID: " + str(user.id))
-        print("Event User ID: " + str(cls.user_id))
-
+        condition = []
+        condition.append(user.role.check_permission(Permission.SITE_ADMIN))
+        condition.append(and_(user.id == cls.user_id, user.role.check_permission(Permission.MODIFY)))
+        condition.append(and_(user.org_id == cls.org_id, user.role.check_permission(Permission.MODIFY_ORG)))
+        condition.append(user.org_id == cls.orgc_id)
+        return and_(user is not None, or_(*condition))
+        """
         return (
             user is not None  # user is not a worker
             and (
@@ -158,6 +151,7 @@ class Event(Base):
                 or (user.org_id == cls.orgc_id)
             )
         )
+        """
 
     @hybrid_method
     def can_access(self, user: User) -> bool:
@@ -173,16 +167,6 @@ class Event(Base):
             true if the user has access permission
         """
         user_org_id = user.org_id
-
-        print("––––––––DEBUG CAN ACCESS––––––––")
-        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
-
-        print("User ID: " + str(user.id))
-        print("Event User ID: " + str(self.user_id))
-        print("Event Distribution ID: " + str(self.distribution))
-        print("Event Published: " + str(self.published))
-        print("User ORG ID: " + str(user_org_id))
-        print("Event ORG ID: " + str(self.org_id))
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
         if user.id == self.user_id:
@@ -220,17 +204,46 @@ class Event(Base):
             true if the user has access permission
         """
         user_org_id = user.org_id
-        print("––––––––DEBUG CAN ACCESS––––––––")
-        print("Permission SiteAdmin: " + str(user.role.check_permission(Permission.SITE_ADMIN)))
-
-        print("User ID: " + str(user.id))
-        print("Event User ID: " + str(cls.user_id))
-        print("Event Distribution ID: " + str(cls.distribution))
-        print("Event Published: " + str(cls.published))
-        print("User ORG ID: " + str(user_org_id))
-        print("Event ORG ID: " + str(cls.org_id))
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
+
+        condition = []
+        condition.append(user.id == cls.user_id)
+
+        condition.append(
+            and_(
+                cls.distribution == EventDistributionLevels.OWN_ORGANIZATION,
+                and_(cls.published, or_(cls.org_id == user_org_id, cls.orgc_id == user_org_id)),
+            )
+        )
+
+        condition.append(
+            and_(
+                cls.distribution.in_(
+                    [
+                        EventDistributionLevels.COMMUNITY,
+                        EventDistributionLevels.CONNECTED_COMMUNITIES,
+                        EventDistributionLevels.ALL_COMMUNITIES,
+                    ]
+                ),
+                cls.published,
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution == EventDistributionLevels.SHARING_GROUP,
+                and_(
+                    cls.published,
+                    or_(
+                        cls.sharing_group.org_id == user_org_id,
+                        cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
+                    ),
+                ),
+            )
+        )
+
+        return or_(*condition)
+        """
         if user.id == cls.user_id:
             return True  # User is the creator of the event
 
@@ -251,6 +264,7 @@ class Event(Base):
             ) and cls.published
         else:
             return False  # Something went wrong with the Distribution ID or Event can not inherit from itself
+        """
 
 
 class EventReport(Base):

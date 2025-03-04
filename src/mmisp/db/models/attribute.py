@@ -1,7 +1,7 @@
 import typing
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
@@ -19,6 +19,7 @@ from ..database import Base
 from .event import Event
 from .tag import Tag
 from .user import User
+from ...lib.distribution import EventDistributionLevels
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
@@ -155,7 +156,7 @@ class Attribute(Base, DictMixin):
         )
 
     @can_edit.expression
-    def can_edit(self: Self, user: User) -> bool:
+    def can_edit(cls: Self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an attribute based on
         whether he or someone of his organisation created the attribute.
@@ -167,12 +168,21 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has editing permission
         """
+        condition = []
+        condition.append(user is None)
+        condition.append(user.role.check_permission(Permission.SITE_ADMIN))
+        condition.append(and_(user.org_id == cls.event.org_id, user.role.check_permission(Permission.MODIFY_ORG)))
+        condition.append(user.org_id == cls.event.orgc_id)
+
+        return or_(*condition)
+        """
         return (
             user is None  # user is a worker
             or user.role.check_permission(Permission.SITE_ADMIN)
-            or (user.org_id == self.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (user.org_id == self.event.orgc_id)
+            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == cls.event.orgc_id)
         )
+        """
 
     @hybrid_method
     def can_access(self, user: User) -> bool:
@@ -238,6 +248,52 @@ class Attribute(Base, DictMixin):
 
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
+
+        condition = []
+        condition.append(user.id == cls.event.user_id)
+        condition.append(
+            and_(
+                cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
+                and_(
+                    cls.published,
+                    or_(cls.org_id == user_org_id, cls.orgc_id == user_org_id),
+                ),
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution.in_(
+                    [
+                        EventDistributionLevels.COMMUNITY,
+                        EventDistributionLevels.CONNECTED_COMMUNITIES,
+                        EventDistributionLevels.ALL_COMMUNITIES,
+                    ]
+                ),
+                cls.published,
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution == EventDistributionLevels.SHARING_GROUP,
+                and_(
+                    cls.published,
+                    or_(
+                        cls.sharing_group.org_id == user_org_id,
+                        cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
+                    ),
+                ),
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution == EventDistributionLevels.INHERIT_EVENT,
+                cls.event.can_access(user),
+            )
+        )
+
+        return or_(*condition)
+
+        """
         if user.id == cls.event.user_id:
             return True  # User is the creator of the event
 
@@ -260,6 +316,7 @@ class Attribute(Base, DictMixin):
             return cls.event.can_access(user)
         else:
             return False  # Something went wrong with the Distribution ID
+        """
 
     @property
     def event_uuid(self: "Attribute") -> str:
