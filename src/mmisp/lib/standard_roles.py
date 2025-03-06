@@ -34,7 +34,6 @@ def site_admin_role() -> Role:
         perm_galaxy_editor=True,
         perm_warninglist=True,
         perm_view_feed_correlations=True,
-        
     )
 
 
@@ -72,7 +71,6 @@ def org_admin_role() -> Role:
         perm_warninglist=False,
         perm_view_feed_correlations=True,
     )
-
 
 
 def user_role() -> Role:
