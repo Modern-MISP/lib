@@ -34,8 +34,7 @@ def site_admin_role() -> Role:
         perm_galaxy_editor=True,
         perm_warninglist=True,
         perm_view_feed_correlations=True,
-        #permission="3",
-        #permission_description="publish"
+        
     )
 
 
@@ -72,9 +71,8 @@ def org_admin_role() -> Role:
         perm_galaxy_editor=True,
         perm_warninglist=False,
         perm_view_feed_correlations=True,
-        #permission="3",
-        #permission_description="publish"
     )
+
 
 
 def user_role() -> Role:
@@ -110,8 +108,6 @@ def user_role() -> Role:
         perm_galaxy_editor=False,
         perm_warninglist=False,
         perm_view_feed_correlations=False,
-        #permission="2",
-        #permission_description="manage_org"
     )
 
 
@@ -148,8 +144,6 @@ def publisher_role() -> Role:
         perm_galaxy_editor=True,
         perm_warninglist=False,
         perm_view_feed_correlations=False,
-        #permission="3",
-        #permission_description="publish"
     )
 
 
@@ -186,8 +180,6 @@ def sync_user_role() -> Role:
         perm_galaxy_editor=False,
         perm_warninglist=False,
         perm_view_feed_correlations=False,
-        #permission="3",
-        #permission_description="publish"
     )
 
 
@@ -224,8 +216,6 @@ def read_only_role() -> Role:
         perm_galaxy_editor=False,
         perm_warninglist=False,
         perm_view_feed_correlations=False,
-        #permission="0",
-        #permission_description="read_only"
     )
 
 
