@@ -251,7 +251,6 @@ class EditRoleBody(BaseModel):
     perm_publish_kafka: bool | None = None
     perm_decaying: bool | None = None
     enforce_rate_limit: bool | None = None
-    rate_limit_count: bool | None = None
     perm_galaxy_editor: bool | None = None
     perm_warninglist: bool | None = None
     perm_view_feed_correlations: bool | None = None
