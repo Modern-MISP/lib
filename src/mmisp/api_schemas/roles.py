@@ -148,6 +148,11 @@ class RoleAttributeResponse(BaseModel):
     permission_description: str | None = None
     default: bool | None = False
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.default_role:
+            self.default = True
+
 
 class GetRolesResponse(BaseModel):
     Role: RoleAttributeResponse
