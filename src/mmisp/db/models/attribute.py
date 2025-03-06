@@ -1,31 +1,35 @@
+import logging
 import typing
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_, and_
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from mmisp.db.mixins import DictMixin
+from mmisp.db.models.organisation import Organisation
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
-from mmisp.lib.permissions import Permission
 from mmisp.db.uuid_type import DBUUID
-from mmisp.lib.uuid import uuid
+from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.lib.permissions import Permission
+from mmisp.lib.uuid import uuid
 
+from ...lib.distribution import EventDistributionLevels
 from ..database import Base
 from .event import Event
+from .sharing_group import SharingGroup
 from .tag import Tag
 from .user import User
-from .sharing_group import SharingGroup
-from ...lib.distribution import EventDistributionLevels
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
 else:
     ColumnExpressionArgument = typing.Any
+
+logger = logging.getLogger("mmisp")
 
 
 class AttributeComparator(Comparator):
@@ -137,7 +141,7 @@ class Attribute(Base, DictMixin):
         return attribute_tag
 
     @hybrid_method
-    def can_edit(self, user: User) -> bool:
+    def can_edit(self: Self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an attribute based on
         whether he or someone of his organisation created the attribute.
@@ -149,12 +153,19 @@ class Attribute(Base, DictMixin):
         returns:
             true if the user has editing permission
         """
-        return (
-            user is None  # user is a worker
-            or user.role.check_permission(Permission.SITE_ADMIN)
-            or (self.event.org_id == user.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-            or (self.event.orgc_id == user.org_id)
-        )
+        if user is None:
+            logger.debug("User is none")
+            return False
+
+        if user.role.check_permission(Permission.SITE_ADMIN):
+            logger.debug("User is site admin")
+            return True
+
+        if user.role.check_permission(Permission.MODIFY_ORG):
+            logger.debug("User has modify org permission")
+            return self.event.org_id == user.org_id
+
+        return self.event.orgc_id == user.org_id
 
     @can_edit.expression
     def can_edit(cls: Self, user: User) -> bool:
@@ -188,7 +199,7 @@ class Attribute(Base, DictMixin):
         """
 
     @hybrid_method
-    def can_access(self, user: User) -> bool:
+    def can_access(self: Self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
         whether the user  is part of the same group or organisation and/or creater organisation
@@ -287,15 +298,15 @@ class Attribute(Base, DictMixin):
                     cls.event.has(Event.published),
                     or_(
                         cls.sharing_group.has(SharingGroup.org_id == user_org_id),
-                        cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
+                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
                     ),
                 ),
             )
         )
         condition.append(
             and_(
-                cls.distribution == EventDistributionLevels.INHERIT_EVENT,
-                cls.event.can_access(user),
+                cls.distribution == AttributeDistributionLevels.INHERIT_EVENT,
+                cls.event.has(Event.can_access(user)),
             )
         )
 

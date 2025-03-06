@@ -1,22 +1,22 @@
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, or_, and_
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.uuid_type import DBUUID
-from mmisp.lib.permissions import Permission
 from mmisp.lib.distribution import EventDistributionLevels
+from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .organisation import Organisation
+from .sharing_group import SharingGroup
 from .tag import Tag
 from .user import User
-from .sharing_group import SharingGroup
 
 
 class Event(Base):
@@ -101,7 +101,7 @@ class Event(Base):
         return event_tag
 
     @hybrid_method
-    def can_edit(self, user: User) -> bool:
+    def can_edit(self: Self, user: User) -> bool:
         """
         Checks if a user is allowed to modify an event based on
         whether he or someone of his organisation created the event.
@@ -155,7 +155,7 @@ class Event(Base):
         """
 
     @hybrid_method
-    def can_access(self, user: User) -> bool:
+    def can_access(self: Self, user: User) -> bool:
         """
         Checks if a user is allowed to see and access an event based on
         whether the event is part of the same group or organisation and the publishing status of the event.
@@ -236,8 +236,8 @@ class Event(Base):
                 and_(
                     cls.published,
                     or_(
-                        cls.sharing_group.has(SharingGroup.org_id == user.org_id),
-                        cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations),
+                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
+                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
                     ),
                 ),
             )
