@@ -146,18 +146,21 @@ class RoleAttributeResponse(BaseModel):
     perm_analyst_data: bool | None = None
     permission: int | None = None
     permission_description: str | None = None
-    default: bool | None = None
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+    default: bool | None = False
 
 
 class GetRolesResponse(BaseModel):
     Role: RoleAttributeResponse
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
 
 class GetRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class AddRoleBody(BaseModel):
@@ -198,6 +201,9 @@ class AddRoleResponse(BaseModel):
     created: bool
     message: str
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
 
 class DeleteRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
@@ -208,6 +214,9 @@ class DeleteRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class EditRoleBody(BaseModel):
@@ -248,6 +257,9 @@ class EditRoleResponse(BaseModel):
     updated: bool
     message: str
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
 
 class ReinstateRoleResponse(BaseModel):
     Role: RoleAttributeResponse
@@ -255,6 +267,9 @@ class ReinstateRoleResponse(BaseModel):
     message: str
     url: str
     id: int
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class FilterRoleBody(BaseModel):
@@ -264,6 +279,9 @@ class FilterRoleBody(BaseModel):
 
 class FilterRoleResponse(BaseModel):
     Role: RoleAttributeResponse
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class EditUserRoleBody(BaseModel):
@@ -293,3 +311,6 @@ class DefaultRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}

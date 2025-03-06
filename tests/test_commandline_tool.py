@@ -244,6 +244,15 @@ async def test_setup(db) -> None:
     query_site_admin = select(Role).where(Role.name == "site_admin")
     site_admin_role = (await db.execute(query_site_admin)).scalar_one_or_none()
     assert site_admin_role is not None
+    query_admin = select(Role).where(Role.name == "publisher")
+    publisher_role = (await db.execute(query_admin)).scalar_one_or_none()
+    assert publisher_role is not None
+    query_admin = select(Role).where(Role.name == "sync_user")
+    sync_user_role = (await db.execute(query_admin)).scalar_one_or_none()
+    assert sync_user_role is not None
+    query_admin = select(Role).where(Role.name == "read_only")
+    read_only_role = (await db.execute(query_admin)).scalar_one_or_none()
+    assert read_only_role is not None
     query_org = select(Organisation).where(Organisation.name == "ghost_org")
     org = (await db.execute(query_org)).scalar_one_or_none()
     assert org is not None
@@ -252,4 +261,7 @@ async def test_setup(db) -> None:
     await db.delete(site_admin_role)
     await db.delete(admin_role)
     await db.delete(user_role)
+    await db.delete(publisher_role)
+    await db.delete(sync_user_role)
+    await db.delete(read_only_role)
     await db.commit()
