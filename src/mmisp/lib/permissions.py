@@ -58,3 +58,5 @@ class Permission(StrEnum):
     """todo: what is this permission for?"""
     SKIP_OTP = "skip_otp"
     """permission to skip otp"""
+    SERVER_SIGN = "server_sign"
+    """permission to sign a server I guess, dunno tho"""
