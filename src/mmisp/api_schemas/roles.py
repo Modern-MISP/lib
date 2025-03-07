@@ -150,6 +150,20 @@ class RoleAttributeResponse(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
+
+        if self.perm_add and self.perm_modify and self.perm_publish:
+            self.permission = 3
+            self.permission_description = "publish"
+        elif self.perm_add and self.perm_modify_org:
+            self.permission = 2
+            self.permission_description = "manage_org"
+        elif self.perm_add and self.perm_modify:
+            self.permission = 1
+            self.permission_description = "manage_own"
+        else:
+            self.permission = 0
+            self.permission_description = "read_only"
+
         if self.default_role:
             self.default = True
 
