@@ -68,6 +68,7 @@ class Role(BaseModel):
     """Allow the viewing of feed correlations. Enabling this can come at a performance cost."""
     permission: str | None  # number as string
     permission_description: str | None
+    perm_skip_otp: bool | None = None
 
     class Config:
         orm_mode = True
@@ -107,6 +108,7 @@ class RoleUsersResponse(BaseModel):
     perm_galaxy_editor: bool | None = None
     perm_warninglist: bool | None = None
     perm_view_feed_correlations: bool | None = None
+    perm_skip_otp: bool | None = None
 
 
 class RoleAttributeResponse(BaseModel):
@@ -147,6 +149,7 @@ class RoleAttributeResponse(BaseModel):
     permission: int | None = None
     permission_description: str | None = None
     default: bool | None = False
+    perm_skip_otp: bool | None = False
 
     def __init__(self, **data):
         super().__init__(**data)
