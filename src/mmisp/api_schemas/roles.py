@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from typing import Any
+
 from pydantic import BaseModel
 
 from mmisp.lib.permissions import Permission
@@ -282,7 +284,7 @@ class EditRoleResponse(BaseModel):
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
-    def dict(self, **kwargs):
+    def dict(self, **kwargs) -> dict[str, Any]:
         data = super().dict(**kwargs)
         if "Role" in data:
             data["Role"].pop("default", None)
