@@ -282,6 +282,11 @@ class EditRoleResponse(BaseModel):
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
+    @classmethod
+    def from_role(cls, role_data: dict):
+        role_data.pop("default", None)
+        return cls(Role=RoleAttributeResponse(**role_data))
+
 
 class ReinstateRoleResponse(BaseModel):
     Role: RoleAttributeResponse
