@@ -281,7 +281,12 @@ class EditRoleResponse(BaseModel):
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-        json_exclude = {"Role": {"default"}}
+
+    def dict(self, **kwargs):
+        data = super().dict(**kwargs)
+        if "Role" in data:
+            data["Role"].pop("default", None)
+        return data
 
 
 class ReinstateRoleResponse(BaseModel):
