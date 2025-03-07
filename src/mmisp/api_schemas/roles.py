@@ -277,9 +277,7 @@ class EditRoleBody(BaseModel):
 
 
 class EditRoleResponse(BaseModel):
-    role: RoleAttributeResponse
-    updated: bool
-    message: str
+    Role: RoleAttributeResponse
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
