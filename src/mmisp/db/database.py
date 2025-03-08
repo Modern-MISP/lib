@@ -1,6 +1,7 @@
 import contextlib
 import time
 from collections.abc import AsyncIterator
+from contextvars import ContextVar
 from typing import Self, TypeAlias
 
 from sqlalchemy.engine.url import make_url
@@ -19,6 +20,8 @@ Session: TypeAlias = AsyncSession
 Base = declarative_base()
 
 _no_database: str = "DatabaseSessionManager is not initialized"
+
+dry_run: ContextVar[bool] = ContextVar("dry_run", default=False)
 
 
 class DatabaseSessionManager:
@@ -108,6 +111,8 @@ class DatabaseSessionManager:
 async def get_db() -> AsyncIterator[Session]:
     async with sessionmanager.session() as session:
         yield session
+        if dry_run.get():
+            await session.rollback()
 
 
 async def create_all_models() -> None:
