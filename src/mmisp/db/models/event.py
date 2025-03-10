@@ -236,7 +236,7 @@ class Event(Base):
                 and_(
                     cls.published,
                     or_(
-                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
+                        cls.sharing_group.has(SharingGroup.org_id == user_org_id),
                         cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
                     ),
                 ),
