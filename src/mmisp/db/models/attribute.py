@@ -234,10 +234,8 @@ class Attribute(Base, DictMixin):
             return self.event.published  # Anyone has access if event is published
         elif self.distribution == AttributeDistributionLevels.SHARING_GROUP:
             return (
-                self.sharing_group.has(
-                    SharingGroup.org_id == user_org_id
-                )  # User is in organisation which created the sharing group
-                or self.sharing_group.has(user.org_id == x.id for x in self.sharing_group.organisations)
+                self.sharing_group.org_id == user_org_id  # User is in organisation which created the sharing group
+                or user.org in self.sharing_group.organisations
                 # User is in a organisation which are in the sharing group
             ) and self.event.published
         elif self.distribution == AttributeDistributionLevels.INHERIT_EVENT:
