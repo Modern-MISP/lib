@@ -327,7 +327,7 @@ class DeleteSelectedAttributeResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int
+    id: str
 
     class Config:
         orm_mode = True
