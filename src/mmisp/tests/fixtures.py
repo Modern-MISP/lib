@@ -1,9 +1,12 @@
 import asyncio
+from contextlib import AsyncExitStack
 from datetime import datetime
+from typing import Self
 
 import pytest
 import pytest_asyncio
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import mmisp.db.all_models  # noqa
@@ -48,6 +51,22 @@ from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+
+
+class DBManager:
+    def __init__(self: Self, db: AsyncSession, obj) -> None:  # noqa
+        self.db = db
+        self.obj = obj
+
+    async def __aenter__(self: Self):  # noqa
+        self.db.add(self.obj)
+        await self.db.commit()
+        await self.db.refresh(self.obj)
+        return self.obj
+
+    async def __aexit__(self: Self, exc_type, exc, tb):  # noqa
+        await self.db.delete(self.obj)
+        await self.db.commit()
 
 
 @pytest.fixture(scope="session")
@@ -292,14 +311,8 @@ async def event(db, organisation, site_admin_user):
     event.orgc_id = org_id
     event.user_id = site_admin_user.id
 
-    db.add(event)
-    await db.commit()
-    await db.refresh(event)
-
-    yield event
-
-    await db.delete(event)
-    await db.commit()
+    async with DBManager(db, event) as obj:
+        yield obj
 
 
 @pytest_asyncio.fixture
@@ -569,236 +582,203 @@ def galaxy_cluster_two_uuid():
 
 @pytest_asyncio.fixture
 async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
-    galaxy = Galaxy(
-        namespace="misp",
-        name="test galaxy",
-        type="test galaxy type",
-        description="test",
-        version="1",
-        kill_chain_order=None,
-        uuid=uuid(),
-        enabled=True,
-        local_only=False,
-        org_id=0,
-        orgc_id=0,
-        distribution=DistributionLevels.ALL_COMMUNITIES,
-        created=datetime.now(),
-        modified=datetime.now(),
-    )
+    async with AsyncExitStack() as stack:
 
-    db.add(galaxy)
-    await db.commit()
-    await db.refresh(galaxy)
+        async def add_to_db(elem):
+            return await stack.enter_async_context(DBManager(db, elem))
 
-    galaxy_cluster = GalaxyCluster(
-        uuid=galaxy_default_cluster_one_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=3,
-        sharing_group_id=None,
-        org_id=0,
-        orgc_id=0,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
-    galaxy_cluster2 = GalaxyCluster(
-        uuid=galaxy_default_cluster_two_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=3,
-        sharing_group_id=None,
-        org_id=0,
-        orgc_id=0,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
+        galaxy = await add_to_db(
+            Galaxy(
+                namespace="misp",
+                name="test galaxy",
+                type="test galaxy type",
+                description="test",
+                version="1",
+                kill_chain_order=None,
+                uuid=uuid(),
+                enabled=True,
+                local_only=False,
+                org_id=0,
+                orgc_id=0,
+                distribution=DistributionLevels.ALL_COMMUNITIES,
+                created=datetime.now(),
+                modified=datetime.now(),
+            )
+        )
 
-    db.add(galaxy_cluster)
-    db.add(galaxy_cluster2)
+        galaxy_cluster = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_default_cluster_one_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=3,
+                sharing_group_id=None,
+                org_id=0,
+                orgc_id=0,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
 
-    await db.commit()
-    await db.refresh(galaxy_cluster)
-    await db.refresh(galaxy_cluster2)
+        galaxy_cluster2 = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_default_cluster_two_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=3,
+                sharing_group_id=None,
+                org_id=0,
+                orgc_id=0,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
 
-    galaxy_element = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
-    )
-    galaxy_element2 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
-    )
+        galaxy_element = add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
+        )
+        galaxy_element2 = add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
+        )
 
-    galaxy_element21 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
-    )
-    galaxy_element22 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
-    )
+        galaxy_element21 = add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
+        )
+        galaxy_element22 = add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
+        )
 
-    db.add(galaxy_element)
-    db.add(galaxy_element2)
-
-    db.add(galaxy_element21)
-    db.add(galaxy_element22)
-
-    await db.commit()
-
-    yield {
-        "galaxy": galaxy,
-        "galaxy_cluster": galaxy_cluster,
-        "galaxy_cluster2": galaxy_cluster2,
-        "galaxy_element": galaxy_element,
-        "galaxy_element2": galaxy_element2,
-        "galaxy_element21": galaxy_element21,
-        "galaxy_element22": galaxy_element22,
-    }
-
-    await db.delete(galaxy_element22)
-    await db.delete(galaxy_element21)
-    await db.delete(galaxy_element2)
-    await db.delete(galaxy_element)
-    await db.delete(galaxy_cluster2)
-    await db.delete(galaxy_cluster)
-    await db.delete(galaxy)
-    await db.commit()
+        yield {
+            "galaxy": galaxy,
+            "galaxy_cluster": galaxy_cluster,
+            "galaxy_cluster2": galaxy_cluster2,
+            "galaxy_element": galaxy_element,
+            "galaxy_element2": galaxy_element2,
+            "galaxy_element21": galaxy_element21,
+            "galaxy_element22": galaxy_element22,
+        }
 
 
 @pytest_asyncio.fixture
 async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid):
-    galaxy = Galaxy(
-        namespace="misp",
-        name="test galaxy",
-        type="test galaxy type",
-        description="test",
-        version="1",
-        kill_chain_order=None,
-        uuid=uuid(),
-        enabled=True,
-        local_only=False,
-        org_id=instance_owner_org.id,
-        orgc_id=instance_owner_org.id,
-        distribution=DistributionLevels.ALL_COMMUNITIES,
-        created=datetime.now(),
-        modified=datetime.now(),
-    )
+    async with AsyncExitStack() as stack:
 
-    db.add(galaxy)
-    await db.commit()
-    await db.refresh(galaxy)
+        async def add_to_db(elem):
+            return await stack.enter_async_context(DBManager(db, elem))
 
-    galaxy_cluster = GalaxyCluster(
-        uuid=galaxy_cluster_one_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=3,
-        sharing_group_id=None,
-        org_id=instance_owner_org.id,
-        orgc_id=instance_owner_org.id,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
-    galaxy_cluster2 = GalaxyCluster(
-        uuid=galaxy_cluster_two_uuid,
-        collection_uuid="",
-        type="test galaxy type",
-        value="test",
-        tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_two_uuid),
-        description="test",
-        galaxy_id=galaxy.id,
-        source="me",
-        authors=["Konstantin Zangerle", "Test Writer"],
-        version=1,
-        distribution=3,
-        sharing_group_id=None,
-        org_id=instance_owner_org.id,
-        orgc_id=instance_owner_org.id,
-        default=0,
-        locked=0,
-        extends_uuid=None,
-        extends_version=None,
-        published=True,
-        deleted=False,
-    )
+        galaxy = await add_to_db(
+            Galaxy(
+                namespace="misp",
+                name="test galaxy",
+                type="test galaxy type",
+                description="test",
+                version="1",
+                kill_chain_order=None,
+                uuid=uuid(),
+                enabled=True,
+                local_only=False,
+                org_id=instance_owner_org.id,
+                orgc_id=instance_owner_org.id,
+                distribution=DistributionLevels.ALL_COMMUNITIES,
+                created=datetime.now(),
+                modified=datetime.now(),
+            )
+        )
 
-    db.add(galaxy_cluster)
-    db.add(galaxy_cluster2)
+        galaxy_cluster = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_cluster_one_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=3,
+                sharing_group_id=None,
+                org_id=instance_owner_org.id,
+                orgc_id=instance_owner_org.id,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
+        galaxy_cluster2 = await add_to_db(
+            GalaxyCluster(
+                uuid=galaxy_cluster_two_uuid,
+                collection_uuid="",
+                type="test galaxy type",
+                value="test",
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_two_uuid),
+                description="test",
+                galaxy_id=galaxy.id,
+                source="me",
+                authors=["Konstantin Zangerle", "Test Writer"],
+                version=1,
+                distribution=3,
+                sharing_group_id=None,
+                org_id=instance_owner_org.id,
+                orgc_id=instance_owner_org.id,
+                default=0,
+                locked=0,
+                extends_uuid=None,
+                extends_version=None,
+                published=True,
+                deleted=False,
+            )
+        )
 
-    await db.commit()
-    await db.refresh(galaxy_cluster)
-    await db.refresh(galaxy_cluster2)
+        galaxy_element = await add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
+        )
+        galaxy_element2 = await add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
+        )
 
-    galaxy_element = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
-    )
-    galaxy_element2 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
-    )
+        galaxy_element21 = await add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
+        )
+        galaxy_element22 = await add_to_db(
+            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
+        )
 
-    galaxy_element21 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
-    )
-    galaxy_element22 = GalaxyElement(
-        galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
-    )
-
-    db.add(galaxy_element)
-    db.add(galaxy_element2)
-
-    db.add(galaxy_element21)
-    db.add(galaxy_element22)
-
-    await db.commit()
-
-    yield {
-        "galaxy": galaxy,
-        "galaxy_cluster": galaxy_cluster,
-        "galaxy_cluster2": galaxy_cluster2,
-        "galaxy_element": galaxy_element,
-        "galaxy_element2": galaxy_element2,
-        "galaxy_element21": galaxy_element21,
-        "galaxy_element22": galaxy_element22,
-    }
-
-    await db.delete(galaxy_element22)
-    await db.delete(galaxy_element21)
-    await db.delete(galaxy_element2)
-    await db.delete(galaxy_element)
-    await db.delete(galaxy_cluster2)
-    await db.delete(galaxy_cluster)
-    await db.delete(galaxy)
-    await db.commit()
+        yield {
+            "galaxy": galaxy,
+            "galaxy_cluster": galaxy_cluster,
+            "galaxy_cluster2": galaxy_cluster2,
+            "galaxy_element": galaxy_element,
+            "galaxy_element2": galaxy_element2,
+            "galaxy_element21": galaxy_element21,
+            "galaxy_element22": galaxy_element22,
+        }
 
 
 @pytest_asyncio.fixture()
