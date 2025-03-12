@@ -42,6 +42,10 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     ic("Legacy MISP Response")
     ic(legacy_response_json)
 
+    if legacy_response.status_code > 299 and response.status_code > 299:
+        # legacy and modern misp both signal an error, details are not relevant
+        return {}
+
     if preprocessor is not None:
         preprocessor(response_json, legacy_response_json)
 
