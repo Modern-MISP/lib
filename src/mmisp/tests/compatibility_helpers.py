@@ -26,7 +26,7 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     ic(body)
 
     kwargs = {"headers": headers}
-    if http_method != "get":
+    if http_method not in ["get", "delete"]:
         kwargs["json"] = body
 
     call = getattr(client, http_method)
