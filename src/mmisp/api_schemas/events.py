@@ -87,7 +87,7 @@ class GetAllEventsGalaxyCluster(BaseModel):
     authors: list[str]
     version: str
     distribution: str | None = None
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     org_id: int
     orgc_id: int
     default: str | None = None
@@ -125,7 +125,7 @@ class AddEditGetEventGalaxyClusterRelation(BaseModel):
     referenced_galaxy_cluster_type: str
     galaxy_cluster_uuid: str
     distribution: str
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     default: bool
     Tag: list[AddEditGetEventGalaxyClusterRelationTag] = []
 
@@ -143,7 +143,7 @@ class AddEditGetEventGalaxyCluster(BaseModel):
     authors: list[str]
     version: str
     distribution: str | None = None
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     org_id: int
     orgc_id: int
     default: bool | None = None
@@ -311,7 +311,7 @@ class AddEditGetEventDetails(BaseModel):
     proposal_email_lock: bool
     locked: bool
     publish_timestamp: str
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     disable_correlation: bool
     extends_uuid: str
     protected: bool | None = None
@@ -620,7 +620,7 @@ class AddEventBody(BaseModel):
     analysis: str | None = None
     attribute_count: str | None = None
     timestamp: str | None = None
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     proposal_email_lock: bool | None = None
     locked: bool | None = None
     threat_level_id: int | None = None
