@@ -267,7 +267,7 @@ class Attribute(Base, DictMixin):
         condition.append(
             and_(
                 cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
-                cls.event.has(Event.orgc_id == user_org_id)
+                cls.event.has(Event.orgc_id == user_org_id),
             )
         )
         condition.append(

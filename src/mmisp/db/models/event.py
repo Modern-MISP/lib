@@ -212,7 +212,8 @@ class Event(Base):
         condition.append(
             and_(
                 cls.distribution == EventDistributionLevels.OWN_ORGANIZATION,
-                cls.org_id == user_org_id, cls.orgc_id == user_org_id
+                cls.org_id == user_org_id,
+                cls.orgc_id == user_org_id,
             )
         )
 

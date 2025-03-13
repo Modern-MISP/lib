@@ -47,7 +47,7 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
             true if role has permission
         """
         return getattr(self, "perm_" + permission.value)
-    
+
     @property
     def permission(self: "Role") -> str:
         if self.perm_add and self.perm_modify and self.perm_publish:
@@ -57,7 +57,7 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
         elif self.perm_add and self.perm_modify:
             return "1"
         return "0"
-    
+
     @property
     def permission_description(self: "Role") -> str:
         if self.perm_add and self.perm_modify and self.perm_publish:
