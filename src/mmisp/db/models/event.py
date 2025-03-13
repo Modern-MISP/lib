@@ -118,7 +118,7 @@ class Event(Base):
             and (
                 user.role.check_permission(Permission.SITE_ADMIN)
                 or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
-                or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+                or (user.org_id == self.orgc_id and user.role.check_permission(Permission.MODIFY_ORG))
             )
         )
 
@@ -138,7 +138,7 @@ class Event(Base):
         condition = []
         condition.append(user.role.check_permission(Permission.SITE_ADMIN))
         condition.append(and_(user.id == cls.user_id, user.role.check_permission(Permission.MODIFY)))
-        condition.append(and_(user.org_id == cls.org_id, user.role.check_permission(Permission.MODIFY_ORG)))
+        condition.append(and_(user.org_id == cls.orgc_id, user.role.check_permission(Permission.MODIFY_ORG)))
         return and_(user is not None, or_(*condition))
         """
         return (

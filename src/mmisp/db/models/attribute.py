@@ -163,7 +163,7 @@ class Attribute(Base, DictMixin):
 
         if user.role.check_permission(Permission.MODIFY_ORG):
             logger.debug("User has modify org permission")
-            return self.event.org_id == user.org_id
+            return self.event.orgc_id == user.org_id
 
         return False
 
@@ -184,7 +184,7 @@ class Attribute(Base, DictMixin):
         condition.append(user is None)
         condition.append(user.role.check_permission(Permission.SITE_ADMIN))
         condition.append(
-            and_(cls.event.has(Event.org_id == user.org_id), user.role.check_permission(Permission.MODIFY_ORG))
+            and_(cls.event.has(Event.orgc_id == user.org_id), user.role.check_permission(Permission.MODIFY_ORG))
         )
 
         return or_(*condition)
