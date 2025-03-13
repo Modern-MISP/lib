@@ -94,7 +94,7 @@ def user_role() -> Role:
         perm_tag_editor=False,
         perm_sighting=True,
         perm_object_template=False,
-        default_role=False, #"default role" is true in Legacy Misp but "default" is false"
+        default_role=False,  # "default role" is true in Legacy Misp but "default" is false"
         memory_limit="",
         max_execution_time="",
         restricted_to_site_admin=False,
@@ -202,7 +202,7 @@ def read_only_role() -> Role:
         perm_tag_editor=False,
         perm_sighting=False,
         perm_object_template=False,
-        default_role=True, #not the default role in Legacy Misp
+        default_role=True,  # not the default role in Legacy Misp
         memory_limit="",
         max_execution_time="",
         restricted_to_site_admin=False,
