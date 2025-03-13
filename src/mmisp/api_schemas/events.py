@@ -348,7 +348,7 @@ class AddEditGetEventDetails(BaseModel):
     @classmethod
     def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
         if value is not None and value == 0:
-            return None
+            return "0"
         return value
 
 
@@ -570,7 +570,7 @@ class EditEventBody(BaseModel):
     analysis: str | None = None
     attribute_count: str | None = None
     timestamp: str | None = None
-    sharing_group_id: int | None = 0
+    sharing_group_id: int | None = None
     proposal_email_lock: bool | None = None
     locked: bool | None = None
     threat_level_id: int | None = None
