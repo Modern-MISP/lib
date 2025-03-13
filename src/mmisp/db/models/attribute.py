@@ -165,7 +165,7 @@ class Attribute(Base, DictMixin):
             logger.debug("User has modify org permission")
             return self.event.org_id == user.org_id
 
-        return self.event.orgc_id == user.org_id
+        return False
 
     @can_edit.expression
     def can_edit(cls: Self, user: User) -> bool:
@@ -186,7 +186,6 @@ class Attribute(Base, DictMixin):
         condition.append(
             and_(cls.event.has(Event.org_id == user.org_id), user.role.check_permission(Permission.MODIFY_ORG))
         )
-        condition.append(cls.event.has(Event.orgc_id == user.org_id))
 
         return or_(*condition)
         """
@@ -224,7 +223,7 @@ class Attribute(Base, DictMixin):
             return True  # User is the creator of the event
 
         if self.distribution == AttributeDistributionLevels.OWN_ORGANIZATION:
-            return (self.event.org_id == user_org_id or self.event.orgc_id == user_org_id) and self.event.published
+            return self.event.orgc_id == user_org_id
             # User is part of the same organisation as the organisation of the event and event is published
         elif self.distribution == AttributeDistributionLevels.COMMUNITY:
             return self.event.published  # Anyone has access if event is published
@@ -268,13 +267,7 @@ class Attribute(Base, DictMixin):
         condition.append(
             and_(
                 cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
-                and_(
-                    cls.event.has(Event.published),
-                    or_(
-                        cls.event.has(Event.org_id == user_org_id),
-                        cls.event.has(Event.orgc_id == user_org_id),
-                    ),
-                ),
+                cls.event.has(Event.orgc_id == user_org_id)
             )
         )
         condition.append(

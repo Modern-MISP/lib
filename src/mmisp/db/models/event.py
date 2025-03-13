@@ -119,7 +119,6 @@ class Event(Base):
                 user.role.check_permission(Permission.SITE_ADMIN)
                 or (user.id == self.user_id and user.role.check_permission(Permission.MODIFY))
                 or (user.org_id == self.org_id and user.role.check_permission(Permission.MODIFY_ORG))
-                or (user.org_id == self.orgc_id)
             )
         )
 
@@ -140,7 +139,6 @@ class Event(Base):
         condition.append(user.role.check_permission(Permission.SITE_ADMIN))
         condition.append(and_(user.id == cls.user_id, user.role.check_permission(Permission.MODIFY)))
         condition.append(and_(user.org_id == cls.org_id, user.role.check_permission(Permission.MODIFY_ORG)))
-        condition.append(user.org_id == cls.orgc_id)
         return and_(user is not None, or_(*condition))
         """
         return (
@@ -174,7 +172,7 @@ class Event(Base):
             return True  # User is the creator of the event
 
         if self.distribution == EventDistributionLevels.OWN_ORGANIZATION:
-            return (user_org_id == self.org_id or user_org_id == self.orgc_id) and self.published
+            return user_org_id == self.orgc_id
             # User is part of the same organisation as the organisation of the event and event is published
         elif self.distribution == EventDistributionLevels.COMMUNITY:
             return self.published  # Anyone has access if event is published
@@ -214,7 +212,7 @@ class Event(Base):
         condition.append(
             and_(
                 cls.distribution == EventDistributionLevels.OWN_ORGANIZATION,
-                and_(cls.published, or_(cls.org_id == user_org_id, cls.orgc_id == user_org_id)),
+                cls.org_id == user_org_id, cls.orgc_id == user_org_id
             )
         )
 
