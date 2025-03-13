@@ -344,12 +344,12 @@ class AddEditGetEventDetails(BaseModel):
     #
     #        return value
 
-    @validator("sharing_group_id", pre=True)
-    @classmethod
-    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-        if value is not None and value == 0:
-            return "0"
-        return value
+#    @validator("sharing_group_id", pre=True)
+#    @classmethod
+#    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
+#        if value is not None and value == 0:
+#            return "0"
+#        return value
 
 
 class AddEditGetEventResponse(BaseModel):
