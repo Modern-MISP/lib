@@ -344,6 +344,7 @@ class AddEditGetEventDetails(BaseModel):
     #
     #        return value
 
+
 #    @validator("sharing_group_id", pre=True)
 #    @classmethod
 #    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
