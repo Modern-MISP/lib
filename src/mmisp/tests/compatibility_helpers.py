@@ -36,7 +36,14 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     call = getattr(httpx, http_method)
     legacy_response = call(f"http://misp-core{path}", **kwargs)
     ic(legacy_response)
-    legacy_response_json = legacy_response.json()
+    try:
+        legacy_response_json = legacy_response.json()
+    except json.decoder.JSONDecodeError:
+        ic(legacy_response.text)
+
+        assert False
+        return
+
     ic("Modern MISP Response")
     ic(response_json)
     ic("Legacy MISP Response")
