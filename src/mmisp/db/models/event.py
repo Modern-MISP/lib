@@ -183,7 +183,7 @@ class Event(Base):
         elif self.distribution == EventDistributionLevels.SHARING_GROUP:
             return (
                 user_org_id == self.sharing_group.org_id  # User is in organisation which created the sharing group
-                or self.sharing_group.has(user.org_id == x.id for x in self.sharing_group.organisations)
+                or user.org in self.sharing_group.organisations
                 # User is in a organisation which are in the sharing group
             ) and self.published
         else:
