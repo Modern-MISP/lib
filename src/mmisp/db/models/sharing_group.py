@@ -38,7 +38,7 @@ class SharingGroup(Base, DictMixin):
         primaryjoin="SharingGroup.id == SharingGroupOrg.sharing_group_id",
         secondary="sharing_group_orgs",
         secondaryjoin="SharingGroupOrg.org_id == Organisation.id",
-        lazy="raise_on_sql",
+        lazy="selectin",
         viewonly=True,
     )
 
