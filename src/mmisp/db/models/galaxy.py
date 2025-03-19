@@ -21,7 +21,7 @@ class Galaxy(Base, DictMixin, UpdateMixin):
     version: Mapped[str] = mapped_column(String(255), nullable=False)
     icon: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     namespace: Mapped[str] = mapped_column(String(255), nullable=False, default="misp", index=True)
-    kill_chain_order: Mapped[str] = mapped_column(String(255))
+    kill_chain_order: Mapped[str | None] = mapped_column(String(255))
     """must be serialized"""
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)

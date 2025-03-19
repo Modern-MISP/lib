@@ -15,7 +15,7 @@ class Tag(Base):
     org_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
     hide_tag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    numerical_value: Mapped[int] = mapped_column(Integer, index=True)
+    numerical_value: Mapped[int | None] = mapped_column(Integer, index=True)
     is_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     is_custom_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
