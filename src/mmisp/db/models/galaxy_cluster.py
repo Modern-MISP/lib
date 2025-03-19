@@ -33,10 +33,10 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     version: Mapped[int] = mapped_column(Integer, default=0, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("sharing_groups.id"), index=True, nullable=True, default=None
+        Integer, index=True, nullable=True, default=None
     )
-    org_id: Mapped[int] = mapped_column(Integer, ForeignKey("organisations.id"), nullable=False, index=True, default=0)
-    orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey("organisations.id"), nullable=False, index=True, default=0)
+    org_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
+    orgc_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     extends_uuid: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None, index=True)
