@@ -28,7 +28,7 @@ dependencies = [
   "packaging",
   "PyGithub",
   "aiohttp",
-  "aiodns"
+  "aiodns",
 ]
 
 
