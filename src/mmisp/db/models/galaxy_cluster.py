@@ -20,7 +20,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
-    collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True, default="")
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     tag_name: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
@@ -39,7 +39,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey("organisations.id"), nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    extends_uuid: Mapped[str | None] = mapped_column(String(40), index=True)
+    extends_uuid: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None, index=True)
     extends_version: Mapped[int | None] = mapped_column(Integer, index=True, nullable=True, default=None)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
