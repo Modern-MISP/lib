@@ -9,7 +9,6 @@ from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
-from .organisation import Organisation
 
 
 class Galaxy(Base, DictMixin, UpdateMixin):
