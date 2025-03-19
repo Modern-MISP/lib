@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
@@ -28,8 +28,8 @@ class Galaxy(Base, DictMixin, UpdateMixin):
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     local_only: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
-    orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False)
+    org_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    orgc_id: Mapped[int] = mapped_column(Integer, nullable=False)
     created: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now(timezone.utc))
     modified: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
