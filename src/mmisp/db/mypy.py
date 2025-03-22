@@ -12,4 +12,3 @@ else:
 
     Mapped = Column
     mapped_column = Column
-

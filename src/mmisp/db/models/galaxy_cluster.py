@@ -1,8 +1,6 @@
-import json
-from typing import Optional, Self
+from typing import Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from mmisp.db.list_json_type import DBListJson
@@ -32,9 +30,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     authors: Mapped[list[str]] = mapped_column(DBListJson, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=0, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    sharing_group_id: Mapped[Optional[int]] = mapped_column(
-        Integer, index=True, nullable=True, default=None
-    )
+    sharing_group_id: Mapped[Optional[int]] = mapped_column(Integer, index=True, nullable=True, default=None)
     org_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     orgc_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)

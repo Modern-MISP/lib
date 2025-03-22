@@ -1,4 +1,3 @@
-
 from sqlalchemy import Boolean, Integer, String, Text
 
 from mmisp.db.database import Base
