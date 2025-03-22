@@ -149,17 +149,24 @@ def get_jobs_logger(name: str, debug: bool = False) -> logging.LoggerAdapter:
 def add_ajob_db_log(func):  # noqa
     """
     This decorator is used to add the logged entries to the database. This function is only for async functions.
-    Only works in combination with the mmsip logger.
+    Only works in combination with the mmisp logger.
     """
 
     @functools.wraps(func)
     async def log_wrapper(*args, **kwargs):  # noqa
         reset_request_log()
         reset_db_log()
-        await func(*args, **kwargs)
-        async with sessionmanager.session() as db:
-            await save_db_log(db)
-        print_request_log()
+        try:
+            res = await func(*args, **kwargs)
+            async with sessionmanager.session() as db:
+                await save_db_log(db)
+        except:
+            print("Exception occured")
+            raise
+        finally:
+            print_request_log()
+
+        return res
 
     return log_wrapper
 
@@ -169,7 +176,7 @@ def add_job_db_log(func):  # noqa
     This decorator is used to add the logged entries to the database.
     This function is only for synchronous functions.
     But the returned function is async because the database session is async.
-    Only works in combination with the mmsip logger.
+    Only works in combination with the mmisp logger.
 
     """
 
@@ -177,10 +184,17 @@ def add_job_db_log(func):  # noqa
     async def log_wrapper(*args, **kwargs):  # noqa
         reset_request_log()
         reset_db_log()
-        func(*args, **kwargs)
-        async with sessionmanager.session() as db:
-            await save_db_log(db)
-        print_request_log()
+        try:
+            res = func(*args, **kwargs)
+            async with sessionmanager.session() as db:
+                await save_db_log(db)
+        except:
+            print("Exception occured")
+            raise
+        finally:
+            print_request_log()
+
+        return res
 
     # Maybe add asyncio.run(log_wrapper(*args, **kwargs)) instead
     # of log_wrapper(*args, **kwargs) in the return statement
