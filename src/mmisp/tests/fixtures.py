@@ -5,12 +5,12 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-import mmisp.lib.standard_roles as standard_roles
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import mmisp.db.all_models  # noqa
+import mmisp.lib.standard_roles as standard_roles
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.galaxy import Galaxy
@@ -43,7 +43,6 @@ from .generators.model_generators.post_generator import generate_post
 from .generators.model_generators.role_generator import (
     generate_org_admin_role,
     generate_read_only_role,
-    generate_site_admin_role,
 )
 from .generators.model_generators.server_generator import generate_server
 from .generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
@@ -658,17 +657,17 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
             )
         )
 
-        galaxy_element = add_to_db(
+        galaxy_element = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
         )
-        galaxy_element2 = add_to_db(
+        galaxy_element2 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
         )
 
-        galaxy_element21 = add_to_db(
+        galaxy_element21 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
         )
-        galaxy_element22 = add_to_db(
+        galaxy_element22 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
         )
 
