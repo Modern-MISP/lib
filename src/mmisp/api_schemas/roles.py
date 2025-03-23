@@ -33,6 +33,8 @@ class HasPermission(BaseModel):
     perm_skip_otp: bool | None = None
     perm_server_sign: bool | None = None
     perm_analyst_data: bool | None = None
+    perm_sync_authoritative: bool | None = None
+    perm_sync_internal: bool | None = None
 
 
 class Role(HasPermission):

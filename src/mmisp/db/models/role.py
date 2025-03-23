@@ -1,6 +1,7 @@
 from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import mapped_column
@@ -48,8 +49,8 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
         """
         return getattr(self, "perm_" + permission.value)
 
-    @property
-    def permission(self: "Role") -> str:
+    @hybrid_property
+    def permission(self: Self) -> str:
         if self.perm_add and self.perm_modify and self.perm_publish:
             return "3"
         elif self.perm_add and self.perm_modify_org:
@@ -58,8 +59,8 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
             return "1"
         return "0"
 
-    @property
-    def permission_description(self: "Role") -> str:
+    @hybrid_property
+    def permission_description(self: Self) -> str:
         if self.perm_add and self.perm_modify and self.perm_publish:
             return "publish"
         elif self.perm_add and self.perm_modify_org:
@@ -68,6 +69,6 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
             return "manage_own"
         return "read_only"
 
-    @property
+    @hybrid_property
     def default(self: Self) -> bool:
         return self.default_role
