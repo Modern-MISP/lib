@@ -1,17 +1,12 @@
 from datetime import datetime
-
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel
 
 from mmisp.lib.permissions import Permission
 
 
-class Role(BaseModel):
-    id: int
-    name: str
-    created: datetime | str | None = None
-    modified: datetime | str | None = None
+class HasPermission(BaseModel):
     perm_add: bool
     perm_modify: bool
     """Manage Own Events."""
@@ -50,113 +45,67 @@ class Role(BaseModel):
     """Permits the user to push feedback on attributes into MISP by providing sightings."""
     perm_object_template: bool
     """Create or modify MISP Object templates."""
-    default_role: bool
-    memory_limit: str | None
-    max_execution_time: str | None
-    restricted_to_site_admin: bool
     perm_publish_zmq: bool
     """Allow users to publish data to the ZMQ pubsub channel via the publish event to ZMQ button."""
     perm_publish_kafka: bool
     """Allow users to publish data to Kafka via the publish event to Kafka button."""
     perm_decaying: bool
     """Create or modify MISP Decaying Models."""
-    enforce_rate_limit: bool
-    rate_limit_count: str  # number as string
     perm_galaxy_editor: bool
     """Create or modify MISP Galaxies and MISP Galaxies Clusters."""
     perm_warninglist: bool
     """Allow to manage warninglists."""
     perm_view_feed_correlations: bool
     """Allow the viewing of feed correlations. Enabling this can come at a performance cost."""
-    permission: str | None  # number as string
-    permission_description: str | None
     perm_skip_otp: bool | None = None
     perm_server_sign: bool | None = None
-
-    class Config:
-        orm_mode = True
+    perm_analyst_data: bool | None = None
 
 
-class RoleUsersResponse(BaseModel):
+class Role(HasPermission):
     id: int
     name: str
     created: datetime | str | None = None
     modified: datetime | str | None = None
-    perm_add: bool | None = None
-    perm_modify: bool | None = None
-    perm_modify_org: bool | None = None
-    perm_publish: bool | None = None
-    perm_delegate: bool | None = None
-    perm_sync: bool | None = None
-    perm_admin: bool | None = None
-    perm_audit: bool | None = None
-    perm_auth: bool
-    perm_site_admin: bool
-    perm_regexp_access: bool | None = None
-    perm_tagger: bool | None = None
-    perm_template: bool | None = None
-    perm_sharing_group: bool | None = None
-    perm_tag_editor: bool | None = None
-    perm_sighting: bool | None = None
-    perm_object_template: bool | None = None
-    default_role: bool | None = None
-    memory_limit: str | None = None
-    max_execution_time: str | None = None
-    restricted_to_site_admin: bool | None = None
-    perm_publish_zmq: bool | None = None
-    perm_publish_kafka: bool | None = None
-    perm_decaying: bool | None = None
-    enforce_rate_limit: bool | None = None
-    rate_limit_count: str | None = None  # number as string
-    perm_galaxy_editor: bool | None = None
-    perm_warninglist: bool | None = None
-    perm_view_feed_correlations: bool | None = None
-    perm_skip_otp: bool | None = None
-    perm_server_sign: bool | None = None
-
-
-class RoleAttributeResponse(BaseModel):
-    id: int
-    name: str
-    created: datetime | str | None = None
-    modified: datetime | str | None = None
-    perm_add: bool
-    perm_modify: bool
-    perm_modify_org: bool
-    perm_publish: bool
-    perm_delegate: bool
-    perm_sync: bool
-    perm_admin: bool
-    perm_audit: bool
-    perm_auth: bool
-    perm_site_admin: bool
-    perm_regexp_access: bool
-    perm_tagger: bool
-    perm_template: bool
-    perm_sharing_group: bool
-    perm_tag_editor: bool
-    perm_sighting: bool
-    perm_object_template: bool
     default_role: bool
     memory_limit: str | None
     max_execution_time: str | None
     restricted_to_site_admin: bool
-    perm_publish_zmq: bool
-    perm_publish_kafka: bool
-    perm_decaying: bool
+    enforce_rate_limit: bool
+    rate_limit_count: str  # number as string
+    permission: str | None  # number as string
+    permission_description: str | None
+
+
+class RoleUsersResponse(HasPermission):
+    id: int
+    name: str
+    created: datetime | str | None = None
+    modified: datetime | str | None = None
+    default_role: bool | None = None
+    memory_limit: str | None = None
+    max_execution_time: str | None = None
+    restricted_to_site_admin: bool | None = None
+    enforce_rate_limit: bool | None = None
+    rate_limit_count: str | None = None  # number as string
+
+
+class RoleAttributeResponse(HasPermission):
+    id: int
+    name: str
+    created: datetime | str | None = None
+    modified: datetime | str | None = None
+    default_role: bool
+    memory_limit: str | None
+    max_execution_time: str | None
+    restricted_to_site_admin: bool
     enforce_rate_limit: bool
     rate_limit_count: int
-    perm_galaxy_editor: bool
-    perm_warninglist: bool
-    perm_view_feed_correlations: bool
-    perm_analyst_data: bool | None = None
     permission: int | None = None
     permission_description: str | None = None
     default: bool | None = False
-    perm_skip_otp: bool | None = False
-    perm_server_sign: bool | None = None
 
-    def __init__(self, **data):
+    def __init__(self: Self, **data) -> None:
         super().__init__(**data)
 
         if self.perm_add and self.perm_modify and self.perm_publish:
@@ -190,37 +139,14 @@ class GetRoleResponse(BaseModel):
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
-class AddRoleBody(BaseModel):
+class AddRoleBody(HasPermission):
     name: str
-    perm_add: bool
-    perm_modify: bool
-    perm_modify_org: bool
-    perm_publish: bool
-    perm_delegate: bool
-    perm_sync: bool
-    perm_admin: bool
-    perm_audit: bool
-    perm_auth: bool
-    perm_site_admin: bool
-    perm_regexp_access: bool
-    perm_tagger: bool
-    perm_template: bool
-    perm_sharing_group: bool
-    perm_tag_editor: bool
-    perm_sighting: bool
-    perm_object_template: bool
     default_role: bool
     memory_limit: str | None = None
     max_execution_time: str | None = None
     restricted_to_site_admin: bool
-    perm_publish_zmq: bool
-    perm_publish_kafka: bool
-    perm_decaying: bool
     enforce_rate_limit: bool
     rate_limit_count: int
-    perm_galaxy_editor: bool
-    perm_warninglist: bool
-    perm_view_feed_correlations: bool
 
 
 class AddRoleResponse(BaseModel):
@@ -246,36 +172,13 @@ class DeleteRoleResponse(BaseModel):
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
-class EditRoleBody(BaseModel):
+class EditRoleBody(HasPermission):
     name: str | None = None
-    perm_add: bool | None = None
-    perm_modify: bool | None = None
-    perm_modify_org: bool | None = None
-    perm_publish: bool | None = None
-    perm_delegate: bool | None = None
-    perm_sync: bool | None = None
-    perm_admin: bool | None = None
-    perm_audit: bool | None = None
-    perm_auth: bool | None = None
-    perm_site_admin: bool | None = None
-    perm_regexp_access: bool | None = None
-    perm_tagger: bool | None = None
-    perm_template: bool | None = None
-    perm_sharing_group: bool | None = None
-    perm_tag_editor: bool | None = None
-    perm_sighting: bool | None = None
-    perm_object_template: bool | None = None
     default_role: bool | None = None
     memory_limit: str | None = None
     max_execution_time: str | None = None
     restricted_to_site_admin: bool | None = None
-    perm_publish_zmq: bool | None = None
-    perm_publish_kafka: bool | None = None
-    perm_decaying: bool | None = None
     enforce_rate_limit: bool | None = None
-    perm_galaxy_editor: bool | None = None
-    perm_warninglist: bool | None = None
-    perm_view_feed_correlations: bool | None = None
 
 
 class EditRoleResponse(BaseModel):
@@ -284,7 +187,7 @@ class EditRoleResponse(BaseModel):
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
-    def dict(self, **kwargs) -> dict[str, Any]:
+    def dict(self: Self, **kwargs) -> dict[str, Any]:
         data = super().dict(**kwargs)
         if "Role" in data:
             data["Role"].pop("default", None)
