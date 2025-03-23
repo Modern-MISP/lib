@@ -2,11 +2,11 @@ from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String
 
+from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import mapped_column
 from mmisp.lib.permissions import Permission
 
 from ..database import Base
-from mmisp.db.mixins import DictMixin
 
 RoleAttrs = {
     "__tablename__": "roles",
@@ -67,3 +67,7 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
         elif self.perm_add and self.perm_modify:
             return "manage_own"
         return "read_only"
+
+    @property
+    def default(self: Self) -> bool:
+        return self.default_role
