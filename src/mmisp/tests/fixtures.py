@@ -13,6 +13,7 @@ import mmisp.db.all_models  # noqa
 import mmisp.lib.standard_roles as standard_roles
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.auth_key import AuthKey
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.tag import Tag
@@ -27,7 +28,6 @@ from ..db.models.object import Object
 from ..db.models.post import Post
 from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
-from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
@@ -536,24 +536,17 @@ async def galaxy(db):
 
 @pytest_asyncio.fixture()
 async def auth_key(db, site_admin_user):
-    #    clear_key = generate(string.ascii_letters + string.digits, size=40)
     clear_key = "siteadminuser".ljust(40, "0")
 
-    auth_key = generate_auth_key()
-    auth_key.user_id = site_admin_user.id
-    auth_key.authkey = hash_secret(clear_key)
-    auth_key.authkey_start = clear_key[:4]
-    auth_key.authkey_end = clear_key[-4:]
-
-    db.add(auth_key)
-
-    await db.commit()
-    await db.refresh(auth_key)
-
-    yield clear_key, auth_key
-
-    await db.delete(auth_key)
-    await db.commit()
+    auth_key = AuthKey(
+        authkey=hash_secret(clear_key),
+        authkey_start=clear_key[:4],
+        authkey_end=clear_key[-4:],
+        comment="test comment",
+        user_id=site_admin_user.id,
+    )
+    async with DBManager(db, auth_key) as obj:
+        yield clear_key, obj
 
 
 @pytest.fixture
