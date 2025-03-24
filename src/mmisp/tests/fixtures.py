@@ -60,13 +60,11 @@ class DBManager:
 
     async def __aenter__(self: Self):  # noqa
         self.db.add(self.obj)
-        await self.db.commit()
-        await self.db.refresh(self.obj)
+        await self.db.flush()
         return self.obj
 
     async def __aexit__(self: Self, exc_type, exc, tb):  # noqa
         await self.db.delete(self.obj)
-        await self.db.commit()
 
 
 @pytest.fixture(scope="session")
@@ -313,7 +311,9 @@ async def event(db, organisation, site_admin_user):
     event.user_id = site_admin_user.id
 
     async with DBManager(db, event) as obj:
+        await db.commit()
         yield obj
+    await db.commit()
 
 
 @pytest_asyncio.fixture
@@ -546,7 +546,9 @@ async def auth_key(db, site_admin_user):
         user_id=site_admin_user.id,
     )
     async with DBManager(db, auth_key) as obj:
+        await db.commit()
         yield clear_key, obj
+    await db.commit()
 
 
 @pytest.fixture
@@ -663,7 +665,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         galaxy_element22 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
         )
-
+        await db.commit()
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -673,6 +675,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
+    await db.commit()
 
 
 @pytest_asyncio.fixture
@@ -763,7 +766,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
         galaxy_element22 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
         )
-
+        await db.commit()
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -773,6 +776,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
+    await db.commit()
 
 
 @pytest_asyncio.fixture()
