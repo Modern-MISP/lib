@@ -1,3 +1,4 @@
+from collections import Counter
 from itertools import product
 
 access_test_objects_orgs = [f"org{i}" for i in range(1, 4)]
@@ -149,6 +150,8 @@ user_attribute_access_expect_granted = [
 user_attribute_access_expect_denied = list(
     all_possible_user_attribute_pairs - set(user_attribute_access_expect_granted)
 )
+
+user_to_event_count = list(Counter(user for user, event in user_event_access_expect_granted).items())
 
 
 ### Filter List:

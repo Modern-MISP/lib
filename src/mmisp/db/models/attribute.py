@@ -9,7 +9,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from mmisp.db.mixins import DictMixin
-from mmisp.db.models.organisation import Organisation
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
@@ -20,7 +19,6 @@ from mmisp.lib.uuid import uuid
 from ...lib.distribution import EventDistributionLevels
 from ..database import Base
 from .event import Event
-from .sharing_group import SharingGroup
 from .tag import Tag
 from .user import User
 
@@ -232,11 +230,7 @@ class Attribute(Base, DictMixin):
         elif self.distribution == AttributeDistributionLevels.ALL_COMMUNITIES:
             return self.event.published  # Anyone has access if event is published
         elif self.distribution == AttributeDistributionLevels.SHARING_GROUP:
-            return (
-                self.sharing_group.org_id == user_org_id  # User is in organisation which created the sharing group
-                or user.org in self.sharing_group.organisations
-                # User is in a organisation which are in the sharing group
-            ) and self.event.published
+            return self.sharing_group_id in user.org._sharing_group_ids
         elif self.distribution == AttributeDistributionLevels.INHERIT_EVENT:
             return self.event.can_access(user)
         else:
@@ -285,13 +279,7 @@ class Attribute(Base, DictMixin):
         condition.append(
             and_(
                 cls.distribution == EventDistributionLevels.SHARING_GROUP,
-                and_(
-                    cls.event.has(Event.published),
-                    or_(
-                        cls.sharing_group.has(SharingGroup.org_id == user_org_id),
-                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
-                    ),
-                ),
+                cls.sharing_group_id.in_(user.org._sharing_group_ids),
             )
         )
         condition.append(

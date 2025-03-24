@@ -14,7 +14,6 @@ from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .organisation import Organisation
-from .sharing_group import SharingGroup
 from .tag import Tag
 from .user import User
 
@@ -171,6 +170,9 @@ class Event(Base):
         if user.id == self.user_id:
             return True  # User is the creator of the event
 
+        if user_org_id == self.orgc_id:
+            return True  # can always access own events
+
         if self.distribution == EventDistributionLevels.OWN_ORGANIZATION:
             return user_org_id == self.orgc_id
             # User is part of the same organisation as the organisation of the event and event is published
@@ -181,11 +183,7 @@ class Event(Base):
         elif self.distribution == EventDistributionLevels.ALL_COMMUNITIES:
             return self.published  # Anyone has access if event is published
         elif self.distribution == EventDistributionLevels.SHARING_GROUP:
-            return (
-                user_org_id == self.sharing_group.org_id  # User is in organisation which created the sharing group
-                or user.org in self.sharing_group.organisations
-                # User is in a organisation which are in the sharing group
-            ) and self.published
+            return self.sharing_group.id in user.org._sharing_group_ids
         else:
             return False  # Something went wrong with the Distribution ID
 
@@ -232,39 +230,11 @@ class Event(Base):
         condition.append(
             and_(
                 cls.distribution == EventDistributionLevels.SHARING_GROUP,
-                and_(
-                    cls.published,
-                    or_(
-                        cls.sharing_group.has(SharingGroup.org_id == user_org_id),
-                        cls.sharing_group.has(SharingGroup.organisations.any(Organisation.id == user.org_id)),
-                    ),
-                ),
+                cls.sharing_group_id.in_(user.org._sharing_group_ids),
             )
         )
 
         return or_(*condition)
-        """
-        if user.id == cls.user_id:
-            return True  # User is the creator of the event
-
-        if cls.distribution == EventDistributionLevels.OWN_ORGANIZATION:
-            return (user_org_id == cls.org_id or user_org_id == cls.orgc_id) and cls.published
-            # User is part of the same organisation as the organisation of the event and event is published
-        elif cls.distribution == EventDistributionLevels.COMMUNITY:
-            return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.CONNECTED_COMMUNITIES:
-            return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.ALL_COMMUNITIES:
-            return cls.published  # Anyone has access if event is published
-        elif cls.distribution == EventDistributionLevels.SHARING_GROUP:
-            return (
-                user_org_id == cls.sharing_group.org_id  # User is in organisation which created the sharing group
-                or cls.sharing_group.has(user.org_id == x.id for x in cls.sharing_group.organisations)
-                # User is in a organisation which are in the sharing group
-            ) and cls.published
-        else:
-            return False  # Something went wrong with the Distribution ID or Event can not inherit from itself
-        """
 
 
 class EventReport(Base):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -57,3 +58,18 @@ class Organisation(Base, DictMixin):
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.orgc_id",
     )  # type:ignore[assignment,var-annotated]
+
+    _sharing_group_orgs = relationship(
+        "SharingGroupOrg",
+        primaryjoin="Organisation.id == SharingGroupOrg.org_id",
+        foreign_keys="SharingGroupOrg.org_id",
+        viewonly=True,
+        lazy="selectin",
+    )
+
+    @property
+    def _sharing_group_ids(self: Self) -> list[int]:
+        return [x.sharing_group_id for x in self._sharing_group_orgs]
+
+
+#
