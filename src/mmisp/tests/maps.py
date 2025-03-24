@@ -112,7 +112,9 @@ access_test_object_user_event_own_org = [
 
 access_test_objects_public_user_event = [(user, event) for user in access_test_objects_users for event in public_events]
 
-access_test_objects_user_event_access_expect_granted = list(
+### Unfiltered lists
+
+user_event_access_expect_granted = list(
     set(
         access_test_object_user_event_sharing_group
         + access_test_object_user_event_own_org
@@ -120,32 +122,71 @@ access_test_objects_user_event_access_expect_granted = list(
         + access_test_objects_public_user_event
     )
 )
-access_test_objects_user_event_access_expect_denied = list(
-    all_possible_user_event_pairs - set(access_test_objects_user_event_access_expect_granted)
-)
+user_event_access_expect_denied = list(all_possible_user_event_pairs - set(user_event_access_expect_granted))
 
-access_test_objects_user_event_edit_expect_granted = [
+user_event_edit_expect_granted = [
     (user, event)
     for user, event in access_test_object_user_event_own_org + access_test_object_user_event_sharing_group
     if "read_only" not in user
 ]
-access_test_objects_user_event_edit_expect_granted.extend(site_admin_access)
+user_event_edit_expect_granted.extend(site_admin_access)
 
-access_test_objects_user_event_publish_expect_granted = [
+user_event_publish_expect_granted = [
     (user, event)
     for user, event in access_test_object_user_event_own_org + access_test_object_user_event_sharing_group
     if "publisher" in user
 ]
-access_test_objects_user_event_publish_expect_granted.extend(site_admin_access)
+user_event_publish_expect_granted.extend(site_admin_access)
 
 
-access_test_objects_user_attribute_access_expect_granted = [
+user_attribute_access_expect_granted = [
     (user, attribute)
-    for (user, event) in access_test_objects_user_event_access_expect_granted
+    for (user, event) in user_event_access_expect_granted
     for attribute in attributes_by_event(event)
     if user_access_to_attribute(user, attribute)
 ]
 
+user_attribute_access_expect_denied = list(
+    all_possible_user_attribute_pairs - set(user_attribute_access_expect_granted)
+)
+
+
+### Filter List:
+def event_filter(elem):
+    user, event = elem
+    if user.startswith("user_org1"):
+        if event.startswith("event_org1"):
+            return True
+        if event.startswith("event_org2"):
+            return True
+    if user == "site_admin_user":
+        if event.startswith("event_org1"):
+            return True
+    return False
+
+
+def attribute_filter(elem):
+    user, attribute = elem
+    if user.startswith("user_org1"):
+        if attribute.startswith("attribute_org1"):
+            return True
+        if attribute.startswith("attribute_org2"):
+            return True
+    if user == "site_admin_user":
+        if attribute.startswith("attribute_org1"):
+            return True
+    return False
+
+
+access_test_objects_user_event_access_expect_granted = list(filter(event_filter, user_event_access_expect_granted))
+access_test_objects_user_event_access_expect_denied = list(filter(event_filter, user_event_access_expect_denied))
+access_test_objects_user_event_edit_expect_granted = list(filter(event_filter, user_event_edit_expect_granted))
+# access_test_objects_user_event_edit_expect_denied = list(filter(event_filter, user_event_edit_expect_denied))
+access_test_objects_user_event_publish_expect_granted = list(filter(event_filter, user_event_publish_expect_granted))
+# access_test_objects_user_event_publish_expect_denied = list(filter(event_filter, user_event_publish_expect_denied))
+access_test_objects_user_attribute_access_expect_granted = list(
+    filter(attribute_filter, user_attribute_access_expect_granted)
+)
 access_test_objects_user_attribute_access_expect_denied = list(
-    all_possible_user_attribute_pairs - set(access_test_objects_user_attribute_access_expect_granted)
+    filter(attribute_filter, user_attribute_access_expect_denied)
 )
