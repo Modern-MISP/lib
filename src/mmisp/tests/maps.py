@@ -23,6 +23,41 @@ def event_distribution_by_org(org):
         yield f"4_{sg}"
 
 
+#    "attribute_org3_4_sg_org2_org3_published_5"
+def attributes_by_event(eventkey):
+    suffix = eventkey[len("event_") :]
+    for i in range(0, 4):
+        yield f"attribute_{suffix}_{i}"
+    yield f"attribute_{suffix}_5"
+
+    org = eventkey[6:10]
+    for sg in access_test_objects_sg_by_org[org]:
+        yield f"attribute_{suffix}_4_{sg}"
+
+
+def user_in_asg(user, attribute):
+    start_asg = attribute.rfind("_4_") + 3
+    user_org = user[5:9]
+    asg = attribute[start_asg:]
+
+    return user_org in asg
+
+
+def user_access_to_attribute(user, attribute):
+    user_org = user[5:9]
+    event_org = attribute[10:14]
+    if user_org == event_org:
+        return True
+    if attribute[-1] == "0":
+        return False
+    if attribute[-2:] in ["_1", "_2", "_3"]:
+        return "unpublished" not in attribute
+    if attribute[-1] == "5":
+        return True  # assume user has access to event
+    else:
+        return user_in_asg(user, attribute)
+
+
 access_test_objects_event_by_org = {
     f"org{i}": [
         f"event_org{i}_{edl}_{pub}published" for edl in event_distribution_by_org(f"org{i}") for pub in ["", "un"]
@@ -46,6 +81,9 @@ all_possible_user_event_pairs = set(
     for user in access_test_objects_users
     for event_list in access_test_objects_event_by_org.values()
     for event in event_list
+)
+all_possible_user_attribute_pairs = set(
+    (user, attribute) for (user, event) in all_possible_user_event_pairs for attribute in attributes_by_event(event)
 )
 
 access_test_objects_shared_events_by_org = {
@@ -99,3 +137,15 @@ access_test_objects_user_event_publish_expect_granted = [
     if "publisher" in user
 ]
 access_test_objects_user_event_publish_expect_granted.extend(site_admin_access)
+
+
+access_test_objects_user_attribute_access_expect_granted = [
+    (user, attribute)
+    for (user, event) in access_test_objects_user_event_access_expect_granted
+    for attribute in attributes_by_event(event)
+    if user_access_to_attribute(user, attribute)
+]
+
+access_test_objects_user_attribute_access_expect_denied = list(
+    all_possible_user_attribute_pairs - set(access_test_objects_user_attribute_access_expect_granted)
+)
