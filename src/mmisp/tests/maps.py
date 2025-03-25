@@ -135,6 +135,7 @@ user_event_edit_expect_granted = [
     if "read_only" not in user
 ]
 user_event_edit_expect_granted.extend(site_admin_access)
+user_event_edit_expect_denied = list(all_possible_user_event_pairs - set(user_event_edit_expect_granted))
 
 user_event_publish_expect_granted = [
     (user, event)
@@ -142,6 +143,7 @@ user_event_publish_expect_granted = [
     if "publisher" in user
 ]
 user_event_publish_expect_granted.extend(site_admin_access)
+user_event_publish_expect_denied = list(all_possible_user_event_pairs - set(user_event_publish_expect_granted))
 
 
 user_attribute_access_expect_granted = [
@@ -194,9 +196,9 @@ def attribute_filter(elem):
 access_test_objects_user_event_access_expect_granted = list(filter(event_filter, user_event_access_expect_granted))
 access_test_objects_user_event_access_expect_denied = list(filter(event_filter, user_event_access_expect_denied))
 access_test_objects_user_event_edit_expect_granted = list(filter(event_filter, user_event_edit_expect_granted))
-# access_test_objects_user_event_edit_expect_denied = list(filter(event_filter, user_event_edit_expect_denied))
+access_test_objects_user_event_edit_expect_denied = list(filter(event_filter, user_event_edit_expect_denied))
 access_test_objects_user_event_publish_expect_granted = list(filter(event_filter, user_event_publish_expect_granted))
-# access_test_objects_user_event_publish_expect_denied = list(filter(event_filter, user_event_publish_expect_denied))
+access_test_objects_user_event_publish_expect_denied = list(filter(event_filter, user_event_publish_expect_denied))
 access_test_objects_user_attribute_access_expect_granted = list(
     filter(attribute_filter, user_attribute_access_expect_granted)
 )
