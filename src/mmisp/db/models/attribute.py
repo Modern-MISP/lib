@@ -16,7 +16,6 @@ from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
-from ...lib.distribution import EventDistributionLevels
 from ..database import Base
 from .event import Event
 from .tag import Tag
@@ -263,6 +262,7 @@ class Attribute(Base, DictMixin):
             return True  # User is a Worker or Site Admin
 
         condition = []
+        condition.append(cls.event.has(Event.orgc_id == user_org_id))
         condition.append(cls.event.has(Event.user_id == user.id))
         condition.append(
             and_(
@@ -274,9 +274,9 @@ class Attribute(Base, DictMixin):
             and_(
                 cls.distribution.in_(
                     [
-                        EventDistributionLevels.COMMUNITY,
-                        EventDistributionLevels.CONNECTED_COMMUNITIES,
-                        EventDistributionLevels.ALL_COMMUNITIES,
+                        AttributeDistributionLevels.COMMUNITY,
+                        AttributeDistributionLevels.CONNECTED_COMMUNITIES,
+                        AttributeDistributionLevels.ALL_COMMUNITIES,
                     ]
                 ),
                 cls.event.has(Event.published),
@@ -284,14 +284,11 @@ class Attribute(Base, DictMixin):
         )
         condition.append(
             and_(
-                cls.distribution == EventDistributionLevels.SHARING_GROUP,
+                cls.distribution == AttributeDistributionLevels.SHARING_GROUP,
                 cls.sharing_group_id.in_(user.org._sharing_group_ids),
             )
         )
-        condition.append(
-            #                cls.event.has(Event.can_access(user)), already checked
-            cls.distribution == AttributeDistributionLevels.INHERIT_EVENT
-        )
+        condition.append(cls.distribution == AttributeDistributionLevels.INHERIT_EVENT)
         return and_(cls.event.has(Event.can_access(user)), or_(*condition))
 
     @property
