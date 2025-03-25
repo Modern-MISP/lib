@@ -165,6 +165,12 @@ for user, event in user_event_access_expect_granted:
 
 user_to_events = list(grouped.items())
 
+grouped = defaultdict(list)
+for user, attribute in user_attribute_access_expect_granted:
+    grouped[user].append(attribute)
+
+user_to_attributes = list(grouped.items())
+
 
 ### Filter List:
 def event_filter(elem):
