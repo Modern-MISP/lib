@@ -2,7 +2,15 @@ import json
 
 import httpx
 from deepdiff import DeepDiff
+from deepdiff.helper import CannotCompare
 from icecream import ic
+
+
+def compare_func(x, y, level=None):
+    try:
+        return x["uuid"] == y["uuid"]
+    except Exception:
+        raise CannotCompare() from None
 
 
 def to_legacy_format(data):
@@ -61,6 +69,7 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
         to_legacy_format(legacy_response_json),
         verbose_level=2,
         ignore_order=ignore_order,
+        iterable_compare_func=compare_func,
     )
     ic(diff)
 
