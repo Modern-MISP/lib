@@ -8,7 +8,10 @@ from icecream import ic
 
 def compare_func(x, y, level=None):
     try:
-        return x["uuid"] == y["uuid"]
+        if "uuid" in x:
+            return x["uuid"] == y["uuid"]
+        if "Event" in x:
+            return x["Event"]["uuid"]
     except Exception:
         raise CannotCompare() from None
 
