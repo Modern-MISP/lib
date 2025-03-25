@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 from itertools import product
 
 access_test_objects_orgs = [f"org{i}" for i in range(1, 4)]
@@ -155,6 +155,12 @@ user_attribute_access_expect_denied = list(
 )
 
 user_to_event_count = list(Counter(user for user, event in user_event_access_expect_granted).items())
+
+grouped = defaultdict(list)
+for user, event in user_event_access_expect_granted:
+    grouped[user].append(event)
+
+user_to_events = list(grouped.items())
 
 
 ### Filter List:
