@@ -183,7 +183,7 @@ class Event(Base):
         elif self.distribution == EventDistributionLevels.ALL_COMMUNITIES:
             return self.published  # Anyone has access if event is published
         elif self.distribution == EventDistributionLevels.SHARING_GROUP:
-            return self.sharing_group.id in user.org._sharing_group_ids
+            return self.sharing_group_id in user.org._sharing_group_ids
         else:
             return False  # Something went wrong with the Distribution ID
 
@@ -206,6 +206,7 @@ class Event(Base):
 
         condition = []
         condition.append(user.id == cls.user_id)
+        condition.append(user_org_id == cls.org_id)
 
         condition.append(
             and_(
