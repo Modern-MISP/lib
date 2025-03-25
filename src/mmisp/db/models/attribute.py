@@ -220,6 +220,9 @@ class Attribute(Base, DictMixin):
         if self.event.user_id == user.id:
             return True  # User is the creator of the event
 
+        if self.event.orgc_id == user_org_id:
+            return True
+
         if self.distribution == AttributeDistributionLevels.OWN_ORGANIZATION:
             return self.event.orgc_id == user_org_id
             # User is part of the same organisation as the organisation of the event and event is published
