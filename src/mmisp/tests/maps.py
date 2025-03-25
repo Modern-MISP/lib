@@ -97,6 +97,7 @@ access_test_objects_shared_events_by_org = {
         if other_org != org
         for event in access_test_objects_event_by_org[other_org]
         if any(sg in event for sg in access_test_objects_sg_by_org.get(org, []))
+        if "unpublished" not in event
     ]
     for org in access_test_objects_orgs
 }
