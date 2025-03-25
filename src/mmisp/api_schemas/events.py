@@ -1,11 +1,26 @@
-from datetime import datetime
-from typing import Any, Type
 import uuid
+from datetime import datetime
 
-from pydantic import BaseModel, PositiveInt, conint, validator
+from pydantic import BaseModel, Field, PositiveInt, conint
 
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import DistributionLevels
+
+
+class SharingGroup(BaseModel):
+    id: int
+    name: str
+    releasability: str
+    description: str
+    uuid: str
+    organisation_uuid: str
+    org_id: int
+    sync_user_id: int
+    active: bool
+    created: datetime | str
+    modified: datetime | str
+    local: bool
+    roaming: bool
 
 
 class GetAllEventsGalaxyClusterGalaxy(BaseModel):
@@ -225,6 +240,7 @@ class AddEditGetEventAttribute(BaseModel):
     first_seen: str | None = None
     last_seen: str | None = None
     Galaxy: list[AddEditGetEventGalaxy] = []
+    sharing_group: SharingGroup | None = Field(alias="SharingGroup", default=None)
     ShadowAttribute: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
