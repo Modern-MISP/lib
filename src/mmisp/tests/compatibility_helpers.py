@@ -10,8 +10,12 @@ def compare_func(x, y, level=None):
     try:
         if "uuid" in x:
             return x["uuid"] == y["uuid"]
+        if "id" in x:
+            return x["id"] == y["id"]
         if "Event" in x:
             return x["Event"]["uuid"]
+        if "SharingGroup" in x:
+            return x["SharingGroup"]["uuid"]
     except Exception:
         raise CannotCompare() from None
 
