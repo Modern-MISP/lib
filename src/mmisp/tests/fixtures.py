@@ -1,6 +1,7 @@
 import asyncio
+import uuid as libuuid
 from contextlib import AsyncExitStack
-from datetime import datetime
+from datetime import date, datetime
 from typing import Self
 
 import pytest
@@ -16,8 +17,9 @@ from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.auth_key import AuthKey
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+from mmisp.db.models.sharing_group import SharingGroupOrg
 from mmisp.db.models.tag import Tag
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
@@ -317,21 +319,44 @@ async def event(db, organisation, site_admin_user):
 
 
 @pytest_asyncio.fixture
-async def event_with_sharing_group(db, organisation, site_admin_user, sharing_group):
-    org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-    event.sharing_group_id = sharing_group.id
-
-    db.add(event)
+async def event_unpublished_sharing_group(db, organisation, site_admin_user, sharing_group):
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=sharing_group.id,
+        threat_level_id=1,
+        info="event_unpublished_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.SHARING_GROUP,
+        published=False,
+    )
+    async with DBManager(db, event) as obj:
+        await db.commit()
+        yield obj
     await db.commit()
-    await db.refresh(event)
 
-    yield event
 
-    await db.delete(event)
+@pytest_asyncio.fixture
+async def event_sharing_group(db, organisation, site_admin_user, sharing_group):
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=sharing_group.id,
+        threat_level_id=1,
+        info="event_published_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.SHARING_GROUP,
+        published=True,
+    )
+    async with DBManager(db, event) as obj:
+        await db.commit()
+        yield obj
     await db.commit()
 
 
@@ -471,11 +496,17 @@ async def sharing_group(db, instance_owner_org):
     sharing_group.org_id = instance_owner_org.id
 
     db.add(sharing_group)
+    await db.flush()
+
+    sgo = SharingGroupOrg(sharing_group_id=sharing_group.id, org_id=instance_owner_org.id)
+    db.add(sgo)
+
+    await db.flush()
     await db.commit()
-    await db.refresh(sharing_group)
 
     yield sharing_group
 
+    await db.delete(sgo)
     await db.delete(sharing_group)
     await db.commit()
 

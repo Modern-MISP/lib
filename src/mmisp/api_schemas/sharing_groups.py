@@ -104,17 +104,19 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
 
-class SharingGroupResponse(BaseModel):
+class EventSharingGroupResponse(BaseModel):
     SharingGroup: ShortSharingGroup
     Organisation: ShortOrganisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
-    editable: bool | None = None
-    deletable: bool | None = None
-
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+class SharingGroupResponse(EventSharingGroupResponse):
+    editable: bool | None = None
+    deletable: bool | None = None
 
 
 class SingleSharingGroupResponse(BaseModel):

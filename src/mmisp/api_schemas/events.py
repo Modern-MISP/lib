@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, PositiveInt, conint
 
 from mmisp.api_schemas.organisations import Organisation
+from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -240,7 +241,7 @@ class AddEditGetEventAttribute(BaseModel):
     first_seen: str | None = None
     last_seen: str | None = None
     Galaxy: list[AddEditGetEventGalaxy] = []
-    sharing_group: SharingGroup | None = Field(alias="SharingGroup", default=None)
+    sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
     ShadowAttribute: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
@@ -342,7 +343,7 @@ class AddEditGetEventDetails(BaseModel):
     EventReport: list[AddEditGetEventEventReport] = []
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
-
+    sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
     #    @validator("uuid", "extends_uuid", pre=True)
     #    @classmethod
     #    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
