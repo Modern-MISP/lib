@@ -59,6 +59,16 @@ class SharingGroupOrg(BaseModel):
     extend: bool
 
 
+class SharingGroupOrgWithOrganisation(SharingGroupOrg):
+    Organisation: Organisation
+
+
+class EventSharingGroupResponse(SharingGroup):
+    Organisation: ShortOrganisation
+    SharingGroupOrg: list[SharingGroupOrgWithOrganisation]
+    SharingGroupServer: list
+
+
 class GetAllSharingGroupsResponseResponseItemSharingGroup(BaseModel):
     id: int
     uuid: str
@@ -104,7 +114,10 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
 
-class EventSharingGroupResponse(BaseModel):
+class SharingGroupResponse(BaseModel):
+    editable: bool | None = None
+    deletable: bool | None = None
+
     SharingGroup: ShortSharingGroup
     Organisation: ShortOrganisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
@@ -112,11 +125,6 @@ class EventSharingGroupResponse(BaseModel):
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-
-
-class SharingGroupResponse(EventSharingGroupResponse):
-    editable: bool | None = None
-    deletable: bool | None = None
 
 
 class SingleSharingGroupResponse(BaseModel):
