@@ -176,6 +176,15 @@ user_to_attributes.sort()
 
 
 ### Filter List:
+def user_filter(elem):
+    user, _ = elem
+    if user.startswith("user_org1"):
+        return True
+    if user == "site_admin_user":
+        return True
+    return False
+
+
 def event_filter(elem):
     user, event = elem
     if user.startswith("user_org1"):
@@ -201,6 +210,12 @@ def attribute_filter(elem):
             return True
     return False
 
+
+user_to_events = list(filter(user_filter, user_to_events))
+user_to_events.sort()
+
+user_to_attributes = list(filter(user_filter, user_to_attributes))
+user_to_attributes.sort()
 
 access_test_objects_user_event_access_expect_granted = list(filter(event_filter, user_event_access_expect_granted))
 access_test_objects_user_event_access_expect_granted.sort()
