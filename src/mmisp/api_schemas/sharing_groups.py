@@ -60,7 +60,7 @@ class SharingGroupOrg(BaseModel):
 
 
 class SharingGroupOrgWithOrganisation(SharingGroupOrg):
-    Organisation: Organisation
+    Organisation: ShortOrganisation
 
 
 class EventSharingGroupResponse(SharingGroup):
