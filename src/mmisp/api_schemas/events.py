@@ -4,24 +4,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field, PositiveInt, conint
 
 from mmisp.api_schemas.organisations import Organisation
-from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse
+from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse, MinimalSharingGroup
 from mmisp.lib.distribution import DistributionLevels
-
-
-class SharingGroup(BaseModel):
-    id: int
-    name: str
-    releasability: str
-    description: str
-    uuid: str
-    organisation_uuid: str
-    org_id: int
-    sync_user_id: int
-    active: bool
-    created: datetime | str
-    modified: datetime | str
-    local: bool
-    roaming: bool
 
 
 class GetAllEventsGalaxyClusterGalaxy(BaseModel):
@@ -568,6 +552,7 @@ class GetAllEventsResponse(BaseModel):
     extends_uuid: str
     event_creator_email: str | None = None  # omitted
     protected: bool | None = None
+    SharingGroup: MinimalSharingGroup | None = None
     Org: GetAllEventsOrg
     Orgc: GetAllEventsOrg
     GalaxyCluster: list[GetAllEventsGalaxyCluster]

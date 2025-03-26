@@ -26,6 +26,12 @@ class SharingGroup(BaseModel):
 #    org_count: int = 0
 
 
+class MinimalSharingGroup(BaseModel):
+    id: int
+    name: str
+    uuid: str
+
+
 class ShortSharingGroup(BaseModel):
     id: int
     name: str
