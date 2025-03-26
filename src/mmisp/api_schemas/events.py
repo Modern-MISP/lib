@@ -566,7 +566,7 @@ class GetAllEventsResponse(BaseModel):
     disable_correlation: bool
     extends_uuid: str
     event_creator_email: str | None = None  # omitted
-    protected: str | None = None
+    protected: bool | None = None
     Org: GetAllEventsOrg
     Orgc: GetAllEventsOrg
     GalaxyCluster: list[GetAllEventsGalaxyCluster]
@@ -596,7 +596,7 @@ class EditEventBody(BaseModel):
     disable_correlation: bool | None = None
     extends_uuid: str | None = None
     event_creator_email: str | None = None
-    protected: str | None = None
+    protected: bool | None = None
     cryptographic_key: str | None = None
 
     class Config:
@@ -645,10 +645,7 @@ class AddEventBody(BaseModel):
     sighting_timestamp: str | None = None
     disable_correlation: bool | None = None
     extends_uuid: str | None = None
-    protected: str | None = None
-
-    class Config:
-        orm_mode = True
+    protected: bool | None = None
 
 
 class AddEventTag(BaseModel):
