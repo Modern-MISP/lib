@@ -158,18 +158,21 @@ user_attribute_access_expect_denied = list(
 )
 
 user_to_event_count = list(Counter(user for user, event in user_event_access_expect_granted).items())
+user_to_event_count.sort()
 
 grouped = defaultdict(list)
 for user, event in user_event_access_expect_granted:
     grouped[user].append(event)
 
 user_to_events = list(grouped.items())
+user_to_events.sort()
 
 grouped = defaultdict(list)
 for user, attribute in user_attribute_access_expect_granted:
     grouped[user].append(attribute)
 
 user_to_attributes = list(grouped.items())
+user_to_attributes.sort()
 
 
 ### Filter List:
@@ -200,14 +203,29 @@ def attribute_filter(elem):
 
 
 access_test_objects_user_event_access_expect_granted = list(filter(event_filter, user_event_access_expect_granted))
+access_test_objects_user_event_access_expect_granted.sort()
+
 access_test_objects_user_event_access_expect_denied = list(filter(event_filter, user_event_access_expect_denied))
+access_test_objects_user_event_access_expect_denied.sort()
+
 access_test_objects_user_event_edit_expect_granted = list(filter(event_filter, user_event_edit_expect_granted))
+access_test_objects_user_event_edit_expect_granted.sort()
+
 access_test_objects_user_event_edit_expect_denied = list(filter(event_filter, user_event_edit_expect_denied))
+access_test_objects_user_event_edit_expect_denied.sort()
+
 access_test_objects_user_event_publish_expect_granted = list(filter(event_filter, user_event_publish_expect_granted))
+access_test_objects_user_event_publish_expect_granted.sort()
+
 access_test_objects_user_event_publish_expect_denied = list(filter(event_filter, user_event_publish_expect_denied))
+access_test_objects_user_event_publish_expect_denied.sort()
+
 access_test_objects_user_attribute_access_expect_granted = list(
     filter(attribute_filter, user_attribute_access_expect_granted)
 )
+access_test_objects_user_attribute_access_expect_granted.sort()
+
 access_test_objects_user_attribute_access_expect_denied = list(
     filter(attribute_filter, user_attribute_access_expect_denied)
 )
+access_test_objects_user_attribute_access_expect_denied.sort()
