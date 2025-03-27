@@ -130,17 +130,13 @@ user_event_access_expect_granted = list(
 user_event_access_expect_denied = list(all_possible_user_event_pairs - set(user_event_access_expect_granted))
 
 user_event_edit_expect_granted = [
-    (user, event)
-    for user, event in access_test_object_user_event_own_org + access_test_object_user_event_sharing_group
-    if "read_only" not in user
+    (user, event) for user, event in access_test_object_user_event_own_org if "read_only" not in user
 ]
 user_event_edit_expect_granted.extend(site_admin_access)
 user_event_edit_expect_denied = list(all_possible_user_event_pairs - set(user_event_edit_expect_granted))
 
 user_event_publish_expect_granted = [
-    (user, event)
-    for user, event in access_test_object_user_event_own_org + access_test_object_user_event_sharing_group
-    if "publisher" in user
+    (user, event) for user, event in access_test_object_user_event_own_org if "publisher" in user
 ]
 user_event_publish_expect_granted.extend(site_admin_access)
 user_event_publish_expect_denied = list(all_possible_user_event_pairs - set(user_event_publish_expect_granted))
