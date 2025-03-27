@@ -316,7 +316,7 @@ class AddEditGetEventDetails(BaseModel):
     disable_correlation: bool
     extends_uuid: str
     protected: bool | None = None
-    event_creator_email: str
+    event_creator_email: str | None = None
     Org: AddEditGetEventOrg
     Orgc: AddEditGetEventOrg
     Attribute: list[AddEditGetEventAttribute] = []
