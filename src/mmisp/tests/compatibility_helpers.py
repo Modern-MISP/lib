@@ -32,7 +32,9 @@ def to_legacy_format(data):
     return data
 
 
-def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocessor=None, ignore_order=True):
+def get_legacy_modern_diff(
+    http_method, path, body, auth_key, client, preprocessor=None, ignore_order=True, dry_run=False
+):
     clear_key, auth_key = auth_key
     headers = {"authorization": clear_key, "accept": "application/json"}
 
@@ -43,6 +45,9 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     kwargs = {"headers": headers}
     if http_method not in ["get", "delete"]:
         kwargs["json"] = body
+
+    if dry_run:
+        kwargs["params"] = {"dry_run": 1}
 
     call = getattr(client, http_method)
     response = call(path, **kwargs)

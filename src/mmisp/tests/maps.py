@@ -157,6 +157,15 @@ user_attribute_access_expect_denied = list(
     all_possible_user_attribute_pairs - set(user_attribute_access_expect_granted)
 )
 
+user_attribute_edit_expect_granted = [
+    (user, attribute)
+    for (user, event) in user_event_edit_expect_granted
+    for attribute in attributes_by_event(event)
+    if user_access_to_attribute(user, attribute)
+]
+
+user_attribute_edit_expect_denied = list(all_possible_user_attribute_pairs - set(user_attribute_edit_expect_granted))
+
 user_to_event_count = list(Counter(user for user, event in user_event_access_expect_granted).items())
 user_to_event_count.sort()
 
@@ -244,3 +253,14 @@ access_test_objects_user_attribute_access_expect_denied = list(
     filter(attribute_filter, user_attribute_access_expect_denied)
 )
 access_test_objects_user_attribute_access_expect_denied.sort()
+
+
+access_test_objects_user_attribute_edit_expect_granted = list(
+    filter(attribute_filter, user_attribute_edit_expect_granted)
+)
+access_test_objects_user_attribute_edit_expect_granted.sort()
+
+access_test_objects_user_attribute_edit_expect_denied = list(
+    filter(attribute_filter, user_attribute_edit_expect_denied)
+)
+access_test_objects_user_attribute_edit_expect_denied.sort()
