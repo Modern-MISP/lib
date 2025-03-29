@@ -16,6 +16,7 @@ from ..database import Base
 from .organisation import Organisation
 from .tag import Tag
 from .user import User
+from ..mixins import DictMixin
 
 
 class Event(Base, UpdateMixin, DictMixin["EventDict"]):
