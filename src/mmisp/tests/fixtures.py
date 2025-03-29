@@ -8,6 +8,7 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm.collections import collection
 
 import mmisp.db.all_models  # noqa
 import mmisp.lib.standard_roles as standard_roles
