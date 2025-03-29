@@ -206,7 +206,7 @@ class AddEditGetEventRelatedEvent(BaseModel):
 
 
 class AddEditGetEventDetails(BaseModel):
-    id: int
+    id: int | None = None
     orgc_id: int
     org_id: int
     date: str
@@ -222,8 +222,8 @@ class AddEditGetEventDetails(BaseModel):
     locked: bool
     publish_timestamp: datetime
     sharing_group_id: int | None = None
-    disable_correlation: bool
-    extends_uuid: str
+    disable_correlation: bool | None = None
+    extends_uuid: str | None = None
     protected: bool | None = None
     event_creator_email: str | None = None
     Org: AddEditGetEventOrg
