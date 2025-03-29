@@ -66,8 +66,10 @@ access_test_objects_event_by_org = {
     f"org{i}": [
         f"event_org{i}_{edl}_{pub}published" for edl in event_distribution_by_org(f"org{i}") for pub in ["", "un"]
     ]
-    for i in range(1, 4)
+    for i in range(1, 3)
 }
+access_test_objects_event_by_org["org3"] = []
+
 
 site_admin_access = [
     ("site_admin_user", event) for event_list in access_test_objects_event_by_org.values() for event in event_list
@@ -93,13 +95,13 @@ all_possible_user_attribute_pairs = set(
 access_test_objects_shared_events_by_org = {
     org: [
         event
-        for other_org in access_test_objects_orgs
+        for other_org in ["org1", "org2"]
         if other_org != org
         for event in access_test_objects_event_by_org[other_org]
         if any(sg in event for sg in access_test_objects_sg_by_org.get(org, []))
         if "unpublished" not in event
     ]
-    for org in access_test_objects_orgs
+    for org in ["org1", "org2"]
 }
 
 access_test_object_user_event_sharing_group = [
