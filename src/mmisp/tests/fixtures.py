@@ -658,7 +658,24 @@ def galaxy_cluster_two_uuid():
 
 @pytest_asyncio.fixture
 async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
-    async with AsyncExitStack() as stack:
+    galaxy = Galaxy(
+        namespace="misp",
+        name="test galaxy",
+        type="test galaxy type",
+        description="test",
+        version="1",
+        icon="",
+        kill_chain_order="",
+        uuid=uuid(),
+        enabled=True,
+        local_only=False,
+        org_id=0,
+        orgc_id=0,
+        distribution=DistributionLevels.ALL_COMMUNITIES,
+        created=datetime.now(),
+        default=False,
+        modified=datetime.now(),
+    )
 
         async def add_to_db(elem):
             return await stack.enter_async_context(DBManager(db, elem))
