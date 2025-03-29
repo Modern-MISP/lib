@@ -1240,6 +1240,9 @@ async def correlating_value(db):
 
     yield cv
 
+    await db.refresh(cv)
+    await db.commit()
+
     await db.delete(cv)
     await db.commit()
 
