@@ -7,9 +7,10 @@ from mmisp.lib.uuid import uuid
 from .attribute import Attribute
 from .event import Event
 from .organisation import Organisation
+from ..mixins import DictMixin
 
 
-class Sighting(Base):
+class Sighting(Base, DictMixin):
     __tablename__ = "sightings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
