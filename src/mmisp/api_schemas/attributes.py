@@ -334,14 +334,6 @@ class DeleteSelectedAttributeResponse(BaseModel):
         orm_mode = True
 
 
-class DeleteSelectedAttributeBody(BaseModel):
-    id: str  # ids can be space separated, id = "all" deletes all attributes in the event
-    allow_hard_delete: bool | None = None
-
-    class Config:
-        orm_mode = True
-
-
 class DeleteAttributeResponse(BaseModel):
     message: str
 

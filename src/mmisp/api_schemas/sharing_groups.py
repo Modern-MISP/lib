@@ -105,10 +105,13 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem(BaseModel):
     Server: ViewUpdateSharingGroupLegacyResponseServerInfo
 
 
-class ViewUpdateSharingGroupLegacyResponseOrganisationInfo(BaseModel):
+class SharingGroupOrgOrganisationIndexInfo(BaseModel):
     id: int
     uuid: str
     name: str
+
+
+class ViewUpdateSharingGroupLegacyResponseOrganisationInfo(SharingGroupOrgOrganisationIndexInfo):
     local: bool
 
 
@@ -120,6 +123,14 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
 
+class SharingGroupOrgIndexItem(BaseModel):
+    id: int
+    sharing_group_id: int
+    org_id: int
+    extend: bool
+    Organisation: SharingGroupOrgOrganisationIndexInfo
+
+
 class SharingGroupResponse(BaseModel):
     editable: bool | None = None
     deletable: bool | None = None
@@ -127,6 +138,19 @@ class SharingGroupResponse(BaseModel):
     SharingGroup: ShortSharingGroup
     Organisation: ShortOrganisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
+    SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+class SharingGroupIndexResponse(BaseModel):
+    editable: bool | None = None
+    deletable: bool | None = None
+
+    SharingGroup: ShortSharingGroup
+    Organisation: ShortOrganisation
+    SharingGroupOrg: list[SharingGroupOrgIndexItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
     class Config:
@@ -148,7 +172,7 @@ class ViewUpdateSharingGroupLegacyResponse(SharingGroupResponse):
 
 
 class GetSharingGroupsIndex(BaseModel):
-    response: list[SharingGroupResponse]
+    response: list[SharingGroupIndexResponse]
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
