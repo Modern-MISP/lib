@@ -1,6 +1,6 @@
-from typing import Annotated, Any, Dict, Optional, Type
+from typing import Annotated, Any, Optional, Type
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, root_validator
 
 from mmisp.lib.attributes import (
     AttributeCategories,
@@ -10,6 +10,7 @@ from mmisp.lib.attributes import (
     mapper_val_safe_clsname,
     to_ids,
 )
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
 class GetAttributeTag(BaseModel):
@@ -48,7 +49,7 @@ class SearchAttributesAttributesDetails(BaseModel):
     to_ids: bool
     uuid: str
     timestamp: str
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool
@@ -155,7 +156,7 @@ class RestoreAttributeResponse(BaseModel):
     to_ids: bool
     uuid: str
     timestamp: str
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str
     deleted: bool
@@ -200,7 +201,7 @@ class GetAttributeAttributes(BaseModel):
     to_ids: bool
     uuid: str
     timestamp: str
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str | None = None
     deleted: bool = False
@@ -231,7 +232,7 @@ class GetAllAttributesResponse(BaseModel):
     to_ids: bool | None = None
     uuid: str | None = None
     timestamp: str | None = None
-    distribution: str | None = None
+    distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
@@ -281,7 +282,7 @@ class EditAttributeAttributes(BaseModel):
     to_ids: bool
     uuid: str
     timestamp: str
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str | None = None
     deleted: bool
@@ -309,7 +310,7 @@ class EditAttributeBody(BaseModel):
     to_ids: bool | None = None
     uuid: str | None = None
     timestamp: str | None = None
-    distribution: str | None = None
+    distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
@@ -371,7 +372,7 @@ class AddAttributeAttributes(BaseModel):
     to_ids: bool
     uuid: str
     timestamp: str
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str | None = None
     deleted: bool
@@ -400,7 +401,7 @@ class AddAttributeBody(BaseModel):
     to_ids: bool | None = None
     uuid: str | None = None
     timestamp: str | None = None
-    distribution: str | None = None
+    distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
