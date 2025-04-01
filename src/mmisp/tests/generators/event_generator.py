@@ -23,5 +23,6 @@ def generate_valid_random_create_event_data() -> AddEditGetEventDetails:
         proposal_email_lock=False,
         locked=False,
         sharing_group_id=1,
+        disable_correlation=False,
         event_creator_email=f"generated-user+{time_ns()}@test.com",
     )

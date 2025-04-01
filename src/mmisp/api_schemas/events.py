@@ -222,7 +222,7 @@ class AddEditGetEventDetails(BaseModel):
     locked: bool
     publish_timestamp: datetime
     sharing_group_id: int | None = None
-    disable_correlation: bool | None = None
+    disable_correlation: bool
     extends_uuid: str | None = None
     protected: bool | None = None
     event_creator_email: str | None = None
