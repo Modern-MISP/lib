@@ -226,8 +226,8 @@ class AddEditGetEventDetails(BaseModel):
     extends_uuid: str | None = None
     protected: bool | None = None
     event_creator_email: str | None = None
-    Org: AddEditGetEventOrg
-    Orgc: AddEditGetEventOrg
+    Org: AddEditGetEventOrg | None = None
+    Orgc: AddEditGetEventOrg | None = None
     Attribute: list[AddEditGetEventAttribute] = []
     ShadowAttribute: list[AddEditGetEventShadowAttribute] = []
     RelatedEvent: list[AddEditGetEventRelatedEvent] = []
