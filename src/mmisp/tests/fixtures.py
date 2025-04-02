@@ -1,6 +1,7 @@
 import asyncio
+import uuid as libuuid
 from contextlib import AsyncExitStack
-from datetime import datetime
+from datetime import date, datetime
 from typing import Self
 
 import pytest
@@ -10,12 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import mmisp.db.all_models  # noqa
+import mmisp.lib.standard_roles as standard_roles
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
+from mmisp.db.models.auth_key import AuthKey
 from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
+from mmisp.db.models.sharing_group import SharingGroupOrg
 from mmisp.db.models.tag import Tag
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
@@ -26,7 +30,6 @@ from ..db.models.object import Object
 from ..db.models.post import Post
 from ..db.models.sighting import Sighting
 from .generators.model_generators.attribute_generator import generate_attribute
-from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
@@ -42,7 +45,6 @@ from .generators.model_generators.post_generator import generate_post
 from .generators.model_generators.role_generator import (
     generate_org_admin_role,
     generate_read_only_role,
-    generate_site_admin_role,
 )
 from .generators.model_generators.server_generator import generate_server
 from .generators.model_generators.shadow_attribute_generator import generate_shadow_attribute
@@ -60,13 +62,11 @@ class DBManager:
 
     async def __aenter__(self: Self):  # noqa
         self.db.add(self.obj)
-        await self.db.commit()
-        await self.db.refresh(self.obj)
+        await self.db.flush()
         return self.obj
 
     async def __aexit__(self: Self, exc_type, exc, tb):  # noqa
         await self.db.delete(self.obj)
-        await self.db.commit()
 
 
 @pytest.fixture(scope="session")
@@ -92,7 +92,8 @@ async def db(db_connection):
 
 @pytest_asyncio.fixture
 async def site_admin_role(db):
-    role = generate_site_admin_role()
+    role = standard_roles.site_admin_role()
+    role.id = None
     db.add(role)
     await db.commit()
     await db.refresh(role)
@@ -312,25 +313,50 @@ async def event(db, organisation, site_admin_user):
     event.user_id = site_admin_user.id
 
     async with DBManager(db, event) as obj:
+        await db.commit()
         yield obj
+    await db.commit()
 
 
 @pytest_asyncio.fixture
-async def event_with_sharing_group(db, organisation, site_admin_user, sharing_group):
-    org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-    event.sharing_group_id = sharing_group.id
-
-    db.add(event)
+async def event_unpublished_sharing_group(db, organisation, site_admin_user, sharing_group):
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=sharing_group.id,
+        threat_level_id=1,
+        info="event_unpublished_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.SHARING_GROUP,
+        published=False,
+    )
+    async with DBManager(db, event) as obj:
+        await db.commit()
+        yield obj
     await db.commit()
-    await db.refresh(event)
 
-    yield event
 
-    await db.delete(event)
+@pytest_asyncio.fixture
+async def event_sharing_group(db, organisation, site_admin_user, sharing_group):
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=sharing_group.id,
+        threat_level_id=1,
+        info="event_published_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.SHARING_GROUP,
+        published=True,
+    )
+    async with DBManager(db, event) as obj:
+        await db.commit()
+        yield obj
     await db.commit()
 
 
@@ -470,11 +496,17 @@ async def sharing_group(db, instance_owner_org):
     sharing_group.org_id = instance_owner_org.id
 
     db.add(sharing_group)
+    await db.flush()
+
+    sgo = SharingGroupOrg(sharing_group_id=sharing_group.id, org_id=instance_owner_org.id)
+    db.add(sgo)
+
+    await db.flush()
     await db.commit()
-    await db.refresh(sharing_group)
 
     yield sharing_group
 
+    await db.delete(sgo)
     await db.delete(sharing_group)
     await db.commit()
 
@@ -535,23 +567,18 @@ async def galaxy(db):
 
 @pytest_asyncio.fixture()
 async def auth_key(db, site_admin_user):
-    #    clear_key = generate(string.ascii_letters + string.digits, size=40)
     clear_key = "siteadminuser".ljust(40, "0")
 
-    auth_key = generate_auth_key()
-    auth_key.user_id = site_admin_user.id
-    auth_key.authkey = hash_secret(clear_key)
-    auth_key.authkey_start = clear_key[:4]
-    auth_key.authkey_end = clear_key[-4:]
-
-    db.add(auth_key)
-
-    await db.commit()
-    await db.refresh(auth_key)
-
-    yield clear_key, auth_key
-
-    await db.delete(auth_key)
+    auth_key = AuthKey(
+        authkey=hash_secret(clear_key),
+        authkey_start=clear_key[:4],
+        authkey_end=clear_key[-4:],
+        comment="test comment",
+        user_id=site_admin_user.id,
+    )
+    async with DBManager(db, auth_key) as obj:
+        await db.commit()
+        yield clear_key, obj
     await db.commit()
 
 
@@ -656,20 +683,20 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
             )
         )
 
-        galaxy_element = add_to_db(
+        galaxy_element = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
         )
-        galaxy_element2 = add_to_db(
+        galaxy_element2 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
         )
 
-        galaxy_element21 = add_to_db(
+        galaxy_element21 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
         )
-        galaxy_element22 = add_to_db(
+        galaxy_element22 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
         )
-
+        await db.commit()
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -679,6 +706,7 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
+    await db.commit()
 
 
 @pytest_asyncio.fixture
@@ -769,7 +797,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
         galaxy_element22 = await add_to_db(
             GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
         )
-
+        await db.commit()
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -779,6 +807,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
+    await db.commit()
 
 
 @pytest_asyncio.fixture()

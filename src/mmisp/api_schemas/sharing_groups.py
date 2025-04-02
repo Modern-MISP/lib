@@ -26,6 +26,12 @@ class SharingGroup(BaseModel):
 #    org_count: int = 0
 
 
+class MinimalSharingGroup(BaseModel):
+    id: int
+    name: str
+    uuid: str
+
+
 class ShortSharingGroup(BaseModel):
     id: int
     name: str
@@ -59,6 +65,16 @@ class SharingGroupOrg(BaseModel):
     extend: bool
 
 
+class SharingGroupOrgWithOrganisation(SharingGroupOrg):
+    Organisation: ShortOrganisation
+
+
+class EventSharingGroupResponse(SharingGroup):
+    Organisation: ShortOrganisation
+    SharingGroupOrg: list[SharingGroupOrgWithOrganisation]
+    SharingGroupServer: list
+
+
 class GetAllSharingGroupsResponseResponseItemSharingGroup(BaseModel):
     id: int
     uuid: str
@@ -89,10 +105,13 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem(BaseModel):
     Server: ViewUpdateSharingGroupLegacyResponseServerInfo
 
 
-class ViewUpdateSharingGroupLegacyResponseOrganisationInfo(BaseModel):
+class SharingGroupOrgOrganisationIndexInfo(BaseModel):
     id: int
     uuid: str
     name: str
+
+
+class ViewUpdateSharingGroupLegacyResponseOrganisationInfo(SharingGroupOrgOrganisationIndexInfo):
     local: bool
 
 
@@ -104,14 +123,35 @@ class ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem(BaseModel):
     Organisation: ViewUpdateSharingGroupLegacyResponseOrganisationInfo
 
 
+class SharingGroupOrgIndexItem(BaseModel):
+    id: int
+    sharing_group_id: int
+    org_id: int
+    extend: bool
+    Organisation: SharingGroupOrgOrganisationIndexInfo
+
+
 class SharingGroupResponse(BaseModel):
+    editable: bool | None = None
+    deletable: bool | None = None
+
     SharingGroup: ShortSharingGroup
     Organisation: ShortOrganisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+class SharingGroupIndexResponse(BaseModel):
     editable: bool | None = None
     deletable: bool | None = None
+
+    SharingGroup: ShortSharingGroup
+    Organisation: ShortOrganisation
+    SharingGroupOrg: list[SharingGroupOrgIndexItem]
+    SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
@@ -132,7 +172,7 @@ class ViewUpdateSharingGroupLegacyResponse(SharingGroupResponse):
 
 
 class GetSharingGroupsIndex(BaseModel):
-    response: list[SharingGroupResponse]
+    response: list[SharingGroupIndexResponse]
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}

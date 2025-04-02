@@ -1,9 +1,10 @@
+import uuid
 from datetime import datetime
-from typing import Any, Type
 
-from pydantic import BaseModel, PositiveInt, conint, validator
+from pydantic import BaseModel, Field, PositiveInt, conint
 
 from mmisp.api_schemas.organisations import Organisation
+from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse, MinimalSharingGroup
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -224,6 +225,7 @@ class AddEditGetEventAttribute(BaseModel):
     first_seen: str | None = None
     last_seen: str | None = None
     Galaxy: list[AddEditGetEventGalaxy] = []
+    sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
     ShadowAttribute: list[str] = []
     Tag: list[AddEditGetEventTag] = []
 
@@ -314,7 +316,7 @@ class AddEditGetEventDetails(BaseModel):
     disable_correlation: bool
     extends_uuid: str
     protected: bool | None = None
-    event_creator_email: str
+    event_creator_email: str | None = None
     Org: AddEditGetEventOrg
     Orgc: AddEditGetEventOrg
     Attribute: list[AddEditGetEventAttribute] = []
@@ -325,7 +327,7 @@ class AddEditGetEventDetails(BaseModel):
     EventReport: list[AddEditGetEventEventReport] = []
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
-
+    sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
     #    @validator("uuid", "extends_uuid", pre=True)
     #    @classmethod
     #    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
@@ -343,12 +345,13 @@ class AddEditGetEventDetails(BaseModel):
     #
     #        return value
 
-    @validator("sharing_group_id", pre=True)
-    @classmethod
-    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-        if value is not None and value == 0:
-            return None
-        return value
+
+#    @validator("sharing_group_id", pre=True)
+#    @classmethod
+#    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
+#        if value is not None and value == 0:
+#            return "0"
+#        return value
 
 
 class AddEditGetEventResponse(BaseModel):
@@ -370,7 +373,7 @@ class UnpublishEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int | None = None
+    id: uuid.UUID | int | None = None
 
     class Config:
         orm_mode = True
@@ -431,21 +434,21 @@ class PublishEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int | None = None
+    id: uuid.UUID | int | None = None
 
     class Config:
         orm_mode = True
 
 
 class GetAllEventsEventTagTag(BaseModel):
-    id: int
+    id: uuid.UUID | int
     name: str
     colour: str
     is_galaxy: bool
 
 
 class IndexEventsEventTag(BaseModel):
-    id: int
+    id: uuid.UUID | int
     event_id: int
     tag_id: int
     local: bool
@@ -512,15 +515,15 @@ class IndexEventsBody(BaseModel):
 
 
 class ObjectEventResponse(BaseModel):
-    id: int
+    id: uuid.UUID | int
     info: str
     org_id: int | None = None
     orgc_id: int | None = None
 
 
 class GetAllEventsEventTag(BaseModel):
-    id: int
-    event_id: int
+    id: uuid.UUID | int
+    event_id: uuid.UUID | int
     tag_id: int
     local: bool
     relationship_type: bool | str | None = None
@@ -548,7 +551,8 @@ class GetAllEventsResponse(BaseModel):
     disable_correlation: bool
     extends_uuid: str
     event_creator_email: str | None = None  # omitted
-    protected: str | None = None
+    protected: bool | None = None
+    SharingGroup: MinimalSharingGroup | None = None
     Org: GetAllEventsOrg
     Orgc: GetAllEventsOrg
     GalaxyCluster: list[GetAllEventsGalaxyCluster]
@@ -578,7 +582,7 @@ class EditEventBody(BaseModel):
     disable_correlation: bool | None = None
     extends_uuid: str | None = None
     event_creator_email: str | None = None
-    protected: str | None = None
+    protected: bool | None = None
     cryptographic_key: str | None = None
 
     class Config:
@@ -591,7 +595,7 @@ class DeleteEventResponse(BaseModel):
     name: str
     message: str
     url: str
-    id: int
+    id: uuid.UUID | int
     errors: str | None = None
 
     class Config:
@@ -627,10 +631,7 @@ class AddEventBody(BaseModel):
     sighting_timestamp: str | None = None
     disable_correlation: bool | None = None
     extends_uuid: str | None = None
-    protected: str | None = None
-
-    class Config:
-        orm_mode = True
+    protected: bool | None = None
 
 
 class AddEventTag(BaseModel):

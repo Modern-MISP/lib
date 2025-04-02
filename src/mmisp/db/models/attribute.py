@@ -1,25 +1,32 @@
+import logging
 import typing
 from typing import Self, Type
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, or_
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
+from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .event import Event
 from .tag import Tag
+from .user import User
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
 else:
     ColumnExpressionArgument = typing.Any
+
+logger = logging.getLogger("mmisp")
 
 
 class AttributeComparator(Comparator):
@@ -35,7 +42,7 @@ class Attribute(Base, DictMixin):
     __tablename__ = "attributes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     event_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -55,7 +62,7 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="joined")  # type:ignore[var-annotated]
+    event = relationship("Event", back_populates="attributes", lazy="selectin")  # type:ignore[var-annotated]
     mispobject = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
@@ -63,7 +70,7 @@ class Attribute(Base, DictMixin):
         lazy="joined",
         foreign_keys="Attribute.object_id",
     )  # type:ignore[var-annotated]
-    tags = relationship("Tag", secondary="attribute_tags", lazy="raise_on_sql", viewonly=True)
+    tags = relationship("Tag", secondary="attribute_tags", lazy="selectin", viewonly=True)
     attributetags = relationship(
         "AttributeTag",
         primaryjoin="Attribute.id == AttributeTag.attribute_id",
@@ -103,6 +110,13 @@ class Attribute(Base, DictMixin):
         viewonly=True,
     )
 
+    sharing_group = relationship(
+        "SharingGroup",
+        primaryjoin="Attribute.sharing_group_id == SharingGroup.id",
+        lazy="raise_on_sql",
+        foreign_keys="Attribute.sharing_group_id",
+    )
+
     __mapper_args__ = {"polymorphic_on": "type"}
 
     def __init__(self: Self, *arg, **kwargs) -> None:
@@ -122,6 +136,160 @@ class Attribute(Base, DictMixin):
         await db.commit()
         await db.refresh(attribute_tag)
         return attribute_tag
+
+    @hybrid_method
+    def can_edit(self: Self, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an attribute based on
+        whether he or someone of his organisation created the attribute.
+
+        args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has editing permission
+        """
+        if user is None:
+            logger.debug("User is none")
+            return False
+
+        if user.role.check_permission(Permission.SITE_ADMIN):
+            logger.debug("User is site admin")
+            return True
+
+        if user.role.check_permission(Permission.MODIFY_ORG):
+            logger.debug("User has modify org permission")
+            return self.event.orgc_id == user.org_id
+
+        return False
+
+    @can_edit.expression
+    def can_edit(cls: Self, user: User) -> bool:
+        """
+        Checks if a user is allowed to modify an attribute based on
+        whether he or someone of his organisation created the attribute.
+
+        args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has editing permission
+        """
+        condition = []
+        condition.append(user is None)
+        condition.append(user.role.check_permission(Permission.SITE_ADMIN))
+        condition.append(
+            and_(cls.event.has(Event.orgc_id == user.org_id), user.role.check_permission(Permission.MODIFY_ORG))
+        )
+
+        return or_(*condition)
+        """
+        return (
+            user is None  # user is a worker
+            or user.role.check_permission(Permission.SITE_ADMIN)
+            or (user.org_id == cls.event.org_id and user.role.check_permission(Permission.MODIFY_ORG))
+            or (user.org_id == cls.event.orgc_id)
+        )
+        """
+
+    @hybrid_method
+    def can_access(self: Self, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an attribute based on
+        whether the user  is part of the same group or organisation and/or creater organisation
+        as well as the publishing status of the attribute with consideration of the event,
+        the attribute is associated with.
+        whether the attribute is part of the same group or organisation and or creating organisation and
+        the publishing status of the attribute with
+        consideration of the event the attribute is associated with.
+
+         args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has access permission
+        """
+        user_org_id = user.org_id
+
+        if user is None or user.role.check_permission(Permission.SITE_ADMIN):
+            return True  # User is a Worker or Site Admin
+        if self.event.user_id == user.id:
+            return True  # User is the creator of the event
+
+        if not self.event.can_access(user):
+            return False
+
+        if self.event.orgc_id == user_org_id:
+            return True
+
+        if self.distribution == AttributeDistributionLevels.OWN_ORGANIZATION:
+            return self.event.orgc_id == user_org_id
+            # User is part of the same organisation as the organisation of the event and event is published
+        elif self.distribution == AttributeDistributionLevels.COMMUNITY:
+            return self.event.published  # Anyone has access if event is published
+        elif self.distribution == AttributeDistributionLevels.CONNECTED_COMMUNITIES:
+            return self.event.published  # Anyone has access if event is published
+        elif self.distribution == AttributeDistributionLevels.ALL_COMMUNITIES:
+            return self.event.published  # Anyone has access if event is published
+        elif self.distribution == AttributeDistributionLevels.SHARING_GROUP:
+            return self.sharing_group_id in user.org._sharing_group_ids
+        elif self.distribution == AttributeDistributionLevels.INHERIT_EVENT:
+            return True  # already checked event.can_access
+        else:
+            return False  # Something went wrong with the Distribution ID
+
+    @can_access.expression
+    def can_access(cls: Self, user: User) -> bool:
+        """
+        Checks if a user is allowed to see and access an attribute based on
+        whether the attribute is part of the same group or organisation and or creating organisation and
+        the publishing status of the attribute with
+        consideration of the event the attribute is associated with.
+
+         args:
+            self: the attribute
+            user: the user
+
+        returns:
+            true if the user has access permission
+        """
+        user_org_id = user.org_id
+
+        if user is None or user.role.check_permission(Permission.SITE_ADMIN):
+            return True  # User is a Worker or Site Admin
+
+        condition = []
+        condition.append(cls.event.has(Event.orgc_id == user_org_id))
+        condition.append(cls.event.has(Event.user_id == user.id))
+        condition.append(
+            and_(
+                cls.distribution == AttributeDistributionLevels.OWN_ORGANIZATION,
+                cls.event.has(Event.orgc_id == user_org_id),
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution.in_(
+                    [
+                        AttributeDistributionLevels.COMMUNITY,
+                        AttributeDistributionLevels.CONNECTED_COMMUNITIES,
+                        AttributeDistributionLevels.ALL_COMMUNITIES,
+                    ]
+                ),
+                cls.event.has(Event.published),
+            )
+        )
+        condition.append(
+            and_(
+                cls.distribution == AttributeDistributionLevels.SHARING_GROUP,
+                cls.sharing_group_id.in_(user.org._sharing_group_ids),
+            )
+        )
+        condition.append(cls.distribution == AttributeDistributionLevels.INHERIT_EVENT)
+        return and_(cls.event.has(Event.can_access(user)), or_(*condition))
 
     @property
     def event_uuid(self: "Attribute") -> str:

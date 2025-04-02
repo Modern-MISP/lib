@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -6,6 +7,7 @@ from sqlalchemy.orm import relationship
 from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.uuid_type import DBUUID
 
 from ..database import Base
 
@@ -24,7 +26,7 @@ class Organisation(Base, DictMixin):
     nationality: Mapped[str] = mapped_column(String(255))
     sector: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True)
     contacts: Mapped[str] = mapped_column(Text)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     restricted_to_domain: Mapped[list[str]] = mapped_column(DBListJson)
@@ -56,3 +58,18 @@ class Organisation(Base, DictMixin):
         lazy="raise_on_sql",
         foreign_keys="GalaxyCluster.orgc_id",
     )  # type:ignore[assignment,var-annotated]
+
+    _sharing_group_orgs = relationship(
+        "SharingGroupOrg",
+        primaryjoin="Organisation.id == SharingGroupOrg.org_id",
+        foreign_keys="SharingGroupOrg.org_id",
+        viewonly=True,
+        lazy="selectin",
+    )
+
+    @property
+    def _sharing_group_ids(self: Self) -> list[int]:
+        return [x.sharing_group_id for x in self._sharing_group_orgs]
+
+
+#

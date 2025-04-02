@@ -2,7 +2,22 @@ import json
 
 import httpx
 from deepdiff import DeepDiff
+from deepdiff.helper import CannotCompare
 from icecream import ic
+
+
+def compare_func(x, y, level=None):
+    try:
+        if "uuid" in x:
+            return x["uuid"] == y["uuid"]
+        if "id" in x:
+            return x["id"] == y["id"]
+        if "Event" in x:
+            return x["Event"]["uuid"]
+        if "SharingGroup" in x:
+            return x["SharingGroup"]["uuid"]
+    except Exception:
+        raise CannotCompare() from None
 
 
 def to_legacy_format(data):
@@ -17,7 +32,9 @@ def to_legacy_format(data):
     return data
 
 
-def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocessor=None, ignore_order=True):
+def get_legacy_modern_diff(
+    http_method, path, body, auth_key, client, preprocessor=None, ignore_order=True, dry_run=False
+):
     clear_key, auth_key = auth_key
     headers = {"authorization": clear_key, "accept": "application/json"}
 
@@ -26,8 +43,11 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     ic(body)
 
     kwargs = {"headers": headers}
-    if http_method != "get":
+    if http_method not in ["get", "delete"]:
         kwargs["json"] = body
+
+    if dry_run:
+        kwargs["params"] = {"dry_run": 1}
 
     call = getattr(client, http_method)
     response = call(path, **kwargs)
@@ -36,11 +56,22 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
     call = getattr(httpx, http_method)
     legacy_response = call(f"http://misp-core{path}", **kwargs)
     ic(legacy_response)
-    legacy_response_json = legacy_response.json()
+    try:
+        legacy_response_json = legacy_response.json()
+    except json.decoder.JSONDecodeError:
+        ic(legacy_response.text)
+
+        assert False
+        return
+
     ic("Modern MISP Response")
     ic(response_json)
     ic("Legacy MISP Response")
     ic(legacy_response_json)
+
+    if legacy_response.status_code > 299 and response.status_code > 299:
+        # legacy and modern misp both signal an error, details are not relevant
+        return {}
 
     if preprocessor is not None:
         preprocessor(response_json, legacy_response_json)
@@ -50,6 +81,7 @@ def get_legacy_modern_diff(http_method, path, body, auth_key, client, preprocess
         to_legacy_format(legacy_response_json),
         verbose_level=2,
         ignore_order=ignore_order,
+        iterable_compare_func=compare_func,
     )
     ic(diff)
 

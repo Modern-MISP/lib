@@ -14,6 +14,10 @@ class Permission(StrEnum):
     SYNC = "sync"
     """Synchronisation permission, can be used to connect two MISP instances create data on behalf of other users.
     Make sure that the role with this permission has also access to tagging and tag editing rights."""
+    SYNC_AUTHORITATIVE = "sync_authoritative"
+    """new in misp v.2.5.8"""
+    SYNC_INTERNAL = "sync_internal"
+    """new in misp v.2.5.8"""
     ADMIN = "admin"
     """Limited organisation admin - create, manage users of their own organisation."""
     ANALYST_DATA = "analyst_data"
@@ -58,3 +62,5 @@ class Permission(StrEnum):
     """todo: what is this permission for?"""
     SKIP_OTP = "skip_otp"
     """permission to skip otp"""
+    SERVER_SIGN = "server_sign"
+    """permission to sign a server I guess, dunno tho"""

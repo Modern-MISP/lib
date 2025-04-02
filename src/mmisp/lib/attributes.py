@@ -1,7 +1,8 @@
 from collections import defaultdict
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import ClassVar, Literal, Self
+from typing import Any, ClassVar, Literal, Self
 
 
 class AttributeCategories(StrEnum):
@@ -26,15 +27,22 @@ class AttributeCategories(StrEnum):
 @dataclass
 class AttributeType:
     all_attributes: ClassVar[list] = []
+    map_dbkey_attributetype: ClassVar[dict[str, Self]] = dict()
+    map_dbkey_safe_clsname: ClassVar[dict[str, str]] = dict()
+    map_safe_clsname_dbkey: ClassVar[dict[str, str]] = dict()
 
     dbkey: str
     safe_clsname: str
     default_category: AttributeCategories
     categories: frozenset
     to_ids: bool = False
+    validator: Callable[[Any], bool] = field(default=lambda _: True)
 
     def __post_init__(self: Self) -> None:
         self.all_attributes.append(self)
+        self.map_dbkey_attributetype[self.dbkey] = self
+        self.map_dbkey_safe_clsname[self.dbkey] = self.safe_clsname
+        self.map_safe_clsname_dbkey[self.safe_clsname] = self.dbkey
 
 
 AttributeType(
@@ -2351,9 +2359,8 @@ AttributeType(
     to_ids=True,
 )
 
-
-mapper_val_safe_clsname = {x.dbkey: x.safe_clsname for x in AttributeType.all_attributes}
-mapper_safe_clsname_val = dict((v, k) for k, v in mapper_val_safe_clsname.items())
+mapper_val_safe_clsname = AttributeType.map_dbkey_safe_clsname
+mapper_safe_clsname_val = AttributeType.map_safe_clsname_dbkey
 literal_valid_attribute_types = Literal[tuple([k for k in mapper_val_safe_clsname.keys()])]  # type:ignore[valid-type]
 default_category = {x.dbkey: x.default_category for x in AttributeType.all_attributes}
 categories = {x.dbkey: x.categories for x in AttributeType.all_attributes}
