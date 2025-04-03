@@ -8,7 +8,6 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy.orm.collections import collection
 
 import mmisp.db.all_models  # noqa
 import mmisp.lib.standard_roles as standard_roles
@@ -657,7 +656,7 @@ def galaxy_cluster_two_uuid():
 
 
 @pytest_asyncio.fixture
-async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
+async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid, organisation):
     galaxy = Galaxy(
         namespace="misp",
         name="test galaxy",
@@ -669,8 +668,8 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
         uuid=uuid(),
         enabled=True,
         local_only=False,
-        org_id=0,
-        orgc_id=0,
+        org_id=organisation.id,
+        orgc_id=organisation.id,
         distribution=DistributionLevels.ALL_COMMUNITIES,
         created=datetime.now(),
         default=False,
