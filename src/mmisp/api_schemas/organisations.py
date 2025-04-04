@@ -29,7 +29,7 @@ class Organisation(BaseOrganisation):
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-class GetOrganisationResponse(BaseModel):
+class GetOrganisationElement(BaseModel):
     id: int
     name: str
     nationality: str | None = None
@@ -54,7 +54,11 @@ class GetOrganisationResponse(BaseModel):
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-class GetAllOrganisationsOrganisation(GetOrganisationResponse):
+class GetOrganisationResponse(BaseModel):
+    Organisation: GetOrganisationElement
+
+
+class GetAllOrganisationsOrganisation(GetOrganisationElement):
     user_count: int
     created_by_email: str
 

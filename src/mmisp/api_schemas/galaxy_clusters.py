@@ -11,7 +11,7 @@ from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGal
 from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
-from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation, GalaxyClusterOrganisationResponse
+from mmisp.api_schemas.organisations import GetOrganisationElement, Organisation, GalaxyClusterOrganisationResponse
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -65,8 +65,8 @@ class GetGalaxyClusterResponse(CommonGalaxyCluster):
     Galaxy: GetAllSearchGalaxiesAttributes | None = None
     GalaxyClusterRelation: list = []
     RelationshipInbound: list = []
-    Org: GetOrganisationResponse | None = None
-    Orgc: GetOrganisationResponse | None = None
+    Org: GetOrganisationElement | None = None
+    Orgc: GetOrganisationElement | None = None
 
 
 class GalaxyClusterResponse(BaseModel):
