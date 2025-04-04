@@ -1396,16 +1396,16 @@ async def user(db, instance_owner_org, site_admin_role):
     await db.commit()
 
 @pytest_asyncio.fixture()
-async def sync_test_event(db, event, organisation, site_admin_user, sharing_group):
-    org_id = organisation.id
-    event.org_id = org_id
-    event.orgc_id = org_id
+async def sync_test_event(db, event, site_admin_user, sharing_group):
     event.user_id = site_admin_user.id
     event.sharing_group_id = sharing_group.id
     event_id = event.id
     attribute = generate_random_attribute(event_id)
     attribute_2 = generate_random_attribute(event_id)
     event.attribute_count += 2
+
+    db.add(event)
+    await db.commit()
 
     db.add(attribute)
     db.add(attribute_2)
@@ -1427,6 +1427,5 @@ async def sync_test_event(db, event, organisation, site_admin_user, sharing_grou
 
     await db.delete(attribute)
     await db.delete(attribute_2)
-    event.attribute_count -= 2
 
     await db.commit()
