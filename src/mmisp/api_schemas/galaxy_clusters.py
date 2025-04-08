@@ -110,6 +110,7 @@ class AddGalaxyElement(BaseModel):
 
 class AddUpdateGalaxyElement(BaseModel):
     id: int | None = None
+    galaxy_cluster_id: int | None = None
     key: str
     value: str
 
@@ -125,14 +126,26 @@ class AddGalaxyClusterRequest(BaseModel):
 
 class PutGalaxyClusterRequest(BaseModel):
     id: int
-    value: str
-    description: str
-    source: str
+    uuid: str
+    collection_uuid: str
     type: str
-    uuid: UUID
-    version: int
+    value: str
+    tag_name: str
+    description: str
+    galaxy_id: int
+    source: str
     authors: list[str]
+    version: str | None = None
     distribution: DistributionLevels
+    sharing_group_id: int | None = None
+    org_id: int
+    orgc_id: int
+    default: bool
+    locked: bool
+    extends_uuid: str | None = None
+    extends_version: str | None = None
+    published: bool = False
+    deleted: bool = False
     GalaxyElement: list[AddUpdateGalaxyElement]
 
 
