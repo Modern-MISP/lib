@@ -5,7 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -1396,7 +1396,7 @@ async def user(db, instance_owner_org, site_admin_role):
     await db.commit()
 
 @pytest_asyncio.fixture()
-async def sync_test_event(db, event, site_admin_user, sharing_group):
+async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
     event.user_id = site_admin_user.id
     event.sharing_group_id = sharing_group.id
     event_id = event.id
@@ -1429,3 +1429,8 @@ async def sync_test_event(db, event, site_admin_user, sharing_group):
     await db.delete(attribute_2)
 
     await db.commit()
+
+    # pushed event cleanup at remote db
+    await remote_db.commit()
+    statement = delete(Event).where(Event.uuid == event.uuid)
+    await remote_db.execute(statement)

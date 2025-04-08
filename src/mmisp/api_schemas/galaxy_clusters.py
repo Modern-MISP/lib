@@ -1,7 +1,6 @@
 from typing import Literal
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -209,9 +208,9 @@ class GalaxyClusterSearchBody(BaseModel):
     limit: int | None = None
     page: int | None = None
     id: int | None = None
-    uuid: UUID | None = None
+    uuid: str | None = None
     galaxy_id: int | None = None
-    galaxy_uuid: UUID | None = None
+    galaxy_uuid: str | None = None
     published: bool | None = None
     value: str | None = None
     extends_uuid: str | None = None
