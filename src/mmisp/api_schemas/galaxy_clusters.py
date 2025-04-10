@@ -207,8 +207,8 @@ class GalaxyClusterSearchResponse(BaseModel):
 class GalaxyClusterSearchBody(BaseModel):
     limit: int | None = None
     page: int | None = None
-    id: int | None = None
-    uuid: str | None = None
+    id: list[int] | None = None
+    uuid: list[str] | None = None
     galaxy_id: int | None = None
     galaxy_uuid: str | None = None
     published: bool | None = None
