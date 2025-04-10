@@ -110,7 +110,7 @@ class AddOrganisation(BaseModel):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: list[str] | None = None
+    restricted_to_domain: str | list[str] | None = None
     landingpage: str | None = None
 
 
