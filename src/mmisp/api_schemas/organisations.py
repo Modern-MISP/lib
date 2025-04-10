@@ -99,7 +99,8 @@ class OrganisationUsersResponse(BaseModel):
 
 
 class AddOrganisation(BaseModel):
-    id: int
+    id: int | None = None
+    uuid: str | None = None
     name: str
     description: str | None = None
     type: str
