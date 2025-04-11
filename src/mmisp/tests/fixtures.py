@@ -23,7 +23,7 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-from .generators.model_generators.attribute_generator import generate_attribute, generate_random_attribute
+from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
@@ -1394,43 +1394,3 @@ async def user(db, instance_owner_org, site_admin_role):
 
     await db.delete(user)
     await db.commit()
-
-@pytest_asyncio.fixture()
-async def sync_test_event(db, event, site_admin_user, sharing_group, remote_db):
-    event.user_id = site_admin_user.id
-    event.sharing_group_id = sharing_group.id
-    event_id = event.id
-    attribute = generate_random_attribute(event_id)
-    attribute_2 = generate_random_attribute(event_id)
-    event.attribute_count += 2
-
-    db.add(event)
-    await db.commit()
-
-    db.add(attribute)
-    db.add(attribute_2)
-    await db.commit()
-    await db.refresh(event)
-
-    qry = (
-        select(Event)
-        .filter(Event.id == event_id)
-        .options(selectinload(Event.attributes))
-        .execution_options(populate_existing=True)
-    )
-    await db.execute(qry)
-
-    await db.refresh(attribute)
-    await db.refresh(attribute_2)
-
-    yield event
-
-    await db.delete(attribute)
-    await db.delete(attribute_2)
-
-    await db.commit()
-
-    # pushed event cleanup at remote db
-    await remote_db.commit()
-    statement = delete(Event).where(Event.uuid == event.uuid)
-    await remote_db.execute(statement)
