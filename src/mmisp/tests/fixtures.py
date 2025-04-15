@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 import mmisp.db.all_models  # noqa
 import mmisp.lib.standard_roles as standard_roles
+import mmisp.lib.standard_threat_levels as standard_threat_levels
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.auth_key import AuthKey
@@ -99,6 +100,21 @@ async def site_admin_role(db):
     await db.refresh(role)
     yield role
     await db.delete(role)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def threat_levels(db):
+    threat_levels = []
+    for tl in standard_threat_levels.get_standard_threat_level():
+        threat_levels.append(tl)
+        db.add(tl)
+    await db.commit()
+
+    yield threat_levels
+
+    for tl in threat_levels:
+        await db.delete(tl)
     await db.commit()
 
 
