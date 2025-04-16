@@ -9,74 +9,16 @@ from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAl
 from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
+from mmisp.api_schemas.galaxies import RestSearchGalaxyBody, ExportGalaxyGalaxyElement
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationElement, Organisation, GalaxyClusterOrganisationResponse
 from mmisp.lib.distribution import DistributionLevels
 
 
-class ImportGalaxyClusterValueMeta(BaseModel):
-    type: list[str]
-    complexity: str
-
-
-class ImportGalaxyClusterValueRelated(BaseModel):
-    dest_uuid: UUID = Field(validation_alias="dest-uuid")
-    type: str
-
-
-class ImportGalaxyClusterValue(BaseModel):
-    value: str
-    uuid: UUID
-    related: list[ImportGalaxyClusterValueRelated] | None = None
-    description: str = ""
-    revoked: bool | None = None
-    meta: ImportGalaxyClusterValueMeta | None = None
-
-
-class ImportGalaxyCluster(BaseModel):
-    description: str
-    type: str
-    version: int
-    name: str
-    uuid: UUID
-    values: list[ImportGalaxyClusterValue]
-    authors: list[str]
-    source: str
-    category: str
-
-    distribution: Literal[3] = 3
-
-
-class ExportGalaxyGalaxyElement(BaseModel):
+class GetGalaxyClusterResponse(BaseModel):
     id: int | None = None
-    galaxy_cluster_id: int | None = None
-    key: str
-    value: str
-
-
-class GetGalaxyClusterResponse(CommonGalaxyCluster):
-    meta: None = Field(default=None, exclude=True)  # type: ignore
-    tag_id: None = Field(default=None, exclude=True)  # type: ignore
-    local: None = Field(default=None, exclude=True)  # type: ignore
-    relationship_type: None = Field(default=None, exclude=True)  # type: ignore
-
-    GalaxyElement: list[ExportGalaxyGalaxyElement]
-    Galaxy: GetAllSearchGalaxiesAttributes | None = None
-    GalaxyClusterRelation: list = []
-    RelationshipInbound: list = []
-    Org: GetOrganisationElement | None = None
-    Orgc: GetOrganisationElement | None = None
-
-
-class GalaxyClusterResponse(BaseModel):
-    GalaxyCluster: GetGalaxyClusterResponse
-    Tag: NoneTag | TagAttributesResponse = Field(default_factory=NoneTag)
-
-
-class ExportGalaxyClusterResponse(BaseModel):
-    id: int
-    uuid: UUID
-    collection_uuid: UUID
+    uuid: str | None = None
+    collection_uuid: str
     type: str
     value: str
     tag_name: str
