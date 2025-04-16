@@ -1,6 +1,7 @@
+from os import getenv
 from typing import Optional, Self
 
-from github import Github, GithubException, UnknownObjectException
+from github import Auth, Github, GithubException, UnknownObjectException
 from github.ContentFile import ContentFile
 
 
@@ -26,7 +27,12 @@ class GithubUtils:
         Raises:
             AttributeError: If the repository or branch cannot be accessed.
         """
-        self._github = Github()
+        auth_token = getenv("GITHUB_AUTH_TOKEN")
+        auth = None
+        if auth_token is not None:
+            auth = Auth.Token(auth_token)
+
+        self._github = Github(auth=auth)
         try:
             self.repository = self._github.get_repo(repository_name)
             self.branch = self.repository.get_branch(branch_name if branch_name else self.repository.default_branch)
