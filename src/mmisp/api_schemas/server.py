@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 from mmisp.api_schemas.organisations import ServerOrganisation
 from mmisp.api_schemas.users import ServerUser
@@ -6,12 +6,12 @@ from mmisp.api_schemas.users import ServerUser
 
 class ServerVersion(BaseModel):
     version: str
-    pymisp_recommended_version: str
+    pymisp_recommended_version: str | None = None
     perm_sync: bool
     perm_sighting: bool
     perm_galaxy_editor: bool
-    perm_analyst_data: bool
-    uuid: str
+    perm_analyst_data: bool = False
+    uuid: str | None = None
     request_encoding: list[str]
     filter_sightings: bool
 
