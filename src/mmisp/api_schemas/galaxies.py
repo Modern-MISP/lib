@@ -1,7 +1,7 @@
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, validator
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
@@ -220,3 +220,10 @@ class RestSearchGalaxyBody(BaseModel):
     created: str | None = None
     modified: str | None = None
     distribution: str | None = None
+
+    @validator("created", "modified", pre=True)
+    @classmethod
+    def convert_date_to_str(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime("%Y-%m-%d %H:%M:%S")
+        return v
