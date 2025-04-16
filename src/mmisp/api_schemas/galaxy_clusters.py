@@ -115,11 +115,13 @@ class AddUpdateGalaxyElement(BaseModel):
 
 
 class AddGalaxyClusterRequest(BaseModel):
+    uuid: str
     value: str
     description: str
     source: str
     authors: list[str]
     distribution: DistributionLevels
+    locked: bool = False
     GalaxyElement: list[AddGalaxyElement]
 
 
