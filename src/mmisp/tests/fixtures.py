@@ -36,7 +36,6 @@ from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
-from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
@@ -323,11 +322,18 @@ async def organisation(db):
 @pytest_asyncio.fixture
 async def event(db, organisation, site_admin_user):
     org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-
+    event = Event(
+        org_id=org_id,
+        orgc_id=org_id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="test event",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.ALL_COMMUNITIES,
+    )
     async with DBManager(db, event) as obj:
         await db.commit()
         yield obj
@@ -393,12 +399,19 @@ async def sighting(db, organisation, event_with_attributes):
 
 @pytest_asyncio.fixture
 async def event2(db, organisation, site_admin_user):
-    org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="event_published_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.SHARING_GROUP,
+        published=True,
+    )
     db.add(event)
     await db.commit()
     await db.refresh(event)
