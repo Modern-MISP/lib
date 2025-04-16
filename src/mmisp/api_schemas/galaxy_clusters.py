@@ -132,7 +132,7 @@ class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     deleted: bool | None = None
     GalaxyElement: Optional[list[ExportGalaxyGalaxyElement]] = None
     Galaxy: RestSearchGalaxyBody
-    GalaxyClusterRelation: Optional[GalaxyClusterRelation] = None
+    GalaxyClusterRelation: Optional[list[GalaxyClusterRelation]] = None
     Org: Optional[GalaxyClusterOrganisationResponse] = None
     Orgc: Optional[GalaxyClusterOrganisationResponse] = None
 
