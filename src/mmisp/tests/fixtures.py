@@ -30,7 +30,11 @@ from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
+from .generators.model_generators.event_blocklist_generator import generate_event_blocklist
+from .generators.model_generators.event_generator import generate_event
+from .generators.model_generators.galaxy_cluster_blocklist_generator import generate_galaxy_cluster_blocklist
 from .generators.model_generators.object_generator import generate_object
+from .generators.model_generators.org_blocklist_generator import generate_org_blocklist
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
     generate_over_correlating_value,
@@ -45,13 +49,16 @@ from .generators.model_generators.shadow_attribute_generator import generate_sha
 from .generators.model_generators.sharing_group_generator import generate_sharing_group
 from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
+from .generators.model_generators.threat_level_generator import generate_threat_level
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+from ..db.models.blocklist import GalaxyClusterBlocklist
 from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
 from ..db.models.object import Object
 from ..db.models.post import Post
 from ..db.models.sighting import Sighting
+from ..db.models.threat_level import ThreatLevel
 
 
 class DBManager:
@@ -1394,4 +1401,61 @@ async def user(db, instance_owner_org, site_admin_role):
     yield user
 
     await db.delete(user)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_blocklist(db, event):
+    event_blocklist = generate_event_blocklist(event.uuid, event.info, event.orgc_id)
+
+    db.add(event_blocklist)
+    await db.commit()
+    await db.refresh(event_blocklist)
+
+    yield event_blocklist
+
+    await db.delete(event_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def org_blocklist(db, organisation):
+    org_blocklist = generate_org_blocklist(organisation.id, organisation.name)
+
+    db.add(org_blocklist)
+    await db.commit()
+    await db.refresh(org_blocklist)
+
+    yield org_blocklist
+
+    await db.delete(org_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def cluster_blocklist(db, test_default_galaxy):
+    cluster = test_default_galaxy['galaxy_cluster']
+    cluster_blocklist: GalaxyClusterBlocklist = generate_galaxy_cluster_blocklist(cluster.uuid, cluster.orgc_id)
+
+    db.add(cluster_blocklist)
+    await db.commit()
+    await db.refresh(cluster_blocklist)
+
+    yield cluster_blocklist
+
+    await db.delete(cluster_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def threat_level(db):
+    threat_level: ThreatLevel = generate_threat_level()
+
+    db.add(threat_level)
+    await db.commit()
+    await db.refresh(threat_level)
+
+    yield threat_level
+
+    await db.delete(threat_level)
     await db.commit()
