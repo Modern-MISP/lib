@@ -108,6 +108,8 @@ class GalaxyClusterRelation(BaseModel):
     default: bool
 
 
+_GalaxyClusterRelation = GalaxyClusterRelation
+
 class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     id: int | None = None
     uuid: str
@@ -132,7 +134,7 @@ class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     deleted: bool | None = None
     GalaxyElement: Optional[list[ExportGalaxyGalaxyElement]] = None
     Galaxy: RestSearchGalaxyBody
-    GalaxyClusterRelation: Optional[list[GalaxyClusterRelation]] = None
+    GalaxyClusterRelation: list[_GalaxyClusterRelation] | None = None
     Org: Optional[GalaxyClusterOrganisationResponse] = None
     Orgc: Optional[GalaxyClusterOrganisationResponse] = None
 
