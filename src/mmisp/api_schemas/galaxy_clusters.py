@@ -78,7 +78,7 @@ class PutGalaxyClusterRequest(BaseModel):
     galaxy_id: int
     source: str
     authors: list[str]
-    version: str | None = None
+    version: int | None = None
     distribution: DistributionLevels
     sharing_group_id: int | None = None
     org_id: int
