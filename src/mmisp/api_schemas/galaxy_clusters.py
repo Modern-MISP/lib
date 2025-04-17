@@ -111,6 +111,8 @@ class GalaxyClusterRelation(BaseModel):
 _GalaxyClusterRelation = GalaxyClusterRelation
 
 class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
+    # if minimal is set, only uuid, version and Galaxy is returned
+
     id: int | None = None
     uuid: str
     collection_uuid: str | None = None
