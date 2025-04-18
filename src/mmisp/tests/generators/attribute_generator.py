@@ -31,8 +31,8 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
         comment=generate_random_str(),
         deleted=False,
         disable_correlation=bool(random.getrandbits(1)),
-        first_seen=str(int(time.time())),
-        last_seen=str(int(time.time())),
+        first_seen=str(time.time()),
+        last_seen=str(time.time()),
     )
 
 
