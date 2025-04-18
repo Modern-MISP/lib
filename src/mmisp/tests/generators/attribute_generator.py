@@ -1,5 +1,4 @@
 import random
-import time
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
@@ -31,8 +30,8 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
         comment=generate_random_str(),
         deleted=False,
         disable_correlation=bool(random.getrandbits(1)),
-        first_seen=str(time.time()),
-        last_seen=str(time.time()),
+        first_seen=None,
+        last_seen=None,
     )
 
 
