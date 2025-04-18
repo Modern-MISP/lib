@@ -152,6 +152,7 @@ async def instance_org_two(db):
     org = generate_organisation()
     db.add(org)
     await db.commit()
+    await db.refresh(org)
     yield org
     await db.delete(org)
     await db.commit()
@@ -163,6 +164,7 @@ async def instance_two_owner_org(db):
     org.local = False
     db.add(org)
     await db.commit()
+    await db.refresh(org)
     yield org
     await db.delete(org)
     await db.commit()
