@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
@@ -8,6 +9,7 @@ from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.object_json_type import DBObjectJson
+from mmisp.db.types import DateTimeEpoch
 from mmisp.lib.uuid import uuid
 
 
@@ -22,7 +24,7 @@ class Object(Base, DictMixin):
     template_uuid: Mapped[str] = mapped_column(String(255), index=True, default=None)
     template_version: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey("events.id"), index=True, nullable=False)
-    timestamp: Mapped[int] = mapped_column(Integer, index=True, nullable=False, default=0)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, index=True, nullable=False, default=0)
     distribution: Mapped[int] = mapped_column(Integer, index=True, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, ForeignKey("sharing_groups.id"), index=True)
     comment: Mapped[str] = mapped_column(String(255), nullable=False)

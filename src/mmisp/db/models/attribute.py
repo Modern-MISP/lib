@@ -1,15 +1,16 @@
 import logging
 import typing
+from datetime import datetime
 from typing import Self, Type
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from mmisp.db.mixins import DictMixin
-from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.types import DateTimeEpoch
 from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.distribution import AttributeDistributionLevels
@@ -53,7 +54,7 @@ class Attribute(Base, DictMixin):
     value1: Mapped[str] = mapped_column(Text, nullable=False)
     value2: Mapped[str] = mapped_column(Text, nullable=False, default="")
     to_ids: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
     comment: Mapped[str | None] = mapped_column(Text)

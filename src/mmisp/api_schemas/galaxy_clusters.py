@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
@@ -11,7 +11,7 @@ from mmisp.lib.distribution import DistributionLevels
 
 class ExportGalaxyGalaxyElement(BaseModel):
     id: int | None = None
-    galaxy_cluster_id: str | None = None
+    galaxy_cluster_id: int | None = None
     key: str
     value: str
 
@@ -27,15 +27,15 @@ class GetGalaxyClusterResponse(BaseModel):
     galaxy_id: int
     source: str
     authors: list[str]
-    version: str
+    version: int
     distribution: str
-    sharing_group_id: str | None
+    sharing_group_id: int | None = None
     org_id: int
     orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str | None = None
-    extends_version: str | None
+    extends_version: int | None = None
     published: bool
     deleted: bool
     Galaxy: GetAllSearchGalaxiesAttributes | None = None
@@ -48,9 +48,9 @@ class GetGalaxyClusterResponse(BaseModel):
 
 class GalaxyClusterResponse(BaseModel):
     GalaxyCluster: GetGalaxyClusterResponse
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
 
 
 class ExportGalaxyClusterResponse(BaseModel):
@@ -64,15 +64,15 @@ class ExportGalaxyClusterResponse(BaseModel):
     galaxy_id: int
     source: str
     authors: list[str]
-    version: str
+    version: int
     distribution: str
-    sharing_group_id: str
+    sharing_group_id: int
     org_id: int
     orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str
-    extends_version: str
+    extends_version: int
     published: bool
     deleted: bool
     GalaxyElement: list[ExportGalaxyGalaxyElement]

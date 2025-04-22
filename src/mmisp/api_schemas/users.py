@@ -7,10 +7,6 @@ from mmisp.api_schemas.organisations import Organisation, OrganisationUsersRespo
 from mmisp.api_schemas.roles import Role, RoleUsersResponse
 
 
-class Config:
-    orm_mode = True
-
-
 class UserAttributesBody(BaseModel):
     org_id: int | None = None
     authkey: str | None = None
@@ -19,19 +15,19 @@ class UserAttributesBody(BaseModel):
     gpgkey: str | None = None
     certif_public: str | None = None
     termsaccepted: bool | None = None
-    role_id: str | None = None
+    role_id: int | None = None
     change_pw: bool | None = None
     contactalert: bool | None = None
     disabled: bool | None = None
-    expiration: datetime | str | None = None
+    expiration: datetime | None = None
     force_logout: bool | None = None
     external_auth_required: bool | None = None
     external_auth_key: str | None = None
     notification_daily: bool | None = None
     notification_weekly: bool | None = None
     notification_monthly: bool | None = None
-    totp: str | None = None
-    hotp_counter: str | None = None
+    totp: bool | None = None
+    hotp_counter: int | None = None
     name: str | None = None
     nids_sid: int | None = None
 
@@ -50,7 +46,7 @@ class AddUserBody(BaseModel):
     password: str
     name: str
     """role_id newly added"""
-    role_id: str
+    role_id: int
 
 
 class AddUserResponseData(BaseModel):
@@ -70,11 +66,11 @@ class AddUserResponseData(BaseModel):
     change_pw: bool
     contactalert: bool
     disabled: bool
-    expiration: int | None = None
-    current_login: int
+    expiration: datetime | None = None
+    current_login: datetime
     force_logout: bool
-    date_created: int
-    date_modified: int
+    date_created: datetime
+    date_modified: datetime
     sub: str | None = None
     external_auth_required: bool
     external_auth_key: str | None = None
@@ -82,7 +78,7 @@ class AddUserResponseData(BaseModel):
     notification_daily: bool
     notification_weekly: bool
     notification_monthly: bool
-    totp: str | None = None
+    totp: bool | None = None
     hotp_counter: int | None = None
     last_pw_change: int | None = None
 
@@ -97,38 +93,38 @@ class GetUsersUser(BaseModel):
     server_id: int = 0
     email: str
     autoalert: bool
-    auth_key: str | None
+    auth_key: str | None = None
     invited_by: int
-    gpg_key: str | None
-    certif_public: str | None
+    gpg_key: str | None = None
+    certif_public: str | None = None
     nids_sid: int
     termsaccepted: bool
-    newsread: int | None
+    newsread: int | None = None
     role_id: int
     change_pw: bool
     contactalert: bool
     disabled: bool
-    expiration: int | None
-    current_login: int | None
-    last_login: int | None
-    last_api_access: int | None
+    expiration: datetime | None = None
+    current_login: datetime | None = None
+    last_login: datetime | None = None
+    last_api_access: int | None = None
     force_logout: bool
-    date_created: int | None
-    date_modified: int | None
-    last_pw_change: int | None
-    totp: str | None
+    date_created: datetime | None = None
+    date_modified: datetime | None = None
+    last_pw_change: int | None = None
+    totp: bool | None = None
     """detailed information bellow"""
-    hotp_counter: int | None
-    notification_daily: bool | None
-    notification_weekly: bool | None
-    notification_monthly: bool | None
-    external_auth_required: bool | None
-    external_auth_key: str | None
-    sub: str | None
+    hotp_counter: int | None = None
+    notification_daily: bool | None = None
+    notification_weekly: bool | None = None
+    notification_monthly: bool | None = None
+    external_auth_required: bool | None = None
+    external_auth_key: str | None = None
+    sub: str | None = None
     """new contents bellow"""  # not in the database, all 3 fields to none now, so no error will be raised
-    name: str | None
-    contact: bool | None
-    notification: bool | None
+    name: str | None = None
+    contact: bool | None = None
+    notification: bool | None = None
 
 
 class GetUsersElement(BaseModel):

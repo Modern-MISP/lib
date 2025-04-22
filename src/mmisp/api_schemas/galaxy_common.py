@@ -1,8 +1,9 @@
 from datetime import datetime
+from typing import Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import GalaxyDistributionLevels
 
 
 class GetAllSearchGalaxiesAttributes(BaseModel):
@@ -17,9 +18,13 @@ class GetAllSearchGalaxiesAttributes(BaseModel):
     kill_chain_order: str | None = None
     enabled: bool
     local_only: bool
-    created: datetime | str
-    modified: datetime | str
+    created: datetime
+    modified: datetime
     org_id: int
     orgc_id: int
     default: bool
-    distribution: DistributionLevels
+    distribution: GalaxyDistributionLevels
+
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime) -> str:
+        return value.strftime("%Y-%m-%d %H:%M:%S")

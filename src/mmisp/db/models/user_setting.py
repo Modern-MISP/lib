@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from time import time
 
@@ -5,6 +6,7 @@ from sqlalchemy import ForeignKey, Integer, String, Text
 
 from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.types import DateTimeEpoch
 
 from .user import User
 
@@ -29,4 +31,4 @@ class UserSetting(Base):
     setting: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False, index=True)
-    timestamp: Mapped[int] = mapped_column(Integer, default=time, onupdate=time, nullable=False, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=time, onupdate=time, nullable=False, index=True)

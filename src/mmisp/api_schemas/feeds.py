@@ -1,6 +1,6 @@
 from typing import Any, Dict, Type
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, validator
 
 
 class FeedUpdateBody(BaseModel):
@@ -9,7 +9,7 @@ class FeedUpdateBody(BaseModel):
     url: str | None = None
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str | None = None
+    distribution: int | None = None
     sharing_group_id: int | None = None
     tag_id: int | None = None
     default: bool | None = None
@@ -27,16 +27,12 @@ class FeedUpdateBody(BaseModel):
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
     orgc_id: int | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedToggleBody(BaseModel):
     enable: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedAttributesResponse(BaseModel):
@@ -46,7 +42,7 @@ class FeedAttributesResponse(BaseModel):
     url: str
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str
+    distribution: int
     sharing_group_id: int | None = None
     tag_id: int
     default: bool | None = None
@@ -65,6 +61,8 @@ class FeedAttributesResponse(BaseModel):
     force_to_ids: bool
     orgc_id: int
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("sharing_group_id", always=True)
     @classmethod
     def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> int | None:
@@ -79,25 +77,19 @@ class FeedAttributesResponse(BaseModel):
 
 class FeedResponse(BaseModel):
     Feed: FeedAttributesResponse
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedFetchResponse(BaseModel):
     result: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedEnableDisableResponse(BaseModel):
     name: str
     message: str
     url: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedCreateBody(BaseModel):
@@ -106,8 +98,8 @@ class FeedCreateBody(BaseModel):
     url: str = Field(min_length=1)
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str | None = None
-    sharing_group_id: str | None = None
+    distribution: int | None = None
+    sharing_group_id: int | None = None
     tag_id: int | None = None
     default: bool | None = None
     source_format: str | None = None
@@ -124,9 +116,7 @@ class FeedCreateBody(BaseModel):
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
     orgc_id: int | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedCacheResponse(BaseModel):
@@ -135,6 +125,4 @@ class FeedCacheResponse(BaseModel):
     url: str
     saved: bool
     success: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

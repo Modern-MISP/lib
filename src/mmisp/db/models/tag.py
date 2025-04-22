@@ -2,10 +2,11 @@ from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import relationship
 
 from mmisp.db.database import Base
+from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
 
 
-class Tag(Base):
+class Tag(Base, DictMixin):
     __tablename__ = "tags"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

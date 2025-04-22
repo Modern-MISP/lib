@@ -1,6 +1,7 @@
 from typing import Optional
 
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, ConfigDict, StringConstraints
+from typing_extensions import Annotated
 
 from mmisp.plugins.plugin_type import PluginType
 
@@ -10,11 +11,11 @@ class PluginInfo(BaseModel):
     Encapsulates information about a plugin.
     """
 
-    class Config:
-        anystr_strip_whitespace = True
-        allow_mutation = False
+    # TODO[pydantic]: The following keys were removed: `allow_mutation`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(str_strip_whitespace=True, allow_mutation=False)
 
-    NAME: constr(min_length=1)
+    NAME: Annotated[str, StringConstraints(min_length=1)]
     """Name of the plugin"""
     PLUGIN_TYPE: PluginType
     """Type of the plugin"""

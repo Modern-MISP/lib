@@ -13,7 +13,7 @@ class ShadowAttribute(BaseModel):
     to_ids: bool
     comment: str
     org_id: int
-    timestamp: str
+    timestamp: int
     first_seen: str
     last_seen: str
     deleted: bool

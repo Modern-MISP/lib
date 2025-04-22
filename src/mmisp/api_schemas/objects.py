@@ -1,42 +1,44 @@
-from typing import Any, Dict, Optional, Type
+from datetime import datetime
+from typing import Any, Dict, Optional, Self, Type
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, validator
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAllAttributesResponse
 from mmisp.api_schemas.events import ObjectEventResponse
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
 class ObjectSearchBody(BaseModel):
     object_name: str | None = None
     object_template_uuid: str | None = None
-    object_template_version: str | None = None
+    object_template_version: int | None = None
     event_id: int | None = None
     category: str | None = None
     comment: str | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: int | None = None
+    last_seen: int | None = None
     quick_filter: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     event_info: str | None = None
     from_: str | None = None  # 'from' is a reserved word in Python, so an underscore is added
     to: str | None = None
     date: str | None = None
     last: str | None = None
-    event_timestamp: str | None = None
+    event_timestamp: datetime | None = None
     org_id: int | None = None
     uuid: str | None = None
     value1: str | None = None
     value2: str | None = None
     type: str | None = None
     object_relation: str | None = None
-    attribute_timestamp: str | None = None
+    attribute_timestamp: datetime | None = None
     to_ids: bool | None = None
     published: bool | None = None
     deleted: bool | None = None
     return_format: str | None = "json"
     limit: str | None = "25"
 
-    @validator("limit", allow_reuse=True)
+    @field_validator("limit")
     @classmethod
     def check_limit(cls: Type["ObjectSearchBody"], value: Any) -> str:  # noqa: ANN101
         if value:
@@ -49,8 +51,11 @@ class ObjectSearchBody(BaseModel):
                 raise ValueError("'limit' must be between 1 and 500")
         return value
 
-    class Config:
-        orm_mode = True
+    @field_serializer("timestamp", "event_timestamp", "attribute_timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
 
 
 class ObjectWithAttributesResponse(BaseModel):
@@ -60,17 +65,19 @@ class ObjectWithAttributesResponse(BaseModel):
     meta_category: str | None = None
     description: str | None = None
     template_uuid: str | None = None
-    template_version: str | None = None
+    template_version: int | None = None
     event_id: int | None = None
-    timestamp: str | None = None
-    distribution: str | None = None
+    timestamp: datetime | None = None
+    distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None  # is none if distribution is not 4, see validator
     comment: str | None = None
     deleted: bool | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: int | None = None
+    last_seen: int | None = None
     attributes: list[GetAllAttributesResponse] | None = Field(alias="Attribute", default=None)
     Event: ObjectEventResponse | None = None
+
+    model_config = ConfigDict(validate_by_name=True, validate_by_alias=True)
 
     @validator("sharing_group_id", always=True)
     @classmethod
@@ -85,8 +92,11 @@ class ObjectWithAttributesResponse(BaseModel):
             return value
         return None
 
-    class Config:
-        allow_population_by_field_name = True
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
 
 
 class ObjectResponse(BaseModel):
@@ -101,10 +111,10 @@ class ObjectCreateBody(BaseModel):
     name: str = Field(min_length=1)
     meta_category: str | None = None
     description: str | None = None
-    distribution: str | None = None
+    distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int
     comment: str = Field(min_length=1)
     deleted: bool | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: int | None = None
+    last_seen: int | None = None
     Attribute: list[AddAttributeBody] | None = None

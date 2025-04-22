@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, ConfigDict, SecretStr
 
 
 class TokenResponse(BaseModel):
@@ -50,9 +50,7 @@ class IdentityProviderInfo(BaseModel):
     id: int
     name: str
     url: str | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LoginType(Enum):

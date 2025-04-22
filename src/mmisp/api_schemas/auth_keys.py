@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import List, Self, Union
 
-from pydantic import BaseModel, PositiveInt, conint, validator
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_validator
+from typing_extensions import Annotated
 
 
 class SearchGetAuthKeysResponseItemUser(BaseModel):
@@ -13,7 +15,7 @@ class ViewAuthKeyResponseWrapper(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
+    created: datetime
     expiration: int
     read_only: bool
     user_id: int
@@ -32,11 +34,11 @@ class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
+    created: datetime
+    expiration: datetime
     read_only: bool
     user_id: int
-    comment: str | None
+    comment: str | None = None
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
 
@@ -46,11 +48,11 @@ class SearchGetAuthKeysResponseAuthKey(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
+    created: datetime
+    expiration: datetime
     read_only: bool
-    user_id: str
-    comment: str | None
+    user_id: int
+    comment: str | None = None
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
     last_used: str | None = None
@@ -59,28 +61,24 @@ class SearchGetAuthKeysResponseAuthKey(BaseModel):
 class SearchGetAuthKeysResponseItem(BaseModel):
     AuthKey: SearchGetAuthKeysResponseItemAuthKey
     User: SearchGetAuthKeysResponseItemUser
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchGetAuthKeysResponse(BaseModel):
     AuthKey: SearchGetAuthKeysResponseAuthKey
     User: SearchGetAuthKeysResponseItemUser
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchAuthKeyBody(BaseModel):
     page: PositiveInt = 1
-    limit: conint(gt=0, lt=500) = 25  # type: ignore
+    limit: Annotated[int, Field(gt=0, lt=500)] = 25  # type: ignore
     id: int | None = None
     uuid: str | None = None
     authkey_start: str | None = None
     authkey_end: str | None = None
-    created: str | None = None
-    expiration: str | None = None
+    created: datetime | None = None
+    expiration: datetime | None = None
     read_only: bool | None = None
     user_id: int | None = None
     comment: str | None = None
@@ -93,8 +91,8 @@ class EditAuthKeyResponseAuthKey(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
+    created: datetime
+    expiration: datetime
     read_only: bool
     user_id: int
     comment: str
@@ -106,10 +104,10 @@ class EditAuthKeyResponseCompleteAuthKey(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
+    created: datetime
+    expiration: datetime
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str
     allowed_ips: str | None = None
     unique_ips: list[str] | None = None
@@ -134,9 +132,10 @@ class EditAuthKeyBody(BaseModel):
     read_only: bool | None = None
     comment: str | None = None
     allowed_ips: Union[str, List[str]] | None = None
-    expiration: str | None = None
+    expiration: datetime | None = None
 
-    @validator("allowed_ips", pre=True)
+    @field_validator("allowed_ips", mode="before")
+    @classmethod
     def ensure_list(cls: Self, v: str | List[str]) -> List[str]:
         if isinstance(v, str):
             return [v]
@@ -148,8 +147,8 @@ class AddAuthKeyResponseAuthKey(BaseModel):
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str | None = "0"
+    created: datetime
+    expiration: datetime | None
     read_only: bool
     user_id: int
     comment: str | None = None

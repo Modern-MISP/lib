@@ -1,13 +1,14 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Self
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, and_, or_
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.types import DateTimeEpoch
 from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.distribution import EventDistributionLevels
 from mmisp.lib.permissions import Permission
@@ -25,20 +26,20 @@ class Event(Base, DictMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
-    date: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    date: Mapped[date] = mapped_column(Date, default=datetime.utcnow, nullable=False)
     info: Mapped[str] = mapped_column(Text, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     analysis: Mapped[int] = mapped_column(Integer, nullable=False)
     attribute_count: Mapped[int] = mapped_column(Integer, default=0)
     orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     proposal_email_lock: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     threat_level_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    publish_timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    publish_timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
     sighting_timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     extends_uuid: Mapped[str] = mapped_column(String(40), default="", index=True)

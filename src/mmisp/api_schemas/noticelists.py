@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class NoticelistAttributes(BaseModel):
@@ -10,15 +10,15 @@ class NoticelistAttributes(BaseModel):
     expanded_name: str
     ref: list[str]
     geographical_area: list[str]
-    version: str
+    version: int
     enabled: bool
 
 
 class Data(BaseModel):
-    scope: str | list[str] | None
-    field: str | list[str] | None
-    value: str | list[str] | None
-    tags: str | list[str] | None
+    scope: str | list[str] | None = None
+    field: str | list[str] | None = None
+    value: str | list[str] | None = None
+    tags: str | list[str] | None = None
     message: str | Any
 
 
@@ -34,13 +34,9 @@ class NoticelistAttributesResponse(NoticelistAttributes):
 
 class GetAllNoticelists(BaseModel):
     Noticelist: NoticelistAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class NoticelistResponse(BaseModel):
     Noticelist: NoticelistAttributesResponse
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
