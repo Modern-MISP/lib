@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Self
+from typing import Self, Any
 
 from pydantic import BaseModel, field_serializer
 
@@ -44,7 +44,7 @@ class GetOrganisationElement(BaseModel):
     created_by: int
     contacts: str | None = None
     local: bool
-    restricted_to_domain: list | str | None = None
+    restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
 
     @field_serializer("date_created", "date_modified")
@@ -52,6 +52,14 @@ class GetOrganisationElement(BaseModel):
         if value is None:
             return ""
         return value.strftime("%Y-%m-%d %H:%M:%S")
+
+    @validator('restricted_to_domain', pre=True)
+    def ensure_list(cls, v: Any) -> Any:
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            return [v]
+        return v
 
 
 class GetOrganisationResponse(BaseModel):
@@ -110,7 +118,7 @@ class AddOrganisation(BaseModel):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: str | list[str] | None = None
+    restricted_to_domain: list[str] | str | None = None
     landingpage: str | None = None
 
 
