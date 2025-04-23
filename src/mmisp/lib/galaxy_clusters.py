@@ -26,4 +26,6 @@ async def update_galaxy_cluster_elements(
             ge.patch(**maybe_updated_dict[ge.id])
 
     for ge_dict in added_dict:
-        db.add(GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, **ge_dict.dict(exclude_none=True)))
+        new_ge: GalaxyElement = GalaxyElement(**ge_dict.dict(exclude_none=True))
+        new_ge.galaxy_cluster_id = galaxy_cluster.id
+        db.add(new_ge)
