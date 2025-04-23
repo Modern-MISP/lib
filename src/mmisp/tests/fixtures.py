@@ -903,25 +903,23 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
-    await db.commit()
+        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+        qry = (select(GalaxyElement))
+        galaxy_element_all = (await db.execute(qry)).scalars().all()
 
-    # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
-    qry = (select(GalaxyElement))
-    galaxy_element_all = (await db.execute(qry)).scalars().all()
+        galaxy_elements_of_cluster = []
+        for galaxy_element in galaxy_element_all:
+            if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
+                galaxy_elements_of_cluster.append(galaxy_element.id)
 
-    galaxy_elements_of_cluster = []
-    for galaxy_element in galaxy_element_all:
-        if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
-            galaxy_elements_of_cluster.append(galaxy_element.id)
+        await db.commit()
 
-    await db.commit()
-
-    async with db.begin():
-        await db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-        await db.execute(
-            delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
-        )
-        await db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
+        async with db.begin():
+            await db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
+            await db.execute(
+                delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+            )
+            await db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
 
 
 @pytest_asyncio.fixture()
