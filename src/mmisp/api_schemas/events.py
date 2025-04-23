@@ -62,6 +62,9 @@ class AddEditGetEventGalaxyCluster(CommonGalaxyCluster):
 class AddEditGetEventGalaxy(CommonGalaxy):
     GalaxyCluster: list[AddEditGetEventGalaxyCluster] = []
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
 
 class FreeTextImportWorkerData(BaseModel):
     data: str
