@@ -14,7 +14,6 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 if TYPE_CHECKING:
-    from ..db.database import Base
     from .input import Filter, RoamingData, WorkflowInput
     from .modules import ModuleConfiguration, Overhead
 
