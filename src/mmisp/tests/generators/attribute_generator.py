@@ -7,13 +7,17 @@ from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname, A
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
 from mmisp.tests.generators.feed_generator import generate_number_as_str
-from mmisp.tests.generators.object_generator import generate_ids_as_str, generate_random_date_str, generate_random_str, \
-    generate_random_value
+from mmisp.tests.generators.object_generator import (
+    generate_ids_as_str,
+    generate_random_date_str,
+    generate_random_str,
+    generate_random_value,
+)
 from mmisp.tests.generators.tag_generator import generate_get_attribute_tag_response
 
 
 def generate_valid_random_create_attribute_data() -> AddAttributeBody:
-    #hardcoded attribute type ip-src
+    # hardcoded attribute type ip-src
     category: AttributeCategories = AttributeCategories.EXTERNAL_ANALYSIS
     return AddAttributeBody(
         type="ip-src",

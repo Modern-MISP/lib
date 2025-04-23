@@ -1,6 +1,6 @@
 import json
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, root_validator, validator
 
 from mmisp.api_schemas.organisations import BaseOrganisation
 
@@ -152,14 +152,14 @@ class ServerResponseBase(BaseModel):
 
     @root_validator(pre=True)
     def map_last_pulled_id_to_lastpulledid(cls, values):
-        if 'last_pulled_id' in values and 'lastpulledid' not in values:
-            values['lastpulledid'] = values['last_pulled_id']
+        if "last_pulled_id" in values and "lastpulledid" not in values:
+            values["lastpulledid"] = values["last_pulled_id"]
         return values
 
     @root_validator(pre=True)
     def map_last_pushed_id_to_lastpushedid(cls, values):
-        if 'last_pushed_id' in values and 'lastpushedid' not in values:
-            values['lastpushedid'] = values['last_pushed_id']
+        if "last_pushed_id" in values and "lastpushedid" not in values:
+            values["lastpushedid"] = values["last_pushed_id"]
         return values
 
 

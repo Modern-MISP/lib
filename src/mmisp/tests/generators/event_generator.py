@@ -11,8 +11,9 @@ def generate_valid_random_create_event_data(orgc_id: int, org_id: int) -> AddEdi
     return AddEditGetEventDetails(
         orgc_id=orgc_id,
         org_id=org_id,
-        date=datetime.date(year=random.randint(2000, 2024), month=random.randint(1, 12),
-                           day=random.randint(1, 28)).strftime("%Y-%m-%d"),
+        date=datetime.date(
+            year=random.randint(2000, 2024), month=random.randint(1, 12), day=random.randint(1, 28)
+        ).strftime("%Y-%m-%d"),
         threat_level_id=random.randint(1, 4),
         info="test event " + random_string(20),
         published=False,

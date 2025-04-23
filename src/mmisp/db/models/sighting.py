@@ -4,10 +4,10 @@ from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
+from ..mixins import DictMixin
 from .attribute import Attribute
 from .event import Event
 from .organisation import Organisation
-from ..mixins import DictMixin
 
 
 class Sighting(Base, DictMixin):

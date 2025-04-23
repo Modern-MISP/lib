@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin
 from mmisp.db.mypy import Mapped, mapped_column
+
 from ..database import Base
 
 

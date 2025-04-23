@@ -11,7 +11,7 @@ from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisatio
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
 from mmisp.api_schemas.galaxies import RestSearchGalaxyBody, ExportGalaxyGalaxyElement
 from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
-from mmisp.api_schemas.organisations import GetOrganisationElement, Organisation, GalaxyClusterOrganisationResponse
+from mmisp.api_schemas.organisations import GalaxyClusterOrganisationResponse, GetOrganisationElement, Organisation
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -109,6 +109,7 @@ class GalaxyClusterRelation(BaseModel):
 
 
 _GalaxyClusterRelation = GalaxyClusterRelation
+
 
 class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     # if minimal is set, only uuid, version and Galaxy is returned

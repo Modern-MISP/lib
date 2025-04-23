@@ -5,7 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -23,6 +23,14 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+
+from ..db.models.blocklist import GalaxyClusterBlocklist
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
+from ..db.models.threat_level import ThreatLevel
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -52,13 +60,6 @@ from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.threat_level_generator import generate_threat_level
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
-from ..db.models.blocklist import GalaxyClusterBlocklist
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
-from ..db.models.threat_level import ThreatLevel
 
 
 class DBManager:
@@ -783,20 +784,24 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
     await db.commit()
 
     # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
-    qry = (select(GalaxyElement))
+    qry = select(GalaxyElement)
     galaxy_element_all = (await db.execute(qry)).scalars().all()
 
     galaxy_elements_of_cluster = []
     for galaxy_element in galaxy_element_all:
-        if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
+        if (
+            galaxy_element.galaxy_cluster_id == galaxy_cluster.id
+            or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id
+        ):
             galaxy_elements_of_cluster.append(galaxy_element.id)
 
     await db.commit()
 
     async with db.begin():
         await db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-        await db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
-                                                                             galaxy_cluster2.uuid])))
+        await db.execute(
+            delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+        )
         await db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
 
 
@@ -913,8 +918,9 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
 
     async with db.begin():
         await db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-        await db.execute(delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid,
-                                                                             galaxy_cluster2.uuid])))
+        await db.execute(
+            delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
+        )
         await db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
 
 
@@ -1470,7 +1476,7 @@ async def org_blocklist(db, organisation):
 
 @pytest_asyncio.fixture()
 async def cluster_blocklist(db, test_default_galaxy):
-    cluster = test_default_galaxy['galaxy_cluster']
+    cluster = test_default_galaxy["galaxy_cluster"]
     cluster_blocklist: GalaxyClusterBlocklist = generate_galaxy_cluster_blocklist(cluster.uuid, cluster.orgc_id)
 
     db.add(cluster_blocklist)
