@@ -16,7 +16,7 @@ async def test_attribute_normalize(db: AsyncSession, attribute: Attribute) -> No
     result = await attribute_to_misp_core_format(db, attribute)
 
     assert result["Event"]["Attribute"][0]["id"] == "23"
-    assert result["Event"]["id"] == "1"
+    assert result["Event"]["id"] == str(attribute.event_id)
     assert len(result["Event"]["Attribute"][0]["Sighting"]) == 2
     assert result["Event"]["Attribute"][0]["value"] == "1abcdefghijkl"
 
@@ -31,7 +31,7 @@ async def test_attribute_normalize_no_sightings(db: AsyncSession, attribute: Att
     result = await attribute_to_misp_core_format(db, attribute, with_sightings=False)
 
     assert result["Event"]["Attribute"][0]["id"] == "23"
-    assert result["Event"]["id"] == "1"
+    assert result["Event"]["id"] == str(attribute.event_id)
     assert "Sighting" not in result["Event"]["Attribute"][0]
 
 
@@ -39,7 +39,7 @@ async def test_attribute_normalize_no_sightings(db: AsyncSession, attribute: Att
 async def test_event_after_save(db: AsyncSession, event: Event) -> None:
     result = await event_after_save_new_to_core_format(db, event)
 
-    assert result["Event"]["id"] == "1"
+    assert result["Event"]["id"] == str(event.id)
     assert result["Event"]["User"]["email"] == "admin@admin.test"
 
 
