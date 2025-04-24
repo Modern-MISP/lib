@@ -5,39 +5,61 @@ from typing import Any, Self
 from pydantic import BaseModel, Field, PositiveInt, field_serializer
 from typing_extensions import Annotated
 
+from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GalaxyClusterMeta
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse, MinimalSharingGroup
-from mmisp.lib.distribution import AttributeDistributionLevels, GalaxyDistributionLevels
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
-class GetAllEventsGalaxyClusterGalaxy(BaseModel):
+class GetAllEventsGalaxyClusterGalaxy(CommonGalaxy):
+    pass
+
+
+class AddEditGetEventGalaxyClusterRelationTag(BaseModel):
     id: int
-    uuid: str
     name: str
-    type: str
-    description: str
-    version: str | int
-    icon: str
-    namespace: str
-    enabled: bool
-    local_only: bool
-    kill_chain_order: str | None = None
-    created: datetime
-    modified: datetime
+    colour: str
+    exportable: bool
     org_id: int
-    orgc_id: int
+    user_id: int
+    hide_tag: bool
+    numerical_value: str
+    is_galaxy: bool
+    is_custom_galaxy: bool
+    local_only: bool
+
+
+class AddEditGetEventGalaxyClusterRelation(BaseModel):
+    id: int
+    galaxy_cluster_id: int
+    referenced_galaxy_cluster_id: int
+    referenced_galaxy_cluster_uuid: str
+    referenced_galaxy_cluster_type: str
+    galaxy_cluster_uuid: str
+    distribution: AttributeDistributionLevels
+    sharing_group_id: int | None = None
     default: bool
-    distribution: GalaxyDistributionLevels
-
-    @field_serializer("created", "modified")
-    def serialize_timestamp(self: Self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d %H:%M:%S")
+    Tag: list[AddEditGetEventGalaxyClusterRelationTag] = []
 
 
-class AddEditGetEventGalaxyClusterMeta(BaseModel):
-    external_id: int | None = None
-    refs: list[str] | None = None
-    kill_chain: str | None = None
+class AddEditGetEventGalaxyClusterMeta(GalaxyClusterMeta):
+    pass
+
+
+class GetAllEventsGalaxyCluster(CommonGalaxyCluster):
+    Galaxy: GetAllEventsGalaxyClusterGalaxy
+
+
+class AddEditGetEventGalaxyCluster(CommonGalaxyCluster):
+    GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
+    Org: Organisation | None = None
+    Orgc: Organisation | None = None
+    attribute_tag_id: int | None = None
+    event_tag_id: int | None = None
+
+
+class AddEditGetEventGalaxy(CommonGalaxy):
+    GalaxyCluster: list[AddEditGetEventGalaxyCluster] = []
 
 
 class FreeTextImportWorkerData(BaseModel):
@@ -69,120 +91,6 @@ class AddAttributeViaFreeTextImportEventAttributes(BaseModel):
 
 class AddAttributeViaFreeTextImportEventBody(BaseModel):
     Attribute: AddAttributeViaFreeTextImportEventAttributes
-
-
-class GetAllEventsGalaxyCluster(BaseModel):
-    id: int
-    uuid: str
-    collection_uuid: str
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    galaxy_id: int
-    source: str
-    authors: list[str]
-    version: str | int
-    distribution: AttributeDistributionLevels | None = None
-    sharing_group_id: int | None = None
-    org_id: int
-    orgc_id: int
-    default: str | None = None
-    locked: bool | None = None
-    extends_uuid: str
-    extends_version: str | int
-    published: bool | None = None
-    deleted: bool | None = None
-    Galaxy: GetAllEventsGalaxyClusterGalaxy
-    meta: AddEditGetEventGalaxyClusterMeta | None = None
-    tag_id: int
-    local: bool | None = None
-    relationship_type: bool | str | None = None
-
-
-class AddEditGetEventGalaxyClusterRelationTag(BaseModel):
-    id: int
-    name: str
-    colour: str
-    exportable: bool
-    org_id: int
-    user_id: int
-    hide_tag: bool
-    numerical_value: str
-    is_galaxy: bool
-    is_custom_galaxy: bool
-    local_only: bool
-
-
-class AddEditGetEventGalaxyClusterRelation(BaseModel):
-    id: int
-    galaxy_cluster_id: int
-    referenced_galaxy_cluster_id: int
-    referenced_galaxy_cluster_uuid: str
-    referenced_galaxy_cluster_type: str
-    galaxy_cluster_uuid: str
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int | None = None
-    default: bool
-    Tag: list[AddEditGetEventGalaxyClusterRelationTag] = []
-
-
-class AddEditGetEventGalaxyCluster(BaseModel):
-    id: int
-    uuid: str
-    collection_uuid: str
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    galaxy_id: int
-    source: str
-    authors: list[str]
-    version: str | int
-    distribution: AttributeDistributionLevels | None = None
-    sharing_group_id: int | None = None
-    org_id: int
-    orgc_id: int
-    default: bool | None = None
-    locked: bool | None = None
-    extends_uuid: str | None = None
-    extends_version: str | int | None = None
-    published: bool | None = None
-    deleted: bool | None = None
-    GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
-    Org: Organisation | None = None
-    Orgc: Organisation | None = None
-    meta: AddEditGetEventGalaxyClusterMeta | None = None
-    tag_id: int
-    attribute_tag_id: int | None = None
-    event_tag_id: int | None = None
-    local: bool | None = None
-    relationship_type: bool | str = ""
-
-
-class AddEditGetEventGalaxy(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    type: str
-    description: str
-    version: str | int
-    icon: str
-    namespace: str
-    enabled: bool
-    local_only: bool
-    kill_chain_order: str | None = None
-    created: datetime
-    modified: datetime
-    org_id: int
-    orgc_id: int
-    default: bool
-    distribution: AttributeDistributionLevels
-    GalaxyCluster: list[AddEditGetEventGalaxyCluster] = []
-
-    @field_serializer("created", "modified")
-    def serialize_timestamp(self: Self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class AddEditGetEventOrg(BaseModel):

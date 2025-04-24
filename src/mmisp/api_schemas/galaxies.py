@@ -1,11 +1,10 @@
-from datetime import datetime
-from typing import Any, List, Self
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
-from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import GalaxyDistributionLevels
 
@@ -40,28 +39,12 @@ class ExportGalaxyGalaxyElement(BaseModel):
     value: str
 
 
-class GetGalaxyClusterResponse(BaseModel):
-    id: int
-    uuid: str
-    collection_uuid: str
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    galaxy_id: int
-    source: str
-    authors: list[str]
-    version: int
-    distribution: GalaxyDistributionLevels
-    sharing_group_id: int
-    org_id: int
-    orgc_id: int
-    default: bool
-    locked: bool
-    extends_uuid: str
-    extends_version: int
-    published: bool
-    deleted: bool
+class GetGalaxyClusterResponse(CommonGalaxyCluster):
+    meta: None = Field(default=None, exclude=True)  # type: ignore
+    tag_id: None = Field(default=None, exclude=True)  # type: ignore
+    local: None = Field(default=None, exclude=True)  # type: ignore
+    relationship_type: None = Field(default=None, exclude=True)  # type: ignore
+
     GalaxyElement: list[ExportGalaxyGalaxyElement]
 
 
@@ -82,27 +65,11 @@ class GetGalaxyResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class GalaxySchema(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    type: str
-    description: str
-    version: int
-    icon: str
-    namespace: str
-    kill_chain_order: List[str]
-    created: datetime
-    modified: datetime
-    org_id: int
-    orgc_id: int
-    default: bool
-    distribution: GalaxyDistributionLevels
-    model_config = ConfigDict(from_attributes=True)
+class GalaxySchema(CommonGalaxy):
+    enabled: None = Field(default=None, exclude=True)  # type: ignore
+    local_only: None = Field(default=None, exclude=True)  # type: ignore
 
-    @field_serializer("created", "modified")
-    def serialize_timestamp(self: Self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d %H:%M:%S")
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ExportGalaxyClusterResponse(BaseModel):
