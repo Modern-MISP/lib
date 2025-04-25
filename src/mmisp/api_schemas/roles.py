@@ -58,6 +58,14 @@ class Role(HasPermission):
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
+class RoleAttributeResponse(Role):
+    pass
+
+
+class IndexRole(Role):
+    default: bool
+
+
 class RoleUsersResponse(HasPermission):
     id: int
     name: str
@@ -77,29 +85,12 @@ class RoleUsersResponse(HasPermission):
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-class RoleAttributeResponse(HasPermission):
-    id: int
-    name: str
-    created: datetime | None = None
-    modified: datetime | None = None
-    default_role: bool
-    memory_limit: str | None = None
-    max_execution_time: str | None = None
-    restricted_to_site_admin: bool
-    enforce_rate_limit: bool
-    rate_limit_count: int
-    permission: int | None = None
-    permission_description: str | None = None
-
-    @field_serializer("created", "modified")
-    def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
-        if value is None:
-            return None
-        return value.strftime("%Y-%m-%d %H:%M:%S")
-
-
 class GetRolesResponse(BaseModel):
     Role: RoleAttributeResponse
+
+
+class IndexRolesResponse(BaseModel):
+    Role: IndexRole
 
 
 class GetRoleResponse(BaseModel):

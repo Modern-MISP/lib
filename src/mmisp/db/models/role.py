@@ -68,7 +68,3 @@ class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
         elif self.perm_add and self.perm_modify:
             return "manage_own"
         return "read_only"
-
-    @hybrid_property
-    def default(self: Self) -> bool:
-        return self.default_role
