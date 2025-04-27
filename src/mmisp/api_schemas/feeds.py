@@ -1,6 +1,8 @@
-from typing import Any, Dict, Type
+from typing import Self
 
-from pydantic import BaseModel, ConfigDict, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
 class FeedUpdateBody(BaseModel):
@@ -61,18 +63,23 @@ class FeedAttributesResponse(BaseModel):
     force_to_ids: bool
     orgc_id: int
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("sharing_group_id", always=True)
-    @classmethod
-    def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> int | None:
+    @model_validator(mode="after")
+    def check_sharing_group_id(self: Self) -> Self:
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
-        distribution = values.get("distribution", None)
-        if distribution == "4" and value is not None:
-            return value
-        return None
+        if self.distribution not in [
+            None,
+            AttributeDistributionLevels.SHARING_GROUP,
+            AttributeDistributionLevels.INHERIT_EVENT,
+        ]:
+            if self.sharing_group_id is not None and self.sharing_group_id != 0:
+                raise ValueError(
+                    "Distribution does not allow to set a sharing group, "
+                    + "name: %s, distribution: %s, sharing_group_id: ",
+                    (self.name, self.distribution, self.sharing_group_id),
+                )
+        return self
 
 
 class FeedResponse(BaseModel):

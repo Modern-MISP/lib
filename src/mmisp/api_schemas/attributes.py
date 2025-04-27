@@ -231,7 +231,7 @@ class GetAttributeAttributes(BaseModel):
     id: int
     event_id: int
     object_id: int
-    object_relation: Optional[str] = Field(..., nullable=True)
+    object_relation: str | None
     category: str
     type: str
     value: str
@@ -413,7 +413,7 @@ class AddAttributeAttributes(BaseModel):
     id: int
     event_id: int
     object_id: int
-    object_relation: Optional[str] = Field(..., nullable=True)
+    object_relation: str | None
     category: str
     type: str
     value: str

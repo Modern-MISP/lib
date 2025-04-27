@@ -6,6 +6,7 @@ from sqlalchemy.types import String, TypeDecorator
 
 class DBUUID(TypeDecorator):
     impl = String
+    cache_ok = True
 
     def load_dialect_impl(self: Self, dialect: Dialect) -> Any:
         return dialect.type_descriptor(String(36))

@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Any, Dict, Optional, Self, Type
+from typing import Any, Self, Type
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAllAttributesResponse
 from mmisp.api_schemas.events import ObjectEventResponse
@@ -79,18 +79,18 @@ class ObjectWithAttributesResponse(BaseModel):
 
     model_config = ConfigDict(validate_by_name=True, validate_by_alias=True)
 
-    @validator("sharing_group_id", always=True)
-    @classmethod
-    def check_sharing_group_id(
-        cls: Type["ObjectWithAttributesResponse"], value: Any, values: Dict[str, Any]
-    ) -> Optional[int]:  # noqa: ANN101
+    @model_validator(mode="after")
+    def check_sharing_group_id(self: Self) -> Self:
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
-        distribution = values.get("distribution", None)
-        if distribution == "4" and value is not None:
-            return value
-        return None
+        if self.distribution not in [
+            AttributeDistributionLevels.SHARING_GROUP,
+            AttributeDistributionLevels.INHERIT_EVENT,
+        ]:
+            if self.sharing_group_id is not None and self.sharing_group_id != 0:
+                raise ValueError("Distribution does not allow to set a sharing group")
+        return self
 
     @field_serializer("timestamp")
     def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:

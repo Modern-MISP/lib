@@ -20,7 +20,7 @@ def random_string(length: int = 10) -> str:
 
 def generate_valid_required_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="gvrfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
     )
@@ -28,13 +28,13 @@ def generate_valid_required_feed_data() -> FeedCreateBody:
 
 def generate_valid_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="gvfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
         rules=random_string(),
         enabled=random.choice([True, False]),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
+        distribution=1,
+        sharing_group_id=0,
         tag_id=0,
         default=random.choice([True, False]),
         source_format=random_string(),
@@ -56,13 +56,13 @@ def generate_valid_feed_data() -> FeedCreateBody:
 
 def generate_random_valid_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="grvfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
         rules=random_string() if random.choice([True, False]) else None,
         enabled=random.choice([True, False]),
-        distribution=generate_number_as_str() if random.choice([True, False]) else None,
-        sharing_group_id=generate_ids_as_str() if random.choice([True, False]) else None,
+        distribution=1,
+        sharing_group_id=0,
         tag_id=0 if random.choice([True, False]) else None,
         default=random.choice([True, False]) if random.choice([True, False]) else None,
         source_format=random_string() if random.choice([True, False]) else None,
