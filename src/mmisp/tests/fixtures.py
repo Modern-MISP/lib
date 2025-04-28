@@ -20,7 +20,7 @@ from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.sharing_group import SharingGroupOrg
 from mmisp.db.models.tag import Tag
-from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels
+from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLevels, EventDistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
@@ -409,7 +409,7 @@ async def event2(db, organisation, site_admin_user):
         info="event_published_sharing_group",
         date=date(year=2024, month=2, day=13),
         analysis=1,
-        distribution=EventDistributionLevels.SHARING_GROUP,
+        distribution=EventDistributionLevels.COMMUNITY,
         published=True,
     )
     db.add(event)
@@ -1306,6 +1306,7 @@ async def object1(db, event, sharing_group):
     misp_object: Object = generate_object()
     misp_object.event_id = event.id
     misp_object.sharing_group_id = sharing_group.id
+    misp_object.distribution = AttributeDistributionLevels.SHARING_GROUP
 
     db.add(misp_object)
     await db.commit()
@@ -1322,6 +1323,7 @@ async def object2(db, event, sharing_group):
     misp_object: Object = generate_object()
     misp_object.event_id = event.id
     misp_object.sharing_group_id = sharing_group.id
+    misp_object.distribution = AttributeDistributionLevels.SHARING_GROUP
 
     db.add(misp_object)
     await db.commit()

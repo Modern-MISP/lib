@@ -5,6 +5,7 @@ import time
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.objects import ObjectCreateBody, ObjectSearchBody
 from mmisp.lib.attributes import mapper_val_safe_clsname
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
 def generate_random_date_str() -> str:
@@ -39,8 +40,8 @@ def generate_valid_object_create_attributes() -> AddAttributeBody:
         category=generate_random_str(),
         to_ids=True,
         timestamp=generate_random_date_str(),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
+        distribution=AttributeDistributionLevels.COMMUNITY,
+        sharing_group_id=0,
         comment=generate_random_str(),
         deleted=False,
         disable_correlation=random.choice([True, False]),
@@ -54,8 +55,8 @@ def generate_valid_object_data() -> ObjectCreateBody:
         description=generate_random_str(),
         template_version="100",
         timestamp=generate_random_date_str(),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
+        distribution=AttributeDistributionLevels.COMMUNITY,
+        sharing_group_id=0,
         comment=generate_random_str(),
         deleted=False,
         first_seen=generate_random_date_str(),
@@ -75,8 +76,8 @@ def generate_valid_random_object_create_attributes() -> AddAttributeBody:
         category=generate_random_str(),
         to_ids=True,
         timestamp=generate_random_date_str(),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
+        distribution=AttributeDistributionLevels.COMMUNITY,
+        sharing_group_id=0,
         comment=generate_random_str(),
         deleted=False,
         disable_correlation=random.choice([True, False]),
@@ -93,8 +94,8 @@ def generate_valid_random_object_data() -> ObjectCreateBody:
         template_description=generate_random_str(),
         update_template_available=random.choice([True, False]),
         timestamp=generate_random_date_str(),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
+        distribution=AttributeDistributionLevels.COMMUNITY,
+        sharing_group_id=0,
         comment=generate_random_str(),
         deleted=False,
         first_seen=generate_random_date_str(),
