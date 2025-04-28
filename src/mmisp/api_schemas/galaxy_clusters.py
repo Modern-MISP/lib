@@ -1,8 +1,8 @@
-from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
+from mmisp.api_schemas.common import NoneTag, TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
@@ -32,9 +32,7 @@ class GetGalaxyClusterResponse(CommonGalaxyCluster):
 
 class GalaxyClusterResponse(BaseModel):
     GalaxyCluster: GetGalaxyClusterResponse
-    # TODO[pydantic]: The following keys were removed: `json_encoders`.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    model_config = ConfigDict(json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
+    Tag: NoneTag | TagAttributesResponse = Field(default_factory=NoneTag)
 
 
 class ExportGalaxyClusterResponse(BaseModel):

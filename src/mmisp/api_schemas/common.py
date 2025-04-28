@@ -17,6 +17,20 @@ class TagAttributesResponse(BaseModel):
     local_only: bool | None = None
 
 
+class NoneTag(BaseModel):
+    id: int | None = None
+    name: str | None = None
+    colour: str | None = None
+    exportable: bool | None = None
+    org_id: int | None = None
+    user_id: int | None = None
+    hide_tag: bool | None = None
+    numerical_value: int | None = None
+    is_galaxy: bool | None = None
+    is_custom_galaxy: bool | None = None
+    local_only: bool | None = None
+
+
 class User(BaseModel):
     id: int
     org_id: int
