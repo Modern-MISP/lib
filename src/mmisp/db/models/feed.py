@@ -2,11 +2,11 @@ from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.orm import mapped_column
 
 from mmisp.db.database import Base
-from mmisp.db.mixins import DictMixin
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped
 
 
-class Feed(Base, DictMixin):
+class Feed(Base, UpdateMixin, DictMixin["FeedDict"]):
     __tablename__ = "feeds"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

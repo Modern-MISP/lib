@@ -13,7 +13,7 @@ from mmisp.db.types import DateTimeEpoch
 from mmisp.lib.uuid import uuid
 
 
-class Object(Base, DictMixin):
+class Object(Base, DictMixin["ObjectDict"]):
     __tablename__ = "objects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -46,7 +46,7 @@ class Object(Base, DictMixin):
     )  # type:ignore[var-annotated]
 
 
-class ObjectTemplate(Base, DictMixin):
+class ObjectTemplate(Base, DictMixin["ObjectTemplateDict"]):
     __tablename__ = "object_templates"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -68,7 +68,7 @@ class ObjectTemplate(Base, DictMixin):
     )
 
 
-class ObjectTemplateElement(Base, DictMixin):
+class ObjectTemplateElement(Base, DictMixin["ObjectTemplateElementDict"]):
     __tablename__ = "object_template_elements"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
-from mmisp.db.mixins import DictMixin
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.types import DateTimeEpoch
 from mmisp.db.uuid_type import DBUUID
@@ -20,7 +20,7 @@ from .tag import Tag
 from .user import User
 
 
-class Event(Base, DictMixin):
+class Event(Base, UpdateMixin, DictMixin["EventDict"]):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

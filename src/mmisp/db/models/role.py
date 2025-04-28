@@ -3,7 +3,7 @@ from typing import Self
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from mmisp.db.mixins import DictMixin
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import mapped_column
 from mmisp.lib.permissions import Permission
 
@@ -26,7 +26,7 @@ RoleAttrs = {
 RoleModel = type("RoleModel", (Base,), RoleAttrs)
 
 
-class Role(RoleModel, DictMixin):  # type:ignore[misc,valid-type]
+class Role(RoleModel, UpdateMixin, DictMixin["RoleDict"]):  # type:ignore[misc,valid-type]
     def get_permissions(self: Self) -> set[Permission]:
         d: list[Permission] = []
 

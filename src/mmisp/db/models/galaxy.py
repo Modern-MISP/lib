@@ -10,7 +10,7 @@ from mmisp.lib.uuid import uuid
 from ..database import Base
 
 
-class Galaxy(Base, DictMixin, UpdateMixin):
+class Galaxy(Base, DictMixin["GalaxyDict"], UpdateMixin):
     __tablename__ = "galaxies"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

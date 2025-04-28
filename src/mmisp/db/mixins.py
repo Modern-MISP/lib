@@ -1,11 +1,13 @@
-from typing import Self
+from typing import Generic, Self, TypeVar
 
 from sqlalchemy import inspect
 from sqlalchemy.ext.hybrid import hybrid_property
 
+TDict = TypeVar("TDict", bound=dict)
 
-class DictMixin:
-    def asdict(self: Self, omit: set[str] | None = None) -> dict:
+
+class DictMixin(Generic[TDict]):
+    def asdict(self: Self, omit: set[str] | None = None) -> TDict:
         """
         Return the object as dictionary.
         Note that attributes starting with `_` are always omited.
@@ -31,7 +33,7 @@ class DictMixin:
                 continue
             if isinstance(prop, hybrid_property):
                 d[key] = getattr(self, key)
-        return d
+        return d  # type: ignore
 
 
 class UpdateMixin:

@@ -13,7 +13,7 @@ from mmisp.lib.uuid import uuid
 from ..database import Base
 
 
-class GalaxyCluster(Base, UpdateMixin, DictMixin):
+class GalaxyCluster(Base, UpdateMixin, DictMixin["GalaxyClusterDict"]):
     __tablename__ = "galaxy_clusters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -81,7 +81,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin):
     )  # type:ignore[assignment,var-annotated]
 
 
-class GalaxyElement(Base, DictMixin, UpdateMixin):
+class GalaxyElement(Base, DictMixin["GalaxyElementDict"], UpdateMixin):
     __tablename__ = "galaxy_elements"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -109,7 +109,7 @@ galaxy_relation_tag = Table(
 )
 
 
-class GalaxyClusterRelation(Base, DictMixin, UpdateMixin):
+class GalaxyClusterRelation(Base, DictMixin["GalaxyClusterRelationDict"], UpdateMixin):
     __tablename__ = "galaxy_cluster_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -138,7 +138,7 @@ class GalaxyClusterRelation(Base, DictMixin, UpdateMixin):
 
 
 # TODO delete this class and rewrite dependent code in mmisp/api/routers/galaxies_cluster.py
-class GalaxyReference(Base):
+class GalaxyReference(Base, DictMixin["GalaxyReferenceDict"]):
     __tablename__ = "galaxy_reference"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

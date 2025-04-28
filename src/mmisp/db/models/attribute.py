@@ -7,9 +7,8 @@ from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, a
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.orm.decl_api import DeclarativeMeta
 
-from mmisp.db.mixins import DictMixin
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.types import DateTimeEpoch
 from mmisp.db.uuid_type import DBUUID
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
@@ -17,7 +16,7 @@ from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
-from ..database import Base
+from ..database import AutoDictMeta, Base
 from .event import Event
 from .tag import Tag
 from .user import User
@@ -39,7 +38,7 @@ class AttributeComparator(Comparator):
         return or_(self.cls.value1 == other, self.cls.value1 + "|" + self.cls.value2 == other)
 
 
-class Attribute(Base, DictMixin):
+class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
     __tablename__ = "attributes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -330,7 +329,7 @@ class AttributeTag(Base):
     tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")
 
 
-class AttributeMeta(DeclarativeMeta):
+class AttributeMeta(AutoDictMeta):
     def __new__(cls: Type[type], clsname: str, bases: tuple, dct: dict) -> "AttributeMeta":
         key = clsname[len("Attribute") :]
         dct["default_category"] = default_category[mapper_safe_clsname_val[key]]

@@ -2,12 +2,12 @@ import contextlib
 import time
 from collections.abc import AsyncIterator
 from contextvars import ContextVar
-from typing import Self, TypeAlias
+from typing import ClassVar, Self, TypeAlias, TypedDict
 
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeMeta, Mapped, declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from mmisp.db.config import config
@@ -17,7 +17,31 @@ Session: TypeAlias = AsyncSession
 # , poolclass=NullPool)
 # async_session = sessionmaker(autoflush=False, expire_on_commit=False, class_=AsyncSession, bind=engine)
 
-Base = declarative_base()
+# Base = declarative_base()
+
+
+def generate_typeddict_for_model(model_cls: type) -> type[TypedDict]:
+    hints = model_cls.__annotations__
+    #    get_type_hints(model_cls, include_extras=True)
+    fields = {}
+    for attr, typ in hints.items():
+        if getattr(typ, "__origin__", None) is Mapped:
+            inner_type = typ.__args__[0]
+            fields[attr] = inner_type
+    td = TypedDict(str(model_cls.__name__) + "Dict", fields)
+    return td
+
+
+class AutoDictMeta(DeclarativeMeta):
+    def __new__(mcs, name, bases, namespace):  # noqa
+        cls = super().__new__(mcs, name, bases, namespace)
+        if "__tablename__" in namespace:  # Only real tables
+            td = generate_typeddict_for_model(cls)
+            cls.__annotations__["DictType"] = ClassVar[td]  # Store for typing
+        return cls
+
+
+Base = declarative_base(metaclass=AutoDictMeta)
 
 _no_database: str = "DatabaseSessionManager is not initialized"
 

@@ -3,11 +3,13 @@ from time import time
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from mmisp.db.mixins import DictMixin, UpdateMixin
+
 from ..database import Base
 from .organisation import Organisation
 
 
-class User(Base):
+class User(Base, UpdateMixin, DictMixin["UserDict"]):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

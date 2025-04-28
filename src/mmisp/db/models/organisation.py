@@ -12,7 +12,7 @@ from mmisp.db.uuid_type import DBUUID
 from ..database import Base
 
 
-class Organisation(Base, DictMixin):
+class Organisation(Base, DictMixin["OrganisationDict"]):
     __tablename__ = "organisations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

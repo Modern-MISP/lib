@@ -7,7 +7,7 @@ from mmisp.db.mypy import Mapped, mapped_column
 from ..database import Base
 
 
-class Server(Base, DictMixin):
+class Server(Base, DictMixin["ServerDict"]):
     __tablename__ = "servers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

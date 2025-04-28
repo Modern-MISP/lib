@@ -2,13 +2,14 @@ from time import time
 
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 
+from mmisp.db.mixins import UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
 
 
-class AuthKey(Base):
+class AuthKey(Base, UpdateMixin):
     __tablename__ = "auth_keys"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

@@ -3,14 +3,14 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from mmisp.db.mixins import DictMixin
+from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
 
 
-class SharingGroup(Base, DictMixin):
+class SharingGroup(Base, UpdateMixin, DictMixin["SharingGroupDict"]):
     __tablename__ = "sharing_groups"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -56,7 +56,7 @@ class SharingGroup(Base, DictMixin):
     )  # type:ignore[assignment,var-annotated]
 
 
-class SharingGroupOrg(Base, DictMixin):
+class SharingGroupOrg(Base, UpdateMixin, DictMixin["SharingGroupOrgDict"]):
     __tablename__ = "sharing_group_orgs"
 
     id = mapped_column(Integer, primary_key=True, nullable=False)
@@ -72,7 +72,7 @@ class SharingGroupOrg(Base, DictMixin):
     )  # type:ignore[assignment,var-annotated]
 
 
-class SharingGroupServer(Base, DictMixin):
+class SharingGroupServer(Base, UpdateMixin, DictMixin["SharingGroupServerDict"]):
     __tablename__ = "sharing_group_servers"
 
     id = mapped_column(Integer, primary_key=True, nullable=False)

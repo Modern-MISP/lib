@@ -5,6 +5,7 @@ from uuid import uuid4 as _uuid4
 
 from sqlalchemy import Boolean, Integer, String
 
+from mmisp.db.mixins import UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
 
 from ...workflows.graph import WorkflowGraph
@@ -17,7 +18,7 @@ def uuid() -> str:
     return str(_uuid4())
 
 
-class Workflow(Base):
+class Workflow(Base, UpdateMixin):
     """
     A python class representation of the database model for workflows in MISP.
 
