@@ -10,7 +10,7 @@ async def update_galaxy_cluster_elements(
     """Update the relationship of GalaxyCluster to GalaxyElements as defined by new_dict"""
     old = [ge.asdict(omit={"galaxy_cluster_id"}) for ge in galaxy_cluster.galaxy_elements]
 
-    maybe_updated_dict = {item.id: item.dict() for item in new if item.id is not None}
+    maybe_updated_dict = {item.id: item.model_dump(exclude_unset=True) for item in new if item.id is not None}
     added_dict = [item for item in new if item.id is None]
     new_ids = {item.id for item in new if item.id is not None}
     old_ids = {item["id"] for item in old if "id" in item}
@@ -26,4 +26,4 @@ async def update_galaxy_cluster_elements(
             ge.patch(**maybe_updated_dict[ge.id])
 
     for ge_dict in added_dict:
-        db.add(GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, **ge_dict.dict(exclude_none=True)))
+        db.add(GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, **ge_dict.model_dump(exclude_none=True)))
