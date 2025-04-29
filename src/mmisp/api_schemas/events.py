@@ -5,6 +5,7 @@ from typing import Any, Self
 from pydantic import BaseModel, Field, PositiveInt, field_serializer
 from typing_extensions import Annotated
 
+from mmisp.api_schemas.attribute_common import CommonAttribute
 from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GalaxyClusterMeta
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse, MinimalSharingGroup
@@ -115,24 +116,7 @@ class AddEditGetEventTag(BaseModel):
     relationship_type: bool | str | None = None
 
 
-class AddEditGetEventAttribute(BaseModel):
-    id: int
-    event_id: int
-    object_id: int
-    object_relation: str | None = None
-    category: str
-    type: str
-    value: str
-    to_ids: bool
-    uuid: str
-    timestamp: datetime
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int
-    comment: str | None = None
-    deleted: bool
-    disable_correlation: bool
-    first_seen: str | None = None
-    last_seen: str | None = None
+class AddEditGetEventAttribute(CommonAttribute):
     Galaxy: list[AddEditGetEventGalaxy] = []
     sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
     ShadowAttribute: list[str] = []
@@ -257,31 +241,6 @@ class AddEditGetEventDetails(BaseModel):
     @field_serializer("timestamp", "publish_timestamp")
     def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
         return int(timestamp.timestamp())
-
-    #    @validator("uuid", "extends_uuid", pre=True)
-    #    @classmethod
-    #    def uuid_empty_str(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-    #        """
-    #        Method to convert an empty string or None to a UUID filled with zeros for the UUID fields.
-    #
-    #        :param value: the value to check and possibly convert
-    #        :type value: Any
-    #        :return: returns a UUID object containing zeros if the input is an empty string,zero or None
-    #         otherwise the input value
-    #        :rtype: Any
-    #        """
-    #        if value == "" or value is None or value == "0":
-    #            return "00000000-0000-0000-0000-000000000000"
-    #
-    #        return value
-
-
-#    @validator("sharing_group_id", pre=True)
-#    @classmethod
-#    def zero_sharing_group_id_to_none(cls: Type["AddEditGetEventDetails"], value: Any) -> Any:  # noqa: ANN102
-#        if value is not None and value == 0:
-#            return "0"
-#        return value
 
 
 class AddEditGetEventResponse(BaseModel):

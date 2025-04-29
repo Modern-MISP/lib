@@ -3,6 +3,7 @@ from typing import Annotated, Any, Optional, Self, Type
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
 
+from mmisp.api_schemas.attribute_common import CommonAttribute
 from mmisp.lib.attributes import (
     AttributeCategories,
     default_category,
@@ -48,7 +49,7 @@ class SearchAttributesAttributesDetails(BaseModel):
     event_id: int | None = None
     object_id: int | None = None
     object_relation: str | None = None
-    category: str
+    category: AttributeCategories
     type: str
     value: str
     to_ids: bool
@@ -111,7 +112,7 @@ class RestSearchFilter(BaseModel):
     value1: str | None = None
     value2: str | None = None
     type: str | None = None
-    category: str | None = None
+    category: AttributeCategories | None = None
     org: str | None = None
     tags: list[str] | None = None
     from_: str | None = None
@@ -227,38 +228,10 @@ class GetDescribeTypesResponse(BaseModel):
     result: GetDescribeTypesAttributes
 
 
-class GetAttributeAttributes(BaseModel):
-    id: int
-    event_id: int
-    object_id: int
-    object_relation: str | None
-    category: str
-    type: str
-    value: str
-    to_ids: bool
-    uuid: str
-    timestamp: datetime
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int
-    comment: str | None = None
-    deleted: bool = False
-    disable_correlation: bool = False
-    first_seen: str | None = None
-    last_seen: str | None = None
+class GetAttributeAttributes(CommonAttribute):
     event_uuid: str
     data: str | None = None
     Tag: list[GetAttributeTag] | None = None
-
-    @field_serializer("timestamp")
-    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
-        return int(timestamp.timestamp())
-
-    @field_validator("first_seen", mode="before")
-    @classmethod
-    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
-        if value == "":
-            return None
-        return value
 
 
 class GetAttributeResponse(BaseModel):
@@ -266,40 +239,10 @@ class GetAttributeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class GetAllAttributesResponse(BaseModel):
-    id: int
-    event_id: int | None = None
-    object_id: int | None = None
-    object_relation: str | None = None
-    category: str | None = None
-    type: str
+class GetAllAttributesResponse(CommonAttribute):
     value1: str | None = None
     value2: str | None = None
-    to_ids: bool | None = None
-    uuid: str | None = None
-    timestamp: datetime | None = None
-    distribution: AttributeDistributionLevels | None = None
-    sharing_group_id: int | None = None
-    comment: str | None = None
-    deleted: bool | None = None
-    disable_correlation: bool | None = None
-    first_seen: datetime | None = None
-    last_seen: datetime | None = None
-    value: str | None = None
     model_config = ConfigDict(from_attributes=True)
-
-    @field_serializer("timestamp")
-    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int | None:
-        if timestamp is None:
-            return None
-        return int(timestamp.timestamp())
-
-    @field_validator("first_seen", mode="before")
-    @classmethod
-    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
-        if value == "":
-            return None
-        return value
 
 
 class EditAttributeTag(BaseModel):
@@ -409,38 +352,10 @@ class AddRemoveTagAttributeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AddAttributeAttributes(BaseModel):
-    id: int
-    event_id: int
-    object_id: int
-    object_relation: str | None
-    category: str
-    type: str
-    value: str
+class AddAttributeAttributes(CommonAttribute):
     value1: str
     value2: str
-    to_ids: bool
-    uuid: str
-    timestamp: datetime
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int
-    comment: str | None = None
-    deleted: bool
-    disable_correlation: bool
-    first_seen: datetime | None = None
-    last_seen: datetime | None = None
     attribute_tag: list[str] | None = Field(default_factory=list, alias="AttributeTag")
-
-    @field_serializer("timestamp")
-    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
-        return int(timestamp.timestamp())
-
-    @field_validator("first_seen", mode="before")
-    @classmethod
-    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
-        if value == "":
-            return None
-        return value
 
 
 class AddAttributeResponse(BaseModel):
