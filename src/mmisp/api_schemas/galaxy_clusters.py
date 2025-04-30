@@ -62,6 +62,8 @@ class AddGalaxyClusterRequest(BaseModel):
     description: str
     source: str
     authors: list[str]
+    org_id: int | None = None
+    orgc_id: int | None = None
     distribution: DistributionLevels
     locked: bool = False
     GalaxyElement: list[AddGalaxyElement]
