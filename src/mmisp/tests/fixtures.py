@@ -5,7 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import delete, select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -23,14 +23,6 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
-
-from ..db.models.blocklist import GalaxyClusterBlocklist
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
-from ..db.models.threat_level import ThreatLevel
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
@@ -60,6 +52,13 @@ from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.threat_level_generator import generate_threat_level
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
+from ..db.models.blocklist import GalaxyClusterBlocklist
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
+from ..db.models.threat_level import ThreatLevel
 
 
 class DBManager:
@@ -666,127 +665,8 @@ def galaxy_cluster_two_uuid():
 
 
 @pytest_asyncio.fixture
-async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid, organisation):
-    galaxy = Galaxy(
-        namespace="misp",
-        name="test galaxy",
-        type="test galaxy type",
-        description="test",
-        version="1",
-        icon="",
-        kill_chain_order="",
-        uuid=uuid(),
-        enabled=True,
-        local_only=False,
-        org_id=organisation.id,
-        orgc_id=organisation.id,
-        distribution=DistributionLevels.ALL_COMMUNITIES,
-        created=datetime.now(),
-        default=False,
-        modified=datetime.now(),
-    )
-
-        async def add_to_db(elem):
-            return await stack.enter_async_context(DBManager(db, elem))
-
-        galaxy = await add_to_db(
-            Galaxy(
-                namespace="misp",
-                name="test galaxy",
-                type="test galaxy type",
-                description="test",
-                version="1",
-                kill_chain_order=None,
-                uuid=uuid(),
-                enabled=True,
-                local_only=False,
-                org_id=0,
-                orgc_id=0,
-                distribution=DistributionLevels.ALL_COMMUNITIES,
-                created=datetime.now(),
-                modified=datetime.now(),
-            )
-        )
-
-        galaxy_cluster = await add_to_db(
-            GalaxyCluster(
-                uuid=galaxy_default_cluster_one_uuid,
-                collection_uuid="",
-                type="test galaxy type",
-                value="test",
-                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
-                description="test",
-                galaxy_id=galaxy.id,
-                source="me",
-                authors=["Konstantin Zangerle", "Test Writer"],
-                version=1,
-                distribution=3,
-                sharing_group_id=None,
-                org_id=0,
-                orgc_id=0,
-                default=0,
-                locked=0,
-                extends_uuid=None,
-                extends_version=None,
-                published=True,
-                deleted=False,
-            )
-        )
-
-        galaxy_cluster2 = await add_to_db(
-            GalaxyCluster(
-                uuid=galaxy_default_cluster_two_uuid,
-                collection_uuid="",
-                type="test galaxy type",
-                value="test",
-                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
-                description="test",
-                galaxy_id=galaxy.id,
-                source="me",
-                authors=["Konstantin Zangerle", "Test Writer"],
-                version=1,
-                distribution=3,
-                sharing_group_id=None,
-                org_id=0,
-                orgc_id=0,
-                default=0,
-                locked=0,
-                extends_uuid=None,
-                extends_version=None,
-                published=True,
-                deleted=False,
-            )
-        )
-
-        galaxy_element = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
-        )
-        galaxy_element2 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
-        )
-
-        galaxy_element21 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
-        )
-        galaxy_element22 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
-        )
-        await db.commit()
-        yield {
-            "galaxy": galaxy,
-            "galaxy_cluster": galaxy_cluster,
-            "galaxy_cluster2": galaxy_cluster2,
-            "galaxy_element": galaxy_element,
-            "galaxy_element2": galaxy_element2,
-            "galaxy_element21": galaxy_element21,
-            "galaxy_element22": galaxy_element22,
-        }
-
-
-@pytest_asyncio.fixture
-async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid):
+async def test_galaxy(db, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, organisation):
     async with AsyncExitStack() as stack:
-
         async def add_to_db(elem):
             return await stack.enter_async_context(DBManager(db, elem))
 
@@ -801,8 +681,8 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 uuid=uuid(),
                 enabled=True,
                 local_only=False,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                org_id=0,
+                orgc_id=0,
                 distribution=DistributionLevels.ALL_COMMUNITIES,
                 created=datetime.now(),
                 modified=datetime.now(),
@@ -823,8 +703,8 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 version=1,
                 distribution=3,
                 sharing_group_id=None,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                org_id=organisation.id,
+                orgc_id=organisation.id,
                 default=0,
                 locked=0,
                 extends_uuid=None,
@@ -833,6 +713,7 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 deleted=False,
             )
         )
+
         galaxy_cluster2 = await add_to_db(
             GalaxyCluster(
                 uuid=galaxy_cluster_two_uuid,
@@ -847,8 +728,8 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 version=1,
                 distribution=3,
                 sharing_group_id=None,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                org_id=organisation.id,
+                orgc_id=organisation.id,
                 default=0,
                 locked=0,
                 extends_uuid=None,
@@ -858,20 +739,25 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             )
         )
 
-        galaxy_element = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
-        )
-        galaxy_element2 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
-        )
+        galaxy_element = GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs",
+                                       value="http://test-one-one.example.com")
+        galaxy_element2 = GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs",
+                                        value="http://test-one-two.example.com")
 
-        galaxy_element21 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
-        )
-        galaxy_element22 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
-        )
+        galaxy_element21 = GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs",
+                                         value="http://test-two-one.example.com")
+        galaxy_element22 = GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs",
+                                         value="http://test-two-two.example.com")
+
+        galaxy_elements = (galaxy_element, galaxy_element2, galaxy_element21, galaxy_element22)
+        for g_e in galaxy_elements:
+            db.add(g_e)
+
         await db.commit()
+
+        for g_e in galaxy_elements:
+            await db.refresh(g_e)
+
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -881,23 +767,11 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
-        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
-        qry = (select(GalaxyElement))
-        galaxy_element_all = (await db.execute(qry)).scalars().all()
-
-        galaxy_elements_of_cluster = []
-        for galaxy_element in galaxy_element_all:
-            if galaxy_element.galaxy_cluster_id == galaxy_cluster.id or galaxy_element.galaxy_cluster_id == galaxy_cluster2.id:
-                galaxy_elements_of_cluster.append(galaxy_element.id)
-
         await db.commit()
 
-        async with db.begin():
-            await db.execute(delete(GalaxyElement).where(GalaxyElement.id.in_(galaxy_elements_of_cluster)))
-            await db.execute(
-                delete(GalaxyCluster).where(GalaxyCluster.uuid.in_([galaxy_cluster.uuid, galaxy_cluster2.uuid]))
-            )
-            await db.execute(delete(Galaxy).where(Galaxy.uuid == galaxy.uuid))
+        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+        qry = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([galaxy_cluster.id, galaxy_cluster2.id]))
+        await db.execute(qry)
 
 
 @pytest_asyncio.fixture()
@@ -1453,8 +1327,8 @@ async def org_blocklist(db, organisation):
 
 
 @pytest_asyncio.fixture()
-async def cluster_blocklist(db, test_default_galaxy):
-    cluster = test_default_galaxy["galaxy_cluster"]
+async def cluster_blocklist(db, test_galaxy):
+    cluster = test_galaxy["galaxy_cluster"]
     cluster_blocklist: GalaxyClusterBlocklist = generate_galaxy_cluster_blocklist(cluster.uuid, cluster.orgc_id)
 
     db.add(cluster_blocklist)
