@@ -2,14 +2,11 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.database import Base
-from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin
-from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.object_json_type import DBObjectJson
-from mmisp.db.types import DateTimeEpoch
+from mmisp.db.types import DBUUID, DateTimeEpoch, DBListJson, DBObjectJson
 from mmisp.lib.uuid import uuid
 
 
@@ -17,7 +14,7 @@ class Object(Base, DictMixin["ObjectDict"]):
     __tablename__ = "objects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     name: Mapped[str] = mapped_column(String(255), index=True)
     meta_category: Mapped[str] = mapped_column("meta-category", String(255), index=True)
     description: Mapped[str] = mapped_column(String(255))
@@ -52,7 +49,7 @@ class ObjectTemplate(Base, DictMixin["ObjectTemplateDict"]):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey("organisations.id"), index=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(255), unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     meta_category: Mapped[Optional[str]] = mapped_column(
         "meta-category", String(255), nullable=True, index=True, key="meta_category"
