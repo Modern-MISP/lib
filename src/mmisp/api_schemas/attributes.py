@@ -118,7 +118,7 @@ class RestSearchFilter(BaseModel):
     from_: str | None = None
     to: datetime | None = None
     last: int | None = None
-    eventid: str | None = None
+    eventid: int | None = None
     published: bool | None = None
     to_ids: bool | None = None
     deleted: bool | None = None
