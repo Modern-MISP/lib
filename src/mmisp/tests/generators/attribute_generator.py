@@ -17,7 +17,7 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
         value1=generate_random_str(),
         value2=generate_random_str(),
         event_id=generate_ids_as_str(),
-        category=random.choice(list(AttributeCategories)),
+        category=AttributeCategories.OTHER,
         to_ids=bool(random.getrandbits(1)),
         uuid=uuid(),
         timestamp=generate_random_date_str(),
@@ -33,11 +33,11 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
 
 def generate_get_attribute_attributes_response() -> GetAttributeAttributes:
     return GetAttributeAttributes(
-        id=generate_ids_as_str(),
+        id=int(generate_ids_as_str()),
         event_id=generate_ids_as_str(),
         object_id=generate_ids_as_str(),
         object_relation=generate_random_str(),
-        category=generate_random_str(),
+        category=AttributeCategories.OTHER,
         type=random.choice(list(mapper_val_safe_clsname.keys())),
         value=generate_random_str(),
         to_ids=False,

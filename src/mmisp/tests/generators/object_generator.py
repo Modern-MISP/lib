@@ -4,7 +4,7 @@ import time
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.objects import ObjectCreateBody, ObjectSearchBody
-from mmisp.lib.attributes import mapper_val_safe_clsname
+from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
 from mmisp.lib.distribution import AttributeDistributionLevels
 
 
@@ -37,7 +37,7 @@ def generate_valid_object_create_attributes() -> AddAttributeBody:
         type="text",
         value=generate_random_str(),
         event_id=generate_ids_as_str(),
-        category=generate_random_str(),
+        category=AttributeCategories.OTHER,
         to_ids=True,
         timestamp=generate_random_date_str(),
         distribution=AttributeDistributionLevels.COMMUNITY,
@@ -73,7 +73,7 @@ def generate_valid_random_object_create_attributes() -> AddAttributeBody:
         value1=generate_random_str(),
         value2=generate_random_str(),
         event_id=generate_ids_as_str(),
-        category=generate_random_str(),
+        category=AttributeCategories.OTHER,
         to_ids=True,
         timestamp=generate_random_date_str(),
         distribution=AttributeDistributionLevels.COMMUNITY,
@@ -121,7 +121,7 @@ def generate_search_query() -> ObjectSearchBody:
         object_template_uuid=generate_random_str(),
         object_template_version=generate_ids_as_str(),
         event_id=generate_ids_as_str(),
-        category=generate_random_str(),
+        category=AttributeCategories.OTHER,
         comment=generate_random_str(),
         first_seen=generate_random_date_str(),
         last_seen=generate_random_date_str(),
@@ -155,7 +155,7 @@ def generate_random_search_query() -> ObjectSearchBody:
         object_template_uuid=generate_random_str() if random.choice([True, False]) else None,
         object_template_version=generate_ids_as_str() if random.choice([True, False]) else None,
         event_id=generate_ids_as_str(),
-        category=generate_random_str() if random.choice([True, False]) else None,
+        category=AttributeCategories.OTHER,
         comment=generate_random_str(),
         first_seen=generate_random_date_str() if random.choice([True, False]) else None,
         last_seen=generate_random_date_str() if random.choice([True, False]) else None,
