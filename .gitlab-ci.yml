@@ -79,11 +79,10 @@ compare_db:
     MISP_READY_FILE: '${CI_PROJECT_DIR}/misp_ready'
 
 pytest:
-  parallel: 1
   stage: test
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
   script:
-    - pytest --test-group-count $CI_NODE_TOTAL --test-group=$CI_NODE_INDEX  --cov --cov-report= tests/
+    - pytest --cov --cov-report= tests/
   variables:
     COVERAGE_FILE: ".coverage.${CI_NODE_INDEX}"
     DATABASE_URL: sqlite+aiosqlite:///mmisp-tests.db?check_same_thread=False
