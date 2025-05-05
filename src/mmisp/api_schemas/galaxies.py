@@ -1,4 +1,5 @@
-from typing import Any
+from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -7,6 +8,21 @@ from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAl
 from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import GalaxyDistributionLevels
+
+
+class ImportGalaxy(BaseModel):
+    description: str
+    type: str
+    version: int
+    name: str
+    uuid: UUID
+    icon: str | None = None
+    namespace: str | None = None
+    kill_chain_order: dict | None = None
+
+    distribution: Literal[3] = 3
+    org_id: Literal[0] = 0
+    orgc_id: Literal[0] = 0
 
 
 class SearchGalaxiesBody(BaseModel):

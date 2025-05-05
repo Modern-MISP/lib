@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -7,6 +8,39 @@ from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAl
 from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
 from mmisp.lib.distribution import DistributionLevels
+
+
+class ImportGalaxyClusterValueMeta(BaseModel):
+    type: list[str]
+    complexity: str
+
+
+class ImportGalaxyClusterValueRelated(BaseModel):
+    dest_uuid: UUID = Field(validation_alias="dest-uuid")
+    type: str
+
+
+class ImportGalaxyClusterValue(BaseModel):
+    value: str
+    uuid: UUID
+    related: list[ImportGalaxyClusterValueRelated] | None = None
+    description: str = ""
+    revoked: bool | None = None
+    meta: ImportGalaxyClusterValueMeta | None = None
+
+
+class ImportGalaxyCluster(BaseModel):
+    description: str
+    type: str
+    version: int
+    name: str
+    uuid: UUID
+    values: list[ImportGalaxyClusterValue]
+    authors: list[str]
+    source: str
+    category: str
+
+    distribution: Literal[3] = 3
 
 
 class ExportGalaxyGalaxyElement(BaseModel):
