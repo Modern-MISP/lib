@@ -2,12 +2,10 @@ from datetime import datetime
 from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin
-from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.uuid_type import DBUUID
+from mmisp.db.types import DBUUID, DBListJson
 
 from ..database import Base
 

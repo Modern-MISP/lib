@@ -9,8 +9,7 @@ from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
-from mmisp.db.types import DateTimeEpoch
-from mmisp.db.uuid_type import DBUUID
+from mmisp.db.types import DBUUID, DateTimeEpoch
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.permissions import Permission
@@ -23,6 +22,8 @@ from .user import User
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
+
+    from .object import Object
 else:
     ColumnExpressionArgument = typing.Any
 
@@ -62,14 +63,14 @@ class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="selectin")  # type:ignore[var-annotated]
-    mispobject = relationship(
+    event: Mapped[Event] = relationship("Event", back_populates="attributes", lazy="selectin")
+    mispobject: Mapped["Object"] = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
         back_populates="attributes",
         lazy="joined",
         foreign_keys="Attribute.object_id",
-    )  # type:ignore[var-annotated]
+    )
     tags = relationship("Tag", secondary="attribute_tags", lazy="selectin", viewonly=True)
     attributetags = relationship(
         "AttributeTag",
