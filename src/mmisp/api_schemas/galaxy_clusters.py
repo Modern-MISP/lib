@@ -71,8 +71,8 @@ class GalaxyClusterResponse(BaseModel):
 
 class ExportGalaxyClusterResponse(BaseModel):
     id: int
-    uuid: str
-    collection_uuid: str
+    uuid: UUID
+    collection_uuid: UUID
     type: str
     value: str
     tag_name: str
@@ -87,7 +87,7 @@ class ExportGalaxyClusterResponse(BaseModel):
     orgc_id: int
     default: bool
     locked: bool
-    extends_uuid: str
+    extends_uuid: UUID
     extends_version: int
     published: bool
     deleted: bool

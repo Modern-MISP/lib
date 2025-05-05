@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.types import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -14,7 +15,7 @@ class Galaxy(Base, DictMixin["GalaxyDict"], UpdateMixin):
     __tablename__ = "galaxies"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, default=uuid)
+    uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, unique=True, default=uuid)
     name: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)

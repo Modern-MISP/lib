@@ -7,7 +7,7 @@ from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.models.tag import Tag
 from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.uuid_type import DBUUID
+from mmisp.db.types import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -18,7 +18,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin["GalaxyClusterDict"]):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
-    collection_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True, default="")
+    collection_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True, default="")
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     tag_name: Mapped[str] = mapped_column(String(255), nullable=False, default="", index=True)
@@ -35,7 +35,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin["GalaxyClusterDict"]):
     orgc_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
     default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    extends_uuid: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None, index=True)
+    extends_uuid: Mapped[str | None] = mapped_column(DBUUID, nullable=True, default=None, index=True)
     extends_version: Mapped[int | None] = mapped_column(Integer, index=True, nullable=True, default=None)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -117,11 +117,9 @@ class GalaxyClusterRelation(Base, DictMixin["GalaxyClusterRelationDict"], Update
         Integer, ForeignKey(GalaxyCluster.id, ondelete="CASCADE"), nullable=False, index=True
     )
     referenced_galaxy_cluster_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True)
     referenced_galaxy_cluster_type: Mapped[str] = mapped_column(Text, nullable=False)
-    galaxy_cluster_uuid: Mapped[str] = mapped_column(
-        String(40), ForeignKey(GalaxyCluster.uuid), nullable=False, index=True
-    )
+    galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, ForeignKey(GalaxyCluster.uuid), nullable=False, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("sharing_groups.id"), index=True, nullable=True, default=None
@@ -146,6 +144,6 @@ class GalaxyReference(Base, DictMixin["GalaxyReferenceDict"]):
         Integer, ForeignKey(GalaxyCluster.id, ondelete="CASCADE"), nullable=False, index=True
     )
     referenced_galaxy_cluster_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True)
     referenced_galaxy_cluster_type: Mapped[str] = mapped_column(Text, nullable=False)
     referenced_galaxy_cluster_value: Mapped[str] = mapped_column(Text, nullable=False)

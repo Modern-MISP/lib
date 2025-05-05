@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Self
+from uuid import UUID
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -8,7 +9,7 @@ from mmisp.lib.distribution import GalaxyDistributionLevels
 
 class CommonGalaxy(BaseModel):
     id: int
-    uuid: str
+    uuid: UUID
     name: str
     type: str
     description: str
@@ -38,8 +39,8 @@ class GalaxyClusterMeta(BaseModel):
 
 class CommonGalaxyCluster(BaseModel):
     id: int
-    uuid: str
-    collection_uuid: str
+    uuid: UUID
+    collection_uuid: UUID
     type: str
     value: str
     tag_name: str
@@ -54,7 +55,7 @@ class CommonGalaxyCluster(BaseModel):
     orgc_id: int
     default: bool | None = None
     locked: bool | None = None
-    extends_uuid: str | None = None
+    extends_uuid: UUID | None = None
     extends_version: str | int | None = None
     published: bool | None = None
     deleted: bool | None = None
