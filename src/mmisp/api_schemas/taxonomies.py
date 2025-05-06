@@ -3,6 +3,40 @@ from pydantic import BaseModel, ConfigDict
 from mmisp.api_schemas.common import TagAttributesResponse
 
 
+class ImportTaxonomyEntry(BaseModel):
+    value: str
+    numerical_value: int
+    colour: str
+    description: str
+    expanded: str
+
+
+class ImportTaxonomyValues(BaseModel):
+    predicate: str
+    entry: list[ImportTaxonomyEntry]
+
+
+class ImportTaxonomyPredicates(BaseModel):
+    value: str
+    numerical_value: int | None = None
+    colour: str | None = None
+    description: str | None = None
+    expanded: str | None = None
+    exclusive: bool | None = None
+
+
+class ImportTaxonomyFile(BaseModel):
+    namespace: str
+    description: str
+    version: int
+    exclusive: bool | None = None
+    expanded: str
+    type: list[str]
+    refs: list[str]
+    predicates: list[ImportTaxonomyPredicates]
+    values: list[ImportTaxonomyValues] | None = None
+
+
 class TaxonomyEntrySchema(BaseModel):
     tag: str
     expanded: str
