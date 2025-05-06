@@ -4,12 +4,10 @@ from typing import Self
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
-from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.types import DateTimeEpoch
-from mmisp.db.uuid_type import DBUUID
+from mmisp.db.types import DBUUID, DateTimeEpoch
 from mmisp.lib.distribution import EventDistributionLevels
 from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid

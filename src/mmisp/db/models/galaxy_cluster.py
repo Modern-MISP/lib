@@ -1,13 +1,11 @@
 from typing import Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mmisp.db.list_json_type import DBListJson
 from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.models.tag import Tag
-from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.types import DBUUID
+from mmisp.db.types import DBUUID, DBListJson
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
