@@ -77,7 +77,7 @@ def load_plugins(plugins: list[str]) -> None:
             continue
 
 
-def load_plugins_from_directory(directory: str) -> None:
+def load_plugins_from_directory(*directories: str) -> None:
     """
     Loads all plugins that are in the specified directory.
 
@@ -86,23 +86,23 @@ def load_plugins_from_directory(directory: str) -> None:
     :param factory: The factory in which the plugins are to be registered.
     :type factory: PluginFactory
     """
+    for directory in directories:
+        if not directory:
+            raise ValueError("Path to a directory is required. May not be empty.")
+        if not os.path.isdir(directory):
+            raise ValueError(f"The directory '{directory}' doesn't exist.")
 
-    if not directory:
-        raise ValueError("Path to a directory is required. May not be empty.")
-    if not os.path.isdir(directory):
-        raise ValueError(f"The directory '{directory}' doesn't exist.")
+        path_content: list[str] = os.listdir(directory)
+        plugin_modules: list[str] = []
+        for element in path_content:
+            print(element)
+            element_path: str = os.path.join(directory, element)
+            if os.path.isdir(element_path):
+                if os.path.isfile(os.path.join(element_path, "__init__.py")):
+                    plugin_modules.append(element_path)
+            else:
+                file_extension: str = os.path.splitext(element)[1]
+                if file_extension == ".py":
+                    plugin_modules.append(element_path)
 
-    path_content: list[str] = os.listdir(directory)
-    plugin_modules: list[str] = []
-    for element in path_content:
-        print(element)
-        element_path: str = os.path.join(directory, element)
-        if os.path.isdir(element_path):
-            if os.path.isfile(os.path.join(element_path, "__init__.py")):
-                plugin_modules.append(element_path)
-        else:
-            file_extension: str = os.path.splitext(element)[1]
-            if file_extension == ".py":
-                plugin_modules.append(element_path)
-
-    load_plugins(plugin_modules)
+        load_plugins(plugin_modules)
