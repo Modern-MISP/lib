@@ -146,3 +146,4 @@ async def create_all_models() -> None:
 sessionmanager = None
 if config.CONNECTION_INIT:
     sessionmanager = DatabaseSessionManager()
+    sessionmanager.init()
