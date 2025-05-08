@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_serializer
@@ -40,7 +40,7 @@ class GalaxyClusterMeta(BaseModel):
 class CommonGalaxyCluster(BaseModel):
     id: int
     uuid: UUID
-    collection_uuid: UUID
+    collection_uuid: UUID | Literal[""]
     type: str
     value: str
     tag_name: str
@@ -55,7 +55,7 @@ class CommonGalaxyCluster(BaseModel):
     orgc_id: int
     default: bool | None = None
     locked: bool | None = None
-    extends_uuid: UUID | None = None
+    extends_uuid: UUID | Literal[""] | None = None
     extends_version: str | int | None = None
     published: bool | None = None
     deleted: bool | None = None
