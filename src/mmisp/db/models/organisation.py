@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Self
 
@@ -19,15 +20,15 @@ class Organisation(Base, DictMixin["OrganisationDict"]):
     date_modified: Mapped[DateTime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
-    description: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text, default="")
     type: Mapped[str] = mapped_column(String(255))
     nationality: Mapped[str] = mapped_column(String(255))
     sector: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid.uuid4)
     contacts: Mapped[str] = mapped_column(Text)
     local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    restricted_to_domain: Mapped[list[str]] = mapped_column(DBListJson)
+    restricted_to_domain: Mapped[list[str]] = mapped_column(DBListJson, default=list)
     landingpage: Mapped[str] = mapped_column(Text)
 
     # Relationship to users
