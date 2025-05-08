@@ -19,16 +19,18 @@ class CommonGalaxy(BaseModel):
     enabled: bool
     local_only: bool
     kill_chain_order: str | None = None
-    created: datetime
-    modified: datetime
+    created: Literal["0000-00-00 00:00:00"] | datetime
+    modified: Literal["0000-00-00 00:00:00"] | datetime
     org_id: int
     orgc_id: int
     default: bool
     distribution: GalaxyDistributionLevels
 
     @field_serializer("created", "modified")
-    def serialize_timestamp(self: Self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d %H:%M:%S")
+    def serialize_timestamp(self: Self, value: datetime | Literal["0000-00-00 00:00:00"]) -> str:
+        if isinstance(value, datetime):
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        return value
 
 
 class GalaxyClusterMeta(BaseModel):

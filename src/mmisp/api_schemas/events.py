@@ -330,7 +330,12 @@ class IndexEventsEventTag(BaseModel):
     event_id: int
     tag_id: int
     local: bool
+    relationship_type: bool | str | None = None
     Tag: GetAllEventsEventTagTag
+
+
+class GetAllEventsEventTag(IndexEventsEventTag):
+    pass
 
 
 class IndexEventsAttributes(BaseModel):
@@ -399,15 +404,6 @@ class ObjectEventResponse(BaseModel):
     info: str
     org_id: int | None = None
     orgc_id: int | None = None
-
-
-class GetAllEventsEventTag(BaseModel):
-    id: uuid.UUID | int
-    event_id: uuid.UUID | int
-    tag_id: int
-    local: bool
-    relationship_type: bool | str | None = None
-    Tag: GetAllEventsEventTagTag | None = None
 
 
 class GetAllEventsResponse(BaseModel):

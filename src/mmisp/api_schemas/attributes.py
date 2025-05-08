@@ -26,7 +26,7 @@ class GetAttributeTag(BaseModel):
 
 class SearchAttributesObject(BaseModel):
     id: int
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
 
 

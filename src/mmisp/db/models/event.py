@@ -253,7 +253,7 @@ class EventReport(Base):
     deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
-class EventTag(Base):
+class EventTag(Base, DictMixin["EventTagDict"]):
     __tablename__ = "event_tags"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
