@@ -1,4 +1,3 @@
-import asyncio
 import uuid as libuuid
 from contextlib import AsyncExitStack
 from datetime import date, datetime
@@ -69,15 +68,8 @@ class DBManager:
         await self.db.delete(self.obj)
 
 
-@pytest.fixture(scope="session")
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
-async def db_connection(event_loop):
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def db_connection():
     sm = DatabaseSessionManager()
     sm.init()
     await sm.create_all()
