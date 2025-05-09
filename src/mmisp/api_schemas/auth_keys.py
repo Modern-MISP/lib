@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Self, Union
+from typing import Any, List, Self, Union
 
-from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_serializer, field_validator
 from typing_extensions import Annotated
 
 
@@ -10,13 +10,22 @@ class SearchGetAuthKeysResponseItemUser(BaseModel):
     email: str
 
 
-class ViewAuthKeyResponseWrapper(BaseModel):
+class CreatedExpiration(BaseModel):
+    created: datetime
+    expiration: datetime
+
+    @field_serializer("created", "expiration")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
+
+
+class ViewAuthKeyResponseWrapper(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
-    expiration: int
     read_only: bool
     user_id: int
     comment: str
@@ -29,13 +38,11 @@ class ViewAuthKeysResponse(BaseModel):
     User: SearchGetAuthKeysResponseItemUser
 
 
-class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
+class SearchGetAuthKeysResponseItemAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
-    expiration: datetime
     read_only: bool
     user_id: int
     comment: str | None = None
@@ -43,13 +50,11 @@ class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
     unique_ips: list[str] | None = []
 
 
-class SearchGetAuthKeysResponseAuthKey(BaseModel):
+class SearchGetAuthKeysResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
-    expiration: datetime
     read_only: bool
     user_id: int
     comment: str | None = None
@@ -86,26 +91,22 @@ class SearchAuthKeyBody(BaseModel):
     last_used: str | None = None  # deprecated
 
 
-class EditAuthKeyResponseAuthKey(BaseModel):
+class EditAuthKeyResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
-    expiration: datetime
     read_only: bool
     user_id: int
     comment: str
     allowed_ips: str | None = None
 
 
-class EditAuthKeyResponseCompleteAuthKey(BaseModel):
+class EditAuthKeyResponseCompleteAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
-    expiration: datetime
     read_only: bool
     user_id: int
     comment: str
@@ -142,12 +143,11 @@ class EditAuthKeyBody(BaseModel):
         return v
 
 
-class AddAuthKeyResponseAuthKey(BaseModel):
+class AddAuthKeyResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: datetime
     expiration: datetime | None
     read_only: bool
     user_id: int

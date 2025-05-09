@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Any, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 from mmisp.api_schemas.common import User
 from mmisp.api_schemas.organisations import Organisation, OrganisationUsersResponse
@@ -104,11 +105,11 @@ class GetUsersUser(BaseModel):
     change_pw: bool
     contactalert: bool
     disabled: bool
+    force_logout: bool
+    last_api_access: int | None = None
     expiration: datetime | None = None
     current_login: datetime | None = None
     last_login: datetime | None = None
-    last_api_access: int | None = None
-    force_logout: bool
     date_created: datetime | None = None
     date_modified: datetime | None = None
     last_pw_change: int | None = None
@@ -125,6 +126,12 @@ class GetUsersUser(BaseModel):
     name: str | None = None
     contact: bool | None = None
     notification: bool | None = None
+
+    @field_serializer("expiration", "current_login", "last_login", "date_created", "date_modified")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
 
 
 class GetUsersElement(BaseModel):
