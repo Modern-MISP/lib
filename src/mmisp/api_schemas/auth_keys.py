@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Self, Union
+from typing import Any, List, Self, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_serializer, field_validator
 from typing_extensions import Annotated
@@ -135,9 +135,16 @@ class EditAuthKeyBody(BaseModel):
     allowed_ips: Union[str, List[str]] | None = None
     expiration: datetime | None = None
 
+    @field_validator("expiration", mode="before")
+    @classmethod
+    def empty_string_to_int_null(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return 0
+        return value
+
     @field_validator("allowed_ips", mode="before")
     @classmethod
-    def ensure_list(cls: Self, v: str | List[str]) -> List[str]:
+    def ensure_list(cls: Type[Self], v: str | List[str]) -> List[str]:
         if isinstance(v, str):
             return [v]
         return v
