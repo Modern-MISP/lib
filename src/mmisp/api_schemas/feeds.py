@@ -1,6 +1,8 @@
-from typing import Any, Dict, Type
+from typing import Self
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from mmisp.lib.distribution import AttributeDistributionLevels
 
 
 class FeedUpdateBody(BaseModel):
@@ -9,7 +11,7 @@ class FeedUpdateBody(BaseModel):
     url: str | None = None
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str | None = None
+    distribution: int | None = None
     sharing_group_id: int | None = None
     tag_id: int | None = None
     default: bool | None = None
@@ -27,16 +29,12 @@ class FeedUpdateBody(BaseModel):
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
     orgc_id: int | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedToggleBody(BaseModel):
     enable: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedAttributesResponse(BaseModel):
@@ -46,7 +44,7 @@ class FeedAttributesResponse(BaseModel):
     url: str
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str
+    distribution: int
     sharing_group_id: int | None = None
     tag_id: int
     default: bool | None = None
@@ -65,39 +63,40 @@ class FeedAttributesResponse(BaseModel):
     force_to_ids: bool
     orgc_id: int
 
-    @validator("sharing_group_id", always=True)
-    @classmethod
-    def check_sharing_group_id(cls: Type["FeedAttributesResponse"], value: Any, values: Dict[str, Any]) -> int | None:
+    @model_validator(mode="after")
+    def check_sharing_group_id(self: Self) -> Self:
         """
         If distribution equals 4, sharing_group_id will be shown.
         """
-        distribution = values.get("distribution", None)
-        if distribution == "4" and value is not None:
-            return value
-        return None
+        if self.distribution not in [
+            None,
+            AttributeDistributionLevels.SHARING_GROUP,
+            AttributeDistributionLevels.INHERIT_EVENT,
+        ]:
+            if self.sharing_group_id is not None and self.sharing_group_id != 0:
+                raise ValueError(
+                    "Distribution does not allow to set a sharing group, "
+                    + "name: %s, distribution: %s, sharing_group_id: ",
+                    (self.name, self.distribution, self.sharing_group_id),
+                )
+        return self
 
 
 class FeedResponse(BaseModel):
     Feed: FeedAttributesResponse
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedFetchResponse(BaseModel):
     result: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedEnableDisableResponse(BaseModel):
     name: str
     message: str
     url: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedCreateBody(BaseModel):
@@ -106,8 +105,8 @@ class FeedCreateBody(BaseModel):
     url: str = Field(min_length=1)
     rules: str | None = None
     enabled: bool | None = None
-    distribution: str | None = None
-    sharing_group_id: str | None = None
+    distribution: int | None = None
+    sharing_group_id: int | None = None
     tag_id: int | None = None
     default: bool | None = None
     source_format: str | None = None
@@ -124,9 +123,7 @@ class FeedCreateBody(BaseModel):
     caching_enabled: bool | None = None
     force_to_ids: bool | None = None
     orgc_id: int | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedCacheResponse(BaseModel):
@@ -135,6 +132,4 @@ class FeedCacheResponse(BaseModel):
     url: str
     saved: bool
     success: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

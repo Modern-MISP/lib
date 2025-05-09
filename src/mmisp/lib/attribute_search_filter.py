@@ -21,7 +21,7 @@ def get_search_filters(
     from_: str | None = None,
     to: str | None = None,
     last: int | None = None,
-    eventid: str | None = None,
+    eventid: int | None = None,
     published: bool | None = None,
     to_ids: bool | None = None,
     deleted: bool | None = None,
@@ -49,7 +49,7 @@ def get_search_filters(
     if last is not None:
         raise NotImplementedError("filtering by last is currently not implemented")
     if eventid is not None:
-        raise NotImplementedError("filtering by eventid is currently not implemented")
+        cond.append(Attribute.event_id == eventid)
     if published is not None:
         raise NotImplementedError("filtering by published is currently not implemented")
     if to_ids is not None:

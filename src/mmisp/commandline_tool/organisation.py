@@ -13,7 +13,7 @@ async def create(
     name: str,
     admin_email: int | str | None,
     description: str | None,
-    type: str | None,
+    type: str,
     nationality: str | None,
     sector: str | None,
     contacts_email: str | None,
@@ -49,8 +49,8 @@ async def check_if_organisation_exists(session: AsyncSession, name: str | int) -
         query = select(Organisation).where(Organisation.name == name)
     else:
         query = select(Organisation).where(Organisation.id == name)
-    organisation = await session.execute(query)
-    organisation = organisation.scalar_one_or_none()
+    result = await session.execute(query)
+    organisation = result.scalar_one_or_none()
     if organisation is None:
         return False
     return True
@@ -62,7 +62,7 @@ async def edit_organisation(
     new_name: str | None,
     admin_email: int | str | None,
     description: str | None,
-    type: str | None,
+    type: str,
     nationality: str | None,
     sector: str | None,
     contacts_email: str | None,
@@ -74,15 +74,15 @@ async def edit_organisation(
         query = select(Organisation).where(Organisation.name == organisation)
     else:
         query = select(Organisation).where(Organisation.id == organisation)
-    organisation = await session.execute(query)
-    organisation = organisation.scalar_one_or_none()
+    result = await session.execute(query)
+    organisation_db = result.scalar_one_or_none()
 
-    if organisation is None:
+    if organisation_db is None:
         raise fire.core.FireError("Organisation does not exist")
 
     await set_attributes(
         session,
-        organisation,
+        organisation_db,
         new_name,
         admin_email,
         description,
@@ -116,11 +116,11 @@ async def set_attributes(
         organisation.name = name
     if admin_user is not None:
         if isinstance(admin_user, str):
-            admin_user = await session.execute(select(User).where(User.email == admin_user))
+            result = await session.execute(select(User).where(User.email == admin_user))
         else:
-            admin_user = await session.execute(select(User).where(User.id == admin_user))
+            result = await session.execute(select(User).where(User.id == admin_user))
 
-        admin_user = admin_user.scalar_one_or_none()
+        admin_user = result.scalar_one_or_none()
         if admin_user is None:
             raise fire.core.FireError("User does not exist")
         organisation.created_by = admin_user.id
@@ -147,11 +147,11 @@ async def delete_organisation(session: AsyncSession, organisation: str | int) ->
         query = select(Organisation).where(Organisation.name == organisation)
     else:
         query = select(Organisation).where(Organisation.id == organisation)
-    organisation = await session.execute(query)
-    organisation = organisation.scalar_one_or_none()
+    result = await session.execute(query)
+    organisation_db = result.scalar_one_or_none()
 
-    if organisation is None:
+    if organisation_db is None:
         raise fire.core.FireError("Organisation does not exist")
 
-    await session.delete(organisation)
+    await session.delete(organisation_db)
     await session.commit()

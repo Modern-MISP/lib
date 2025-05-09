@@ -14,6 +14,8 @@ def compare_func(x, y, level=None):
             return x["id"] == y["id"]
         if "Event" in x:
             return x["Event"]["uuid"]
+        if "Role" in x:
+            return x["Role"]["id"]
         if "SharingGroup" in x:
             return x["SharingGroup"]["uuid"]
     except Exception:

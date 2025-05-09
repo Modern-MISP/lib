@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -18,7 +20,7 @@ class ViewUserSettingResponseUserSetting(BaseModel):
     setting: str
     value: dict | list
     user_id: int
-    timestamp: str
+    timestamp: datetime
 
 
 class ViewUserSettingResponse(BaseModel):
@@ -30,7 +32,7 @@ class SetUserSettingResponseUserSetting(BaseModel):
     setting: str
     value: dict | list
     user_id: int
-    timestamp: str
+    timestamp: datetime
 
 
 class SetUserSettingResponse(BaseModel):
@@ -46,7 +48,7 @@ class SearchUserSettingResponse(BaseModel):
     setting: str
     value: Value
     user_id: int
-    timestamp: str
+    timestamp: datetime
 
 
 class SearchUserSettingBody(BaseModel):
@@ -60,7 +62,7 @@ class UserSettingSchema(BaseModel):
     setting: str
     value: dict | list
     user_id: int
-    timestamp: str
+    timestamp: datetime
 
 
 class UserSettingResponse(BaseModel):
@@ -72,4 +74,4 @@ class GetUserSettingResponse(BaseModel):
     setting: str
     value: str
     user_id: int
-    timestamp: str
+    timestamp: datetime

@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import Self
 
-from pydantic import BaseModel
-
-from mmisp.lib.serialisation_helper import timestamp_or_empty_string
+from pydantic import BaseModel, field_serializer
 
 
 class BaseOrganisation(BaseModel):
@@ -16,18 +14,19 @@ class BaseOrganisation(BaseModel):
 
 
 class Organisation(BaseOrganisation):
-    date_created: datetime | str
-    date_modified: datetime | str
+    date_created: datetime
+    date_modified: datetime
     description: str | None = None
-    created_by: str
+    created_by: int
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
     restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+    @field_serializer("date_created", "date_modified")
+    def serialize_timestamp(self: Self, value: datetime) -> str:
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class GetOrganisationResponse(BaseModel):
@@ -39,22 +38,20 @@ class GetOrganisationResponse(BaseModel):
     uuid: str | None = None
     # the fallback GENERIC_MISP_ORGANISATION doesn't have this property
     # str is needed because its returned as string
-    date_created: datetime | None | str = None
-    date_modified: datetime | None | str = None
+    date_created: datetime | None = None
+    date_modified: datetime | None = None
     description: str | None = None
-    created_by: str
+    created_by: int
     contacts: str | None = None
     local: bool
     restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
-    def dict(self: Self, *args, **kwargs) -> dict:
-        d = super().dict(*args, **kwargs)
-
-        d["date_created"] = timestamp_or_empty_string(d["date_created"])
-        d["date_modified"] = timestamp_or_empty_string(d["date_modified"])
-
-        return d
+    @field_serializer("date_created", "date_modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str:
+        if value is None:
+            return ""
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class GetAllOrganisationsOrganisation(GetOrganisationResponse):
@@ -73,15 +70,12 @@ class DeleteForceUpdateOrganisationResponse(BaseModel):
     message: str
     url: str
 
-    class Config:
-        orm_mode = True
-
 
 class OrganisationUsersResponse(BaseModel):
     id: int
     name: str
-    date_created: datetime | str | None = None
-    date_modified: datetime | str | None = None
+    date_created: datetime | None = None
+    date_modified: datetime | None = None
     description: str | None = None
     type: str | None = None
     nationality: str | None = None
@@ -93,6 +87,12 @@ class OrganisationUsersResponse(BaseModel):
     restricted_to_domain: list | str | None = None
     landingpage: str | None = None
 
+    @field_serializer("date_created", "date_modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str:
+        if value is None:
+            return ""
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+
 
 class AddOrganisation(BaseModel):
     id: int
@@ -101,15 +101,12 @@ class AddOrganisation(BaseModel):
     type: str
     nationality: str | None = None
     sector: str | None = None
-    created_by: str
+    created_by: int
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
     restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
-
-    class Config:
-        orm_mode = True
 
 
 class EditOrganisation(BaseModel):
@@ -123,9 +120,6 @@ class EditOrganisation(BaseModel):
     """organisation gains access to the local instance, otherwise treated as external"""
     restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
-
-    class Config:
-        orm_mode = True
 
 
 class ShadowAttributeOrganisation(BaseModel):

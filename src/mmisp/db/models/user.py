@@ -1,43 +1,43 @@
 from time import time
 
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.mixins import DictMixin, UpdateMixin
 
 from ..database import Base
 from .organisation import Organisation
 
 
-class User(Base):
+class User(Base, UpdateMixin, DictMixin["UserDict"]):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
-    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
-    server_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    autoalert: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    authkey: Mapped[str] = mapped_column(String(40), nullable=True, default=None)
-    invited_by: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    password: Mapped[str] = mapped_column(String(255))
+    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
+    server_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    autoalert: Mapped[bool] = mapped_column(Boolean, default=False)
+    authkey: Mapped[str | None] = mapped_column(String(40), default=None)
+    invited_by: Mapped[int] = mapped_column(Integer, default=0)
     gpgkey: Mapped[str | None] = mapped_column(Text)
     certif_public: Mapped[str | None] = mapped_column(Text)
-    nids_sid: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    termsaccepted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    nids_sid: Mapped[int] = mapped_column(Integer, default=0)
+    termsaccepted: Mapped[bool] = mapped_column(Boolean, default=False)
     newsread: Mapped[int] = mapped_column(Integer, default=0)
     role_id: Mapped[int] = mapped_column(Integer, nullable=False, default=6)
     change_pw: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     contactalert: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     disabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    expiration = mapped_column(DateTime, default=None)
+    expiration: Mapped[bool | None] = mapped_column(DateTime, default=None)
     current_login: Mapped[int] = mapped_column(Integer, default=0)
     last_login: Mapped[int] = mapped_column(Integer, default=0)
     force_logout: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     date_created: Mapped[int] = mapped_column(Integer, default=time)
     date_modified: Mapped[int] = mapped_column(Integer, default=time, onupdate=time)
-    sub: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
+    sub: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     external_auth_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    external_auth_key: Mapped[str] = mapped_column(Text, nullable=True)
+    external_auth_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_api_access: Mapped[int] = mapped_column(Integer, default=0)
     notification_daily: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     notification_weekly: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

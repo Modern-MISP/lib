@@ -1,28 +1,29 @@
 import logging
 import typing
+from datetime import datetime
 from typing import Self, Type
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import Comparator, hybrid_method, hybrid_property
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.decl_api import DeclarativeMeta
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mmisp.db.mixins import DictMixin
-from mmisp.db.mypy import Mapped, mapped_column
-from mmisp.db.uuid_type import DBUUID
+from mmisp.db.mixins import DictMixin, UpdateMixin
+from mmisp.db.types import DBUUID, DateTimeEpoch
 from mmisp.lib.attributes import categories, default_category, mapper_safe_clsname_val, to_ids
 from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
-from ..database import Base
+from ..database import AutoDictMeta, Base
 from .event import Event
 from .tag import Tag
 from .user import User
 
 if typing.TYPE_CHECKING:
     from sqlalchemy import ColumnExpressionArgument
+
+    from .object import Object
 else:
     ColumnExpressionArgument = typing.Any
 
@@ -38,7 +39,7 @@ class AttributeComparator(Comparator):
         return or_(self.cls.value1 == other, self.cls.value1 + "|" + self.cls.value2 == other)
 
 
-class Attribute(Base, DictMixin):
+class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
     __tablename__ = "attributes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -53,7 +54,7 @@ class Attribute(Base, DictMixin):
     value1: Mapped[str] = mapped_column(Text, nullable=False)
     value2: Mapped[str] = mapped_column(Text, nullable=False, default="")
     to_ids: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
     comment: Mapped[str | None] = mapped_column(Text)
@@ -62,14 +63,14 @@ class Attribute(Base, DictMixin):
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
-    event = relationship("Event", back_populates="attributes", lazy="selectin")  # type:ignore[var-annotated]
-    mispobject = relationship(
+    event: Mapped[Event] = relationship("Event", back_populates="attributes", lazy="selectin")
+    mispobject: Mapped["Object"] = relationship(
         "Object",
         primaryjoin="Attribute.object_id == Object.id",
         back_populates="attributes",
         lazy="joined",
         foreign_keys="Attribute.object_id",
-    )  # type:ignore[var-annotated]
+    )
     tags = relationship("Tag", secondary="attribute_tags", lazy="selectin", viewonly=True)
     attributetags = relationship(
         "AttributeTag",
@@ -329,7 +330,7 @@ class AttributeTag(Base):
     tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")
 
 
-class AttributeMeta(DeclarativeMeta):
+class AttributeMeta(AutoDictMeta):
     def __new__(cls: Type[type], clsname: str, bases: tuple, dct: dict) -> "AttributeMeta":
         key = clsname[len("Attribute") :]
         dct["default_category"] = default_category[mapper_safe_clsname_val[key]]

@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
+from typing import Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.responses.standard_status_response import StandardStatusResponse
@@ -17,10 +18,14 @@ class SharingGroup(BaseModel):
     org_id: int
     sync_user_id: int
     active: bool
-    created: datetime | str
-    modified: datetime | str
+    created: datetime
+    modified: datetime
     local: bool
     roaming: bool
+
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime) -> str:
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 #    org_count: int = 0
@@ -140,9 +145,6 @@ class SharingGroupResponse(BaseModel):
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-
 
 class SharingGroupIndexResponse(BaseModel):
     editable: bool | None = None
@@ -153,18 +155,12 @@ class SharingGroupIndexResponse(BaseModel):
     SharingGroupOrg: list[SharingGroupOrgIndexItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-
 
 class SingleSharingGroupResponse(BaseModel):
     SharingGroup: SharingGroup
     Organisation: Organisation
     SharingGroupOrg: list[ViewUpdateSharingGroupLegacyResponseSharingGroupOrgItem]
     SharingGroupServer: list[ViewUpdateSharingGroupLegacyResponseSharingGroupServerItem]
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class ViewUpdateSharingGroupLegacyResponse(SharingGroupResponse):
@@ -173,9 +169,6 @@ class ViewUpdateSharingGroupLegacyResponse(SharingGroupResponse):
 
 class GetSharingGroupsIndex(BaseModel):
     response: list[SharingGroupIndexResponse]
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class UpdateSharingGroupLegacyBody(BaseModel):
@@ -192,15 +185,21 @@ class UpdateSharingGroupLegacyBody(BaseModel):
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
     """attribute will be ignored"""
-    org_id: int | None
+    org_id: int | None = None
     """attribute will be ignored"""
-    sync_user_id: int | None
+    sync_user_id: int | None = None
     """attribute will be ignored"""
-    created: datetime | str | None = None
+    created: datetime | None = None
     """attribute will be ignored"""
-    modified: datetime | str | None = None
+    modified: datetime | None = None
     """attribute will be ignored"""
     roaming: bool | None = None
+
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class UpdateSharingGroupBody(BaseModel):
@@ -318,11 +317,17 @@ class CreateSharingGroupLegacyBody(BaseModel):
     org_id: int | None = Field(default=None)
     sync_user_id: int | None = Field(default=None)
     """attribute will be ignored"""
-    created: datetime | str | None = None
+    created: datetime | None = None
     """attribute will be ignored"""
-    modified: datetime | str | None = None
+    modified: datetime | None = None
     """attribute will be ignored"""
     roaming: bool | None = None
+
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class CreateSharingGroupBody(BaseModel):

@@ -1,7 +1,9 @@
-from typing import Annotated, Any, Optional, Type
+from datetime import datetime
+from typing import Annotated, Any, Optional, Self, Type
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
 
+from mmisp.api_schemas.attribute_common import CommonAttribute
 from mmisp.lib.attributes import (
     AttributeCategories,
     default_category,
@@ -10,7 +12,7 @@ from mmisp.lib.attributes import (
     mapper_val_safe_clsname,
     to_ids,
 )
-from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.lib.distribution import AttributeDistributionLevels, EventDistributionLevels
 
 
 class GetAttributeTag(BaseModel):
@@ -24,18 +26,22 @@ class GetAttributeTag(BaseModel):
 
 class SearchAttributesObject(BaseModel):
     id: int
-    distribution: str
+    distribution: AttributeDistributionLevels
     sharing_group_id: int
 
 
 class SearchAttributesEvent(BaseModel):
     id: int
     org_id: int
-    distribution: str
+    distribution: EventDistributionLevels
     info: str
     orgc_id: int
     uuid: str
-    publish_timestamp: int
+    publish_timestamp: datetime
+
+    @field_serializer("publish_timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
+        return int(timestamp.timestamp())
 
 
 class SearchAttributesAttributesDetails(BaseModel):
@@ -43,24 +49,35 @@ class SearchAttributesAttributesDetails(BaseModel):
     event_id: int | None = None
     object_id: int | None = None
     object_relation: str | None = None
-    category: str
+    category: AttributeCategories
     type: str
     value: str
     to_ids: bool
     uuid: str
-    timestamp: str
+    timestamp: datetime
     distribution: AttributeDistributionLevels
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
     event_uuid: str | None = None
     data: str | None = None
     Event: SearchAttributesEvent | None = None
     Object: SearchAttributesObject | None = None
     Tag: list[GetAttributeTag] | None = None
+
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
 
 
 class SearchAttributesAttributes(BaseModel):
@@ -95,39 +112,38 @@ class RestSearchFilter(BaseModel):
     value1: str | None = None
     value2: str | None = None
     type: str | None = None
-    category: str | None = None
+    category: AttributeCategories | None = None
     org: str | None = None
     tags: list[str] | None = None
     from_: str | None = None
-    to: str | None = None
+    to: datetime | None = None
     last: int | None = None
-    eventid: str | None = None
+    eventid: int | None = None
     published: bool | None = None
     to_ids: bool | None = None
     deleted: bool | None = None
 
 
 class SearchAttributesBody(RestSearchFilter):
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
     returnFormat: str = "json"
     page: int | None = None
     limit: int | None = None
     with_attachments: Annotated[bool | None, Field(alias="withAttachments")] = None
     uuid: str | None = None
-    publish_timestamp: str | None = None
-    timestamp: str | None = None
-    attribute_timestamp: str | None = None
-    enforce_warninglist: Annotated[bool | None, Field(alias="enforceWarninglist")]
-    event_timestamp: str | None = None
+    publish_timestamp: datetime | None = None
+    timestamp: datetime | None = None
+    attribute_timestamp: datetime | None = None
+    enforce_warninglist: Annotated[bool | None, Field(alias="enforceWarninglist")] = None
+    event_timestamp: datetime | None = None
     threat_level_id: int | None = None
     eventinfo: str | None = None
     sharinggroup: list[str] | None = None
     decaying_model: Annotated[str | None, Field(alias="decayingModel")] = None
     score: str | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
     include_event_uuid: bool | None = Field(alias="includeEventUuid", default=None)
     include_event_tags: Annotated[bool | None, Field(alias="includeEventTags")] = None
     include_proposals: Annotated[bool | None, Field(alias="includeProposals")] = None
@@ -144,6 +160,19 @@ class SearchAttributesBody(RestSearchFilter):
     include_full_model: Annotated[bool | None, Field(alias="includeFullModel")] = None
     exclude_decayed: Annotated[bool | None, Field(alias="excludeDecayed")] = None
 
+    @field_serializer("timestamp", "publish_timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
+
 
 class RestoreAttributeResponse(BaseModel):
     id: int
@@ -155,18 +184,27 @@ class RestoreAttributeResponse(BaseModel):
     value: str
     to_ids: bool
     uuid: str
-    timestamp: str
+    timestamp: datetime
     distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str
     deleted: bool
     disable_correlation: bool
-    first_seen: str
-    last_seen: str
+    first_seen: datetime | None
+    last_seen: datetime | None
     event_uuid: str  # new
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
 
 
 class GetDescribeTypesAttributes(BaseModel):
@@ -190,24 +228,7 @@ class GetDescribeTypesResponse(BaseModel):
     result: GetDescribeTypesAttributes
 
 
-class GetAttributeAttributes(BaseModel):
-    id: int
-    event_id: int
-    object_id: int
-    object_relation: Optional[str] = Field(..., nullable=True)
-    category: str
-    type: str
-    value: str
-    to_ids: bool
-    uuid: str
-    timestamp: str
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int
-    comment: str | None = None
-    deleted: bool = False
-    disable_correlation: bool = False
-    first_seen: Optional[str] = Field(..., nullable=True)
-    last_seen: Optional[str] = Field(..., nullable=True)
+class GetAttributeAttributes(CommonAttribute):
     event_uuid: str
     data: str | None = None
     Tag: list[GetAttributeTag] | None = None
@@ -215,47 +236,13 @@ class GetAttributeAttributes(BaseModel):
 
 class GetAttributeResponse(BaseModel):
     Attribute: GetAttributeAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class GetAllAttributesResponse(BaseModel):
-    id: int
-    event_id: int | None = None
-    object_id: int | None = None
-    object_relation: str | None = None
-    category: str | None = None
-    type: str
+class GetAllAttributesResponse(CommonAttribute):
     value1: str | None = None
     value2: str | None = None
-    to_ids: bool | None = None
-    uuid: str | None = None
-    timestamp: str | None = None
-    distribution: AttributeDistributionLevels | None = None
-    sharing_group_id: int | None = None
-    comment: str | None = None
-    deleted: bool | None = None
-    disable_correlation: bool | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
-    value: str | None = None
-
-    #    @validator("sharing_group_id", always=True, allow_reuse=True)
-    #    @classmethod
-    #    def check_sharing_group_id(
-    #        cls: Type["GetAllAttributesResponse"], value: Any, values: Dict[str, Any]
-    #    ) -> Optional[int]:  # noqa: ANN101
-    #        """
-    #        If distribution equals 4, sharing_group_id will be shown.
-    #        """
-    #        distribution = values.get("distribution", None)
-    #        if distribution == "4" and value is not None:
-    #            return value
-    #        return None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EditAttributeTag(BaseModel):
@@ -281,22 +268,31 @@ class EditAttributeAttributes(BaseModel):
     value: str
     to_ids: bool
     uuid: str
-    timestamp: str
+    timestamp: datetime
     distribution: AttributeDistributionLevels
     sharing_group_id: int
     comment: str | None = None
     deleted: bool
     disable_correlation: bool
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
     Tag: list[EditAttributeTag]
+
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
 
 
 class EditAttributeResponse(BaseModel):
     Attribute: EditAttributeAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EditAttributeBody(BaseModel):
@@ -309,17 +305,28 @@ class EditAttributeBody(BaseModel):
     category: str | None = None
     to_ids: bool | None = None
     uuid: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     disable_correlation: bool | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
 
 
 class DeleteSelectedAttributeResponse(BaseModel):
@@ -329,56 +336,31 @@ class DeleteSelectedAttributeResponse(BaseModel):
     message: str
     url: str
     id: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DeleteAttributeResponse(BaseModel):
     message: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AddRemoveTagAttributeResponse(BaseModel):
     saved: bool
-    success: Optional[str]
-    check_publish: Optional[bool]
-    errors: Optional[str]
-
-    class Config:
-        orm_mode = True
+    success: Optional[str] = None
+    check_publish: Optional[bool] = None
+    errors: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
-class AddAttributeAttributes(BaseModel):
-    id: int
-    event_id: int
-    object_id: int
-    object_relation: Optional[str] = Field(..., nullable=True)
-    category: str
-    type: str
-    value: str
+class AddAttributeAttributes(CommonAttribute):
     value1: str
     value2: str
-    to_ids: bool
-    uuid: str
-    timestamp: str
-    distribution: AttributeDistributionLevels
-    sharing_group_id: int
-    comment: str | None = None
-    deleted: bool
-    disable_correlation: bool
-    first_seen: str | None = None
-    last_seen: str | None = None
     attribute_tag: list[str] | None = Field(default_factory=list, alias="AttributeTag")
 
 
 class AddAttributeResponse(BaseModel):
     Attribute: AddAttributeAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AddAttributeBody(BaseModel):
@@ -392,32 +374,47 @@ class AddAttributeBody(BaseModel):
     category: str | None = None
     to_ids: bool | None = None
     uuid: str | None = None
-    timestamp: str | None = None
+    timestamp: datetime | None = None
     distribution: AttributeDistributionLevels | None = None
     sharing_group_id: int | None = None
     comment: str | None = None
     deleted: bool | None = None
     disable_correlation: bool | None = None
-    first_seen: str | None = None
-    last_seen: str | None = None
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
 
-    @root_validator(allow_reuse=True)
-    @classmethod
-    def ensure_value_or_value1_is_set(cls: Type["AddAttributeBody"], data: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN101
-        required_values: list[str] = [str(data.get("value")), str(data.get("value1"))]
-        if all(item is None for item in required_values):
+    @model_validator(mode="after")
+    def ensure_value_or_value1_is_set(self: Self) -> Self:
+        if self.value is None and self.value1 is None:
             raise ValueError("value or value1 has to be set")
-        return data
+        return self
+
+    @field_serializer("timestamp")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
+
+    @field_validator("first_seen", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return None
+        return value
 
 
 GetAttributeStatisticsTypesResponseAttrs = {x: Field(default=None) for x in mapper_val_safe_clsname.keys()}
-GetAttributeStatisticsTypesResponseAttrs["__annotations__"] = {x: str | None for x in mapper_val_safe_clsname.keys()}
+GetAttributeStatisticsTypesResponseAttrs["__annotations__"] = {
+    x: str | int | None for x in mapper_val_safe_clsname.keys()
+}
 GetAttributeStatisticsTypesResponse = type(  # type: ignore
     "GetAttributeStatisticsTypesResponse", (BaseModel,), GetAttributeStatisticsTypesResponseAttrs
 )
 
 GetAttributeStatisticsCategoriesResponseAttrs = {x.value: Field(default=None) for x in AttributeCategories}
-GetAttributeStatisticsCategoriesResponseAttrs["__annotations__"] = {x.value: str | None for x in AttributeCategories}
+GetAttributeStatisticsCategoriesResponseAttrs["__annotations__"] = {
+    x.value: str | int | None for x in AttributeCategories
+}
 GetAttributeStatisticsCategoriesResponse = type(  # type: ignore
     "GetAttributeStatisticsCategoriesResponse", (BaseModel,), GetAttributeStatisticsCategoriesResponseAttrs
 )

@@ -11,27 +11,29 @@ The following environment variables are supported:
 
 import logging
 from os import getenv
+from typing import Self
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings, Field, root_validator
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings
 
 
 class DatabaseConfig(BaseSettings):
     DATABASE_URL: str | None = None
     DEBUG: bool = False
-    RETRY_SLEEP: int = Field(5, env="DB_RETRY")
-    MAX_RETRIES: int = Field(100, env="DB_MAX_RETRIES")
+    RETRY_SLEEP: int = Field(5, validation_alias="DB_RETRY")
+    MAX_RETRIES: int = Field(100, validation_alias="DB_MAX_RETRIES")
     CONNECTION_INIT: bool = True
     DB_LOGLEVEL: str | None = None
 
-    @root_validator(skip_on_failure=True)
-    def require_db_url_or_no_connection(cls: "DatabaseConfig", values: dict) -> dict:
-        db_url = values.get("DATABASE_URL")
-        connection_init = values.get("CONNECTION_INIT")
+    @model_validator(mode="after")
+    def require_db_url_or_no_connection(self: Self) -> Self:
+        db_url = self.DATABASE_URL
+        connection_init = self.CONNECTION_INIT
         if db_url is None and connection_init:
             raise ValueError("Environment variable DATABASE_URL is required when CONNECTION_INIT is not False")
 
-        return values
+        return self
 
 
 load_dotenv(getenv("ENV_FILE", ".env"))

@@ -85,10 +85,10 @@ class ServerResponseBase(BaseModel):
     org_id: int | None = None
     push: bool
     pull: bool
-    cert_file: str | None
-    client_cert_file: str | None
-    lastpulledid: int | None
-    lastpushedid: int | None
+    cert_file: str | None = None
+    client_cert_file: str | None = None
+    lastpulledid: int | None = None
+    lastpushedid: int | None = None
     organization: None
     pull_analyst_data: bool
     pull_rules: str

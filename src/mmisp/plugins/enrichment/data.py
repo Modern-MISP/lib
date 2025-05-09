@@ -1,6 +1,6 @@
 from typing import Self
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 from mmisp.api_schemas.attributes import AddAttributeBody
 from mmisp.api_schemas.tags import TagCreateBody
@@ -20,12 +20,11 @@ class NewTag(BaseModel):
     relationship_type: str = ""
     """The relationship type between the attribute or event and tag."""
 
-    @root_validator
-    @classmethod
-    def check_tag_id_or_new_tag_provided(cls: type["NewTag"], values: dict) -> dict:
-        if not values["tag_id"] and not values["tag"]:
+    @model_validator(mode="after")
+    def check_tag_id_or_new_tag_provided(self: Self) -> Self:
+        if not self.tag_id and not self.tag:
             raise ValueError("At least one of the values tag_id or tag is required.")
-        return values
+        return self
 
 
 class NewAttribute(BaseModel):

@@ -20,7 +20,7 @@ def random_string(length: int = 10) -> str:
 
 def generate_valid_required_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="gvrfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
     )
@@ -28,19 +28,19 @@ def generate_valid_required_feed_data() -> FeedCreateBody:
 
 def generate_valid_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="gvfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
         rules=random_string(),
         enabled=random.choice([True, False]),
-        distribution=generate_number_as_str(),
-        sharing_group_id=generate_ids_as_str(),
-        tag_id=generate_ids_as_str(),
+        distribution=1,
+        sharing_group_id=0,
+        tag_id=0,
         default=random.choice([True, False]),
         source_format=random_string(),
         fixed_event=random.choice([True, False]),
         delta_merge=random.choice([True, False]),
-        event_id=generate_ids_as_str(),
+        event_id=0,
         publish=random.choice([True, False]),
         override_ids=random.choice([True, False]),
         settings=random_string(),
@@ -50,33 +50,17 @@ def generate_valid_feed_data() -> FeedCreateBody:
         headers=random_string(),
         caching_enabled=random.choice([True, False]),
         force_to_ids=random.choice([True, False]),
-        orgc_id=generate_ids_as_str(),
+        orgc_id=0,
     )
 
 
 def generate_random_valid_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
-        name=random_string(),
+        name="grvfd_" + random_string(),
         provider=random_string(),
         url=f"http://{random_string()}.com",
-        rules=random_string() if random.choice([True, False]) else None,
-        enabled=random.choice([True, False]),
-        distribution=generate_number_as_str() if random.choice([True, False]) else None,
-        sharing_group_id=generate_ids_as_str() if random.choice([True, False]) else None,
-        tag_id=generate_ids_as_str() if random.choice([True, False]) else None,
-        default=random.choice([True, False]) if random.choice([True, False]) else None,
-        source_format=random_string() if random.choice([True, False]) else None,
-        fixed_event=random.choice([True, False]) if random.choice([True, False]) else None,
-        delta_merge=random.choice([True, False]) if random.choice([True, False]) else None,
-        event_id=generate_ids_as_str() if random.choice([True, False]) else None,
-        publish=random.choice([True, False]) if random.choice([True, False]) else None,
-        override_ids=random.choice([True, False]) if random.choice([True, False]) else None,
-        settings=random_string() if random.choice([True, False]) else None,
-        input_source=random_string() if random.choice([True, False]) else None,
-        delete_local_file=random.choice([True, False]) if random.choice([True, False]) else None,
-        lookup_visible=random.choice([True, False]) if random.choice([True, False]) else None,
-        headers=random_string() if random.choice([True, False]) else None,
-        caching_enabled=random.choice([True, False]) if random.choice([True, False]) else None,
-        force_to_ids=random.choice([True, False]) if random.choice([True, False]) else None,
-        orgc_id=generate_ids_as_str() if random.choice([True, False]) else None,
+        enabled=True,
+        distribution=1,
+        sharing_group_id=0,
+        tag_id=0,
     )

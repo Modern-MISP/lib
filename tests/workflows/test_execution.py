@@ -86,7 +86,16 @@ async def role(db: AsyncSession) -> AsyncGenerator[Role, None]:
 
 @pytest_asyncio.fixture
 async def org(db: AsyncSession) -> AsyncGenerator[Organisation, None]:
-    org = Organisation(name="Snens", local=True, description="Foo", type="Bar", nationality="Ger", sector="idk")
+    org = Organisation(
+        name="Snens",
+        local=True,
+        description="Foo",
+        type="Bar",
+        nationality="Ger",
+        sector="idk",
+        contacts="snens@example.com",
+        landingpage="snens.example.com",
+    )
     db.add(org)
     await db.commit()
     yield org

@@ -12,6 +12,11 @@ async def setup(session: AsyncSession) -> None:
 
     ghost_org = Organisation()
     ghost_org.name = "ghost_org"
+    ghost_org.type = "ghost"
+    ghost_org.nationality = "ghost"
+    ghost_org.sector = "ghost"
+    ghost_org.contacts = "ghost@example.com"
+    ghost_org.landingpage = "ghost.example.com"
     await add_organisation_if_not_exist(session, ghost_org)
 
 

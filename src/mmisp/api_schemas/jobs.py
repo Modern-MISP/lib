@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class FreeTextProcessID(BaseModel):
@@ -16,9 +16,7 @@ class FreeTextImportWorkerUser(BaseModel):
 class FreeTextImportWorkerBody(BaseModel):
     user: FreeTextImportWorkerUser
     data: FreeTextImportWorkerData
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AddAttributeViaFreeTextImportEventResponse(BaseModel):
@@ -29,17 +27,13 @@ class AddAttributeViaFreeTextImportEventResponse(BaseModel):
     type: str
     category: str
     distribution: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AddAttributeViaFreeTextImportEventBody(BaseModel):
     value: str
     returnMetaAttributes: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AttributeType(BaseModel):

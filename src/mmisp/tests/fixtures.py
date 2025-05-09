@@ -1,4 +1,3 @@
-import asyncio
 import uuid as libuuid
 from contextlib import AsyncExitStack
 from datetime import date, datetime
@@ -12,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 import mmisp.db.all_models  # noqa
 import mmisp.lib.standard_roles as standard_roles
+import mmisp.lib.standard_threat_levels as standard_threat_levels
 from mmisp.db.database import DatabaseSessionManager
 from mmisp.db.models.attribute import Attribute
 from mmisp.db.models.auth_key import AuthKey
@@ -19,7 +19,7 @@ from mmisp.db.models.galaxy import Galaxy
 from mmisp.db.models.galaxy_cluster import GalaxyCluster, GalaxyElement
 from mmisp.db.models.sharing_group import SharingGroupOrg
 from mmisp.db.models.tag import Tag
-from mmisp.lib.distribution import DistributionLevels, EventDistributionLevels
+from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLevels, EventDistributionLevels
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
@@ -35,7 +35,6 @@ from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
-from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
@@ -69,15 +68,8 @@ class DBManager:
         await self.db.delete(self.obj)
 
 
-@pytest.fixture(scope="session")
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
-async def db_connection(event_loop):
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def db_connection():
     sm = DatabaseSessionManager()
     sm.init()
     await sm.create_all()
@@ -99,6 +91,21 @@ async def site_admin_role(db):
     await db.refresh(role)
     yield role
     await db.delete(role)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def threat_levels(db):
+    threat_levels = []
+    for tl in standard_threat_levels.get_standard_threat_level():
+        threat_levels.append(tl)
+        db.add(tl)
+    await db.commit()
+
+    yield threat_levels
+
+    for tl in threat_levels:
+        await db.delete(tl)
     await db.commit()
 
 
@@ -307,11 +314,18 @@ async def organisation(db):
 @pytest_asyncio.fixture
 async def event(db, organisation, site_admin_user):
     org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-
+    event = Event(
+        org_id=org_id,
+        orgc_id=org_id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="test event",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.ALL_COMMUNITIES,
+    )
     async with DBManager(db, event) as obj:
         await db.commit()
         yield obj
@@ -377,12 +391,19 @@ async def sighting(db, organisation, event_with_attributes):
 
 @pytest_asyncio.fixture
 async def event2(db, organisation, site_admin_user):
-    org_id = organisation.id
-    event = generate_event()
-    event.org_id = org_id
-    event.orgc_id = org_id
-    event.user_id = site_admin_user.id
-
+    event = Event(
+        org_id=organisation.id,
+        orgc_id=organisation.id,
+        user_id=site_admin_user.id,
+        uuid=libuuid.uuid4(),
+        sharing_group_id=0,
+        threat_level_id=1,
+        info="event_published_sharing_group",
+        date=date(year=2024, month=2, day=13),
+        analysis=1,
+        distribution=EventDistributionLevels.COMMUNITY,
+        published=True,
+    )
     db.add(event)
     await db.commit()
     await db.refresh(event)
@@ -1277,6 +1298,7 @@ async def object1(db, event, sharing_group):
     misp_object: Object = generate_object()
     misp_object.event_id = event.id
     misp_object.sharing_group_id = sharing_group.id
+    misp_object.distribution = AttributeDistributionLevels.SHARING_GROUP
 
     db.add(misp_object)
     await db.commit()
@@ -1293,6 +1315,7 @@ async def object2(db, event, sharing_group):
     misp_object: Object = generate_object()
     misp_object.event_id = event.id
     misp_object.sharing_group_id = sharing_group.id
+    misp_object.distribution = AttributeDistributionLevels.SHARING_GROUP
 
     db.add(misp_object)
     await db.commit()

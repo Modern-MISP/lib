@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 import mmisp.api_schemas.taxonomies
 from mmisp.api_schemas.common import TagAttributesResponse
@@ -11,11 +11,9 @@ class TagUpdateBody(BaseModel):
     org_id: int | None = None
     user_id: int | None = None
     hide_tag: bool | None = None
-    numerical_value: str | None = None
+    numerical_value: int | None = None
     local_only: bool | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaxonomyPredicateResponse(mmisp.api_schemas.taxonomies.TaxonomyPredicateSchema):
@@ -34,16 +32,12 @@ class TagCombinedModel(BaseModel):
 
 class TagSearchResponse(BaseModel):
     response: list[TagCombinedModel]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TagGetResponse(BaseModel):
     Tag: list[TagAttributesResponse]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TagResponse(BaseModel):
@@ -59,9 +53,7 @@ class TagDeleteResponse(BaseModel):
     name: str
     message: str
     url: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TagCreateBody(BaseModel):
@@ -71,8 +63,6 @@ class TagCreateBody(BaseModel):
     org_id: int | None = None
     user_id: int | None = None
     hide_tag: bool | None = None
-    numerical_value: str | None = None
+    numerical_value: int | None = None
     local_only: bool | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

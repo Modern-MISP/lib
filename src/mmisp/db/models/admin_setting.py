@@ -1,6 +1,5 @@
 from sqlalchemy import Integer, String, Text
-
-from mmisp.db.mypy import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
 

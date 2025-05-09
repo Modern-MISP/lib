@@ -11,7 +11,7 @@ class WorkflowEditRequest(BaseModel):
     # workflow_name: str
     # workflow_description: str
     # workflow_graph: dict
-    data: Any
+    data: Any = None
 
 
 class ModuleIndexRequest(BaseModel):

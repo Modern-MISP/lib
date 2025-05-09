@@ -1,13 +1,28 @@
-from datetime import datetime
-from typing import Any, List
+from typing import Any, Literal
+from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
-from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
 from mmisp.api_schemas.organisations import Organisation
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.lib.distribution import GalaxyDistributionLevels
+
+
+class ImportGalaxy(BaseModel):
+    description: str
+    type: str
+    version: int
+    name: str
+    uuid: UUID
+    icon: str | None = None
+    namespace: str | None = None
+    kill_chain_order: dict | None = None
+
+    distribution: Literal[3] = 3
+    org_id: Literal[0] = 0
+    orgc_id: Literal[0] = 0
 
 
 class SearchGalaxiesBody(BaseModel):
@@ -16,15 +31,13 @@ class SearchGalaxiesBody(BaseModel):
     name: str | None = None
     type: str | None = None
     description: str | None = None
-    version: str | None = None
+    version: int | None = None
     icon: str | None = None
     namespace: str | None = None
     kill_chain_order: str | None = None
     enabled: bool | None = None
     local_only: bool | None = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchGalaxiesbyValue(BaseModel):
@@ -42,73 +55,37 @@ class ExportGalaxyGalaxyElement(BaseModel):
     value: str
 
 
-class GetGalaxyClusterResponse(BaseModel):
-    id: int
-    uuid: str
-    collection_uuid: str
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    galaxy_id: int
-    source: str
-    authors: list[str]
-    version: str
-    distribution: str
-    sharing_group_id: int
-    org_id: int
-    orgc_id: int
-    default: bool
-    locked: bool
-    extends_uuid: str
-    extends_version: str
-    published: bool
-    deleted: bool
+class GetGalaxyClusterResponse(CommonGalaxyCluster):
+    meta: None = Field(default=None, exclude=True)  # type: ignore
+    tag_id: None = Field(default=None, exclude=True)  # type: ignore
+    local: None = Field(default=None, exclude=True)  # type: ignore
+    relationship_type: None = Field(default=None, exclude=True)  # type: ignore
+
     GalaxyElement: list[ExportGalaxyGalaxyElement]
 
 
 class ImportGalaxyBody(BaseModel):
     GalaxyCluster: GetGalaxyClusterResponse
     Galaxy: ImportGalaxyGalaxy
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GetAllSearchGalaxiesResponse(BaseModel):
     Galaxy: GetAllSearchGalaxiesAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GetGalaxyResponse(BaseModel):
     Galaxy: GetAllSearchGalaxiesAttributes
     GalaxyCluster: list[GetGalaxyClusterResponse]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class GalaxySchema(BaseModel):
-    id: int
-    uuid: str
-    name: str
-    type: str
-    description: str
-    version: str
-    icon: str
-    namespace: str
-    kill_chain_order: List[str]
-    created: datetime | str
-    modified: datetime | str
-    org_id: int
-    orgc_id: int
-    default: bool
-    distribution: DistributionLevels
+class GalaxySchema(CommonGalaxy):
+    enabled: None = Field(default=None, exclude=True)  # type: ignore
+    local_only: None = Field(default=None, exclude=True)  # type: ignore
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ExportGalaxyClusterResponse(BaseModel):
@@ -122,15 +99,15 @@ class ExportGalaxyClusterResponse(BaseModel):
     galaxy_id: int
     source: str
     authors: list[str]
-    version: str
-    distribution: str
+    version: int
+    distribution: GalaxyDistributionLevels
     sharing_group_id: int
     org_id: int
     orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str
-    extends_version: str
+    extends_version: int
     published: bool
     deleted: bool
     GalaxyElement: list[ExportGalaxyGalaxyElement]
@@ -138,9 +115,7 @@ class ExportGalaxyClusterResponse(BaseModel):
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
     Org: Organisation
     Orgc: Organisation
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TargetingClusterRelation(BaseModel):
@@ -150,7 +125,7 @@ class TargetingClusterRelation(BaseModel):
     referenced_galaxy_cluster_uuid: str
     referenced_galaxy_cluster_type: str
     galaxy_cluster_uuid: str
-    distribution: int
+    distribution: GalaxyDistributionLevels
     sharing_group_id: int | None = None
     default: bool
     Tag: list[TagAttributesResponse]
@@ -167,15 +142,15 @@ class GalaxyClustersViewResponse(BaseModel):
     galaxy_id: int
     source: str
     authors: list[str]
-    version: str
-    distribution: str
+    version: int
+    distribution: GalaxyDistributionLevels
     sharing_group_id: int
     org_id: int
     orgc_id: int
     default: bool
     locked: bool
     extends_uuid: str
-    extends_version: str
+    extends_version: int
     published: bool
     deleted: bool
     GalaxyElement: list[ExportGalaxyGalaxyElement]
@@ -190,16 +165,14 @@ class GalaxyClustersViewResponse(BaseModel):
 class ExportGalaxyAttributes(BaseModel):
     default: bool
     custom: bool | None = None
-    distribution: str
+    distribution: GalaxyDistributionLevels
     format: str | None = None
     download: bool | None = None
 
 
 class ExportGalaxyBody(BaseModel):
     Galaxy: ExportGalaxyAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DeleteForceUpdateImportGalaxyResponse(BaseModel):
@@ -208,18 +181,14 @@ class DeleteForceUpdateImportGalaxyResponse(BaseModel):
     name: str
     message: str
     url: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AttachClusterGalaxyResponse(BaseModel):
     saved: bool
     success: str
     check_publish: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AttachClusterGalaxyAttributes(BaseModel):
@@ -228,6 +197,4 @@ class AttachClusterGalaxyAttributes(BaseModel):
 
 class AttachClusterGalaxyBody(BaseModel):
     Galaxy: AttachClusterGalaxyAttributes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

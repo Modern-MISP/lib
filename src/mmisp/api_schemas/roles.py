@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Any, Self
+from typing import Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 from mmisp.lib.permissions import Permission
 
@@ -40,59 +40,61 @@ class HasPermission(BaseModel):
 class Role(HasPermission):
     id: int
     name: str
-    created: datetime | str | None = None
-    modified: datetime | str | None = None
+    created: datetime | None = None
+    modified: datetime | None = None
     default_role: bool
-    memory_limit: str | None
-    max_execution_time: str | None
+    memory_limit: str | None = None
+    max_execution_time: str | None = None
     restricted_to_site_admin: bool
     enforce_rate_limit: bool
-    rate_limit_count: str  # number as string
-    permission: str | None  # number as string
-    permission_description: str | None
+    rate_limit_count: int
+    permission: int | None = None  # number as string
+    permission_description: str | None = None
+
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+
+
+class RoleAttributeResponse(Role):
+    pass
+
+
+class IndexRole(Role):
+    default: bool
 
 
 class RoleUsersResponse(HasPermission):
     id: int
     name: str
-    created: datetime | str | None = None
-    modified: datetime | str | None = None
+    created: datetime | None = None
+    modified: datetime | None = None
     default_role: bool | None = None
     memory_limit: str | None = None
     max_execution_time: str | None = None
     restricted_to_site_admin: bool | None = None
     enforce_rate_limit: bool | None = None
-    rate_limit_count: str | None = None  # number as string
+    rate_limit_count: int | None = None
 
-
-class RoleAttributeResponse(HasPermission):
-    id: int
-    name: str
-    created: datetime | str | None = None
-    modified: datetime | str | None = None
-    default_role: bool
-    memory_limit: str | None
-    max_execution_time: str | None
-    restricted_to_site_admin: bool
-    enforce_rate_limit: bool
-    rate_limit_count: int
-    permission: int | None = None
-    permission_description: str | None = None
-    default: bool | None = False
+    @field_serializer("created", "modified")
+    def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class GetRolesResponse(BaseModel):
     Role: RoleAttributeResponse
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+
+class IndexRolesResponse(BaseModel):
+    Role: IndexRole
 
 
 class GetRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class AddRoleBody(HasPermission):
@@ -110,9 +112,6 @@ class AddRoleResponse(BaseModel):
     created: bool
     message: str
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-
 
 class DeleteRoleResponse(BaseModel):
     Role: RoleAttributeResponse | None = None
@@ -123,9 +122,6 @@ class DeleteRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class EditRoleBody(HasPermission):
@@ -140,15 +136,6 @@ class EditRoleBody(HasPermission):
 class EditRoleResponse(BaseModel):
     Role: RoleAttributeResponse
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-
-    def dict(self: Self, **kwargs) -> dict[str, Any]:
-        data = super().dict(**kwargs)
-        if "Role" in data:
-            data["Role"].pop("default", None)
-        return data
-
 
 class ReinstateRoleResponse(BaseModel):
     Role: RoleAttributeResponse
@@ -156,9 +143,6 @@ class ReinstateRoleResponse(BaseModel):
     message: str
     url: str
     id: int
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class FilterRoleBody(BaseModel):
@@ -168,9 +152,6 @@ class FilterRoleBody(BaseModel):
 
 class FilterRoleResponse(BaseModel):
     Role: RoleAttributeResponse
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class EditUserRoleBody(BaseModel):
@@ -200,6 +181,3 @@ class DefaultRoleResponse(BaseModel):
     url: str
     id: int
     errors: str | None = None
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}

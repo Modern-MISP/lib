@@ -1,6 +1,8 @@
-from typing import List, Self, Union
+from datetime import datetime
+from typing import Any, List, Self, Type, Union
 
-from pydantic import BaseModel, PositiveInt, conint, validator
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_serializer, field_validator
+from typing_extensions import Annotated
 
 
 class SearchGetAuthKeysResponseItemUser(BaseModel):
@@ -8,13 +10,22 @@ class SearchGetAuthKeysResponseItemUser(BaseModel):
     email: str
 
 
-class ViewAuthKeyResponseWrapper(BaseModel):
+class CreatedExpiration(BaseModel):
+    created: datetime
+    expiration: datetime
+
+    @field_serializer("created", "expiration")
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
+        return int(timestamp.timestamp())
+
+
+class ViewAuthKeyResponseWrapper(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: int
     read_only: bool
     user_id: int
     comment: str
@@ -27,30 +38,26 @@ class ViewAuthKeysResponse(BaseModel):
     User: SearchGetAuthKeysResponseItemUser
 
 
-class SearchGetAuthKeysResponseItemAuthKey(BaseModel):
+class SearchGetAuthKeysResponseItemAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
     read_only: bool
     user_id: int
-    comment: str | None
+    comment: str | None = None
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
 
 
-class SearchGetAuthKeysResponseAuthKey(BaseModel):
+class SearchGetAuthKeysResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
     read_only: bool
-    user_id: str
-    comment: str | None
+    user_id: int
+    comment: str | None = None
     allowed_ips: list[str] | None = None
     unique_ips: list[str] | None = []
     last_used: str | None = None
@@ -59,28 +66,24 @@ class SearchGetAuthKeysResponseAuthKey(BaseModel):
 class SearchGetAuthKeysResponseItem(BaseModel):
     AuthKey: SearchGetAuthKeysResponseItemAuthKey
     User: SearchGetAuthKeysResponseItemUser
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchGetAuthKeysResponse(BaseModel):
     AuthKey: SearchGetAuthKeysResponseAuthKey
     User: SearchGetAuthKeysResponseItemUser
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchAuthKeyBody(BaseModel):
     page: PositiveInt = 1
-    limit: conint(gt=0, lt=500) = 25  # type: ignore
+    limit: Annotated[int, Field(gt=0, lt=500)] = 25  # type: ignore
     id: int | None = None
     uuid: str | None = None
     authkey_start: str | None = None
     authkey_end: str | None = None
-    created: str | None = None
-    expiration: str | None = None
+    created: datetime | None = None
+    expiration: datetime | None = None
     read_only: bool | None = None
     user_id: int | None = None
     comment: str | None = None
@@ -88,28 +91,24 @@ class SearchAuthKeyBody(BaseModel):
     last_used: str | None = None  # deprecated
 
 
-class EditAuthKeyResponseAuthKey(BaseModel):
+class EditAuthKeyResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
     read_only: bool
     user_id: int
     comment: str
     allowed_ips: str | None = None
 
 
-class EditAuthKeyResponseCompleteAuthKey(BaseModel):
+class EditAuthKeyResponseCompleteAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str
     read_only: bool
-    user_id: str
+    user_id: int
     comment: str
     allowed_ips: str | None = None
     unique_ips: list[str] | None = None
@@ -134,22 +133,29 @@ class EditAuthKeyBody(BaseModel):
     read_only: bool | None = None
     comment: str | None = None
     allowed_ips: Union[str, List[str]] | None = None
-    expiration: str | None = None
+    expiration: datetime | None = None
 
-    @validator("allowed_ips", pre=True)
-    def ensure_list(cls: Self, v: str | List[str]) -> List[str]:
+    @field_validator("expiration", mode="before")
+    @classmethod
+    def empty_string_to_int_null(cls: Type[Self], value: Any) -> Any:
+        if value == "":
+            return 0
+        return value
+
+    @field_validator("allowed_ips", mode="before")
+    @classmethod
+    def ensure_list(cls: Type[Self], v: str | List[str]) -> List[str]:
         if isinstance(v, str):
             return [v]
         return v
 
 
-class AddAuthKeyResponseAuthKey(BaseModel):
+class AddAuthKeyResponseAuthKey(CreatedExpiration):
     id: int
     uuid: str
     authkey_start: str
     authkey_end: str
-    created: str
-    expiration: str | None = "0"
+    expiration: datetime | None
     read_only: bool
     user_id: int
     comment: str | None = None
