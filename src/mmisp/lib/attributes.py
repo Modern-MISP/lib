@@ -2365,10 +2365,13 @@ literal_valid_attribute_types = Literal[tuple([k for k in mapper_val_safe_clsnam
 default_category = {x.dbkey: x.default_category for x in AttributeType.all_attributes}
 categories = {x.dbkey: x.categories for x in AttributeType.all_attributes}
 
-inverted_categories = defaultdict(list)
+inverted_categories_tmp = defaultdict(list)
 
 for key, value in categories.items():
     for category in value:
-        inverted_categories[category.value].append(key)
+        inverted_categories_tmp[category.value].append(key)
+
+inverted_categories = dict(inverted_categories_tmp)
+del inverted_categories_tmp
 
 to_ids = {x.dbkey: x.to_ids for x in AttributeType.all_attributes}

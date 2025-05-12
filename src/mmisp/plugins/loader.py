@@ -18,7 +18,6 @@ PLUGIN_MODULE_NAME_PREFIX: str = "mmisp_plugins"
 
 
 def _import_module(path: str) -> ModuleType:
-    print(path)
     plugin_dir_name: str = os.path.basename(os.path.split(path)[0])
     module_name: str = os.path.splitext(os.path.basename(path))[0]
     extended_module_name: str = f"{PLUGIN_MODULE_NAME_PREFIX}.{plugin_dir_name}.{module_name}"
@@ -95,7 +94,6 @@ def load_plugins_from_directory(*directories: str) -> None:
         path_content: list[str] = os.listdir(directory)
         plugin_modules: list[str] = []
         for element in path_content:
-            print(element)
             element_path: str = os.path.join(directory, element)
             if os.path.isdir(element_path):
                 if os.path.isfile(os.path.join(element_path, "__init__.py")):
