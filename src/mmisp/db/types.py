@@ -52,7 +52,6 @@ class DBObjectJson(TypeDecorator):
             return None
 
         res = json.loads(value)
-        print("Result is", res)
         if res == []:
             res = {}
         if not isinstance(res, dict):
@@ -88,7 +87,6 @@ class DateTimeEpoch(TypeDecorator):
         return value
 
     def process_result_value(self: Self, value: Any, dialect: Dialect) -> datetime | None:
-        print(type(value), value)
         if value is not None:
             return datetime.fromtimestamp(value)
         return value
