@@ -14,6 +14,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 if TYPE_CHECKING:
+    from mmisp.db.database import Base
+
     from .input import Filter, RoamingData, WorkflowInput
     from .modules import ModuleConfiguration, Overhead
 

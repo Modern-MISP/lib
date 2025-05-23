@@ -9,7 +9,7 @@ from mmisp.api_schemas.attribute_common import CommonAttribute
 from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GalaxyClusterMeta
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.api_schemas.sharing_groups import EventSharingGroupResponse, MinimalSharingGroup
-from mmisp.lib.distribution import AttributeDistributionLevels
+from mmisp.lib.distribution import AttributeDistributionLevels, EventDistributionLevels
 
 
 class GetAllEventsGalaxyClusterGalaxy(CommonGalaxy):
@@ -24,7 +24,7 @@ class AddEditGetEventGalaxyClusterRelationTag(BaseModel):
     org_id: int
     user_id: int
     hide_tag: bool
-    numerical_value: str
+    numerical_value: int
     is_galaxy: bool
     is_custom_galaxy: bool
     local_only: bool
@@ -52,6 +52,8 @@ class GetAllEventsGalaxyCluster(CommonGalaxyCluster):
 
 
 class AddEditGetEventGalaxyCluster(CommonGalaxyCluster):
+    meta: dict[str, list]
+
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
     Org: Organisation | None = None
     Orgc: Organisation | None = None
@@ -61,9 +63,6 @@ class AddEditGetEventGalaxyCluster(CommonGalaxyCluster):
 
 class AddEditGetEventGalaxy(CommonGalaxy):
     GalaxyCluster: list[AddEditGetEventGalaxyCluster] = []
-
-    class Config:
-        json_encoders = {datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
 
 
 class FreeTextImportWorkerData(BaseModel):
@@ -219,11 +218,11 @@ class AddEditGetEventDetails(BaseModel):
     uuid: str
     attribute_count: int
     analysis: str | int
-    timestamp: datetime
-    distribution: AttributeDistributionLevels
+    timestamp: datetime | None = None
+    distribution: EventDistributionLevels
     proposal_email_lock: bool
     locked: bool
-    publish_timestamp: datetime
+    publish_timestamp: datetime | None = None
     sharing_group_id: int | None = None
     disable_correlation: bool
     extends_uuid: str | None = None
@@ -242,7 +241,9 @@ class AddEditGetEventDetails(BaseModel):
     sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
 
     @field_serializer("timestamp", "publish_timestamp")
-    def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
+    def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:
+        if timestamp is None:
+            return None
         return int(timestamp.timestamp())
 
 
@@ -394,6 +395,7 @@ class IndexEventsBody(BaseModel):
     hasproposal: str | None = None
     timestamp: datetime | None = None
     publish_timestamp: datetime | None = None
+    published: bool | None = None
     searchDatefrom: str | None = None
     searchDateuntil: str | None = None
 

@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from mmisp.api_schemas.organisations import ShadowAttributeOrganisation
 
-from datetime import datetime
 
 class ShadowAttribute(BaseModel):
     id: int

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, Field
 
 from mmisp.api_schemas.organisations import ServerOrganisation
 from mmisp.api_schemas.users import ServerUser
@@ -28,8 +28,8 @@ class Server(BaseModel):
     push_analyst_data: bool
     pull_analyst_data: bool
     pull_galaxy_clusters: bool
-    lastpulledid: int | None = None
-    lastpushedid: int | None = None
+    lastpulledid: int | None = Field(None, validation_alias="last_pulled_id")
+    lastpushedid: int | None = Field(None, validation_alias="last_pushed_id")
     organization: str | None = None
     remote_org_id: int
     publish_without_email: bool
@@ -45,18 +45,6 @@ class Server(BaseModel):
     caching_enabled: bool
     priority: int | None = None
     cache_timestamp: bool
-
-    @root_validator(pre=True)
-    def map_last_pulled_id_to_lastpulledid(cls, values):
-        if "last_pulled_id" in values and "lastpulledid" not in values:
-            values["lastpulledid"] = values["last_pulled_id"]
-        return values
-
-    @root_validator(pre=True)
-    def map_last_pushed_id_to_lastpushedid(cls, values):
-        if "last_pushed_id" in values and "lastpushedid" not in values:
-            values["lastpushedid"] = values["last_pushed_id"]
-        return values
 
 
 class ServerViewMeResponse(BaseModel):

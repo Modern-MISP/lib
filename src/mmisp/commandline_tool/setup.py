@@ -17,6 +17,7 @@ async def setup(session: AsyncSession) -> None:
     ghost_org.sector = "ghost"
     ghost_org.contacts = "ghost@example.com"
     ghost_org.landingpage = "ghost.example.com"
+    ghost_org.local = True
     await add_organisation_if_not_exist(session, ghost_org)
 
 

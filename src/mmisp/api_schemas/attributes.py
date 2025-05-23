@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_valid
 from mmisp.api_schemas.attribute_common import CommonAttribute
 from mmisp.lib.attributes import (
     AttributeCategories,
+    AttributeType,
     default_category,
     inverted_categories,
     literal_valid_attribute_types,
@@ -385,8 +386,13 @@ class AddAttributeBody(BaseModel):
 
     @model_validator(mode="after")
     def ensure_value_or_value1_is_set(self: Self) -> Self:
-        if self.value is None and self.value1 is None:
-            raise ValueError("value or value1 has to be set")
+        if self.value is None:
+            if self.value1 is None:
+                raise ValueError("value or value1 has to be set")
+            if self.value2 is not None:
+                self.value = f"{self.value1}|{self.value2}"
+            else:
+                self.value = f"{self.value1}"
         return self
 
     @field_serializer("timestamp")
@@ -395,12 +401,22 @@ class AddAttributeBody(BaseModel):
             return None
         return int(timestamp.timestamp())
 
-    @field_validator("first_seen", mode="before")
+    @field_validator("first_seen", "value", "value1", "value2", mode="before")
     @classmethod
     def empty_string_to_none(cls: Type[Self], value: Any) -> Any:
         if value == "":
             return None
         return value
+
+    @model_validator(mode="after")
+    def check_type_value(self: Self) -> Self:
+        # get validator from attribute type
+        at = AttributeType.map_dbkey_attributetype[self.type]
+        validator = at.validator
+        if not validator(self.value):
+            raise ValueError(f"{self.value} is not compatible with attribute type {self.type}")
+
+        return self
 
 
 GetAttributeStatisticsTypesResponseAttrs = {x: Field(default=None) for x in mapper_val_safe_clsname.keys()}

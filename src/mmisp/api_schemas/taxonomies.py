@@ -1,3 +1,6 @@
+from enum import StrEnum
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 
 from mmisp.api_schemas.common import TagAttributesResponse
@@ -5,15 +8,17 @@ from mmisp.api_schemas.common import TagAttributesResponse
 
 class ImportTaxonomyEntry(BaseModel):
     value: str
-    numerical_value: int
-    colour: str
-    description: str
-    expanded: str
+    numerical_value: int | None = None
+    colour: str | None = None
+    description: str | None = None
+    expanded: str | None = None
+    uuid: UUID | None = None
 
 
 class ImportTaxonomyValues(BaseModel):
     predicate: str
-    entry: list[ImportTaxonomyEntry]
+    entry: list[ImportTaxonomyEntry] | None = None
+    uuid: UUID | None = None
 
 
 class ImportTaxonomyPredicates(BaseModel):
@@ -23,17 +28,25 @@ class ImportTaxonomyPredicates(BaseModel):
     description: str | None = None
     expanded: str | None = None
     exclusive: bool | None = None
+    uuid: UUID | None = None
+
+
+class ImportTaxonomyFileTypes(StrEnum):
+    ORGANISATION = "org"
+    USER = "user"
+    ATTRIBUTE = "attribute"
+    EVENT = "event"
 
 
 class ImportTaxonomyFile(BaseModel):
     namespace: str
     description: str
     version: int
-    exclusive: bool | None = None
-    expanded: str
-    type: list[str]
-    refs: list[str]
     predicates: list[ImportTaxonomyPredicates]
+    exclusive: bool | None = None
+    expanded: str | None = None
+    type: list[ImportTaxonomyFileTypes] | None = None
+    refs: list[str] | None = None
     values: list[ImportTaxonomyValues] | None = None
 
 

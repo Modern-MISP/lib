@@ -2,7 +2,11 @@ from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, ClassVar, Literal, Self
+from typing import Annotated, Any, ClassVar, Literal, Self
+
+from pydantic import TypeAdapter, ValidationError
+from pydantic.networks import IPvAnyAddress
+from pydantic.types import StringConstraints
 
 
 class AttributeCategories(StrEnum):
@@ -45,6 +49,28 @@ class AttributeType:
         self.map_safe_clsname_dbkey[self.safe_clsname] = self.dbkey
 
 
+ip_adapter = TypeAdapter(IPvAnyAddress)
+
+sha1_string = Annotated[str, StringConstraints(pattern=r"^[a-fA-F0-9]{40}$")]
+sha1_adapter = TypeAdapter(sha1_string)
+
+
+def pydantic_validator(value: str, adapter: TypeAdapter) -> bool:
+    try:
+        adapter.validate_python(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def is_valid_ip(value: str) -> bool:
+    return pydantic_validator(value, ip_adapter)
+
+
+def is_valid_sha1(value: str) -> bool:
+    return pydantic_validator(value, sha1_adapter)
+
+
 AttributeType(
     dbkey="md5",
     safe_clsname="Md5",
@@ -72,6 +98,7 @@ AttributeType(
         }
     ),
     to_ids=True,
+    validator=is_valid_sha1,
 )
 AttributeType(
     dbkey="sha256",
@@ -158,6 +185,7 @@ AttributeType(
         }
     ),
     to_ids=True,
+    validator=is_valid_ip,
 )
 
 

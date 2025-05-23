@@ -2,7 +2,7 @@ import random
 import time
 
 from mmisp.db.models.shadow_attribute import ShadowAttribute
-from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
+from mmisp.lib.attributes import AttributeType
 from mmisp.lib.uuid import uuid
 from mmisp.tests.generators.object_generator import generate_random_date_str, generate_random_str
 

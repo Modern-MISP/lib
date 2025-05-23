@@ -1,13 +1,75 @@
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.api_schemas.common import NoneTag, TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement, RestSearchGalaxyBody
-from mmisp.api_schemas.organisations import GalaxyClusterOrganisationResponse, Organisation
+from mmisp.api_schemas.organisations import GetOrganisationElement
+from mmisp.lib.distribution import DistributionLevels, GalaxyDistributionLevels
+from mmisp.api_schemas.galaxy_common import (
+    CommonGalaxyCluster,
+    GetAllSearchGalaxiesAttributes,
+    ShortCommonGalaxy,
+    ShortCommonGalaxyCluster,
+)
+from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
 from mmisp.lib.distribution import DistributionLevels
+
+
+class IndexGalaxyCluster(BaseModel):
+    Galaxy: ShortCommonGalaxy
+    GalaxyCluster: ShortCommonGalaxyCluster
+
+
+class ImportGalaxyClusterValueMeta(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    type: list[str] | None = None
+    complexity: str | None = None
+    effectiveness: str | None = None
+    country: str | None = None
+    possible_issues: str | None = None
+    colour: str | None = None
+    motive: str | None = None
+    impact: str | None = None
+    refs: list[str] | None = None
+    synonyms: list[str] | None = None
+    status: str | None = None
+    date: str | None = None
+    encryption: str | None = None
+    extensions: list[str] | None = None
+    ransomnotes: list[str] | None = None
+    official_refs: list[str] | None = Field(None, validation_alias="official-refs")
+
+
+class ImportGalaxyClusterValueRelated(BaseModel):
+    dest_uuid: UUID = Field(validation_alias="dest-uuid")
+    type: str
+
+
+class ImportGalaxyClusterValue(BaseModel):
+    value: str
+    uuid: UUID
+    related: list[ImportGalaxyClusterValueRelated] | None = None
+    description: str = ""
+    revoked: bool | None = None
+    meta: ImportGalaxyClusterValueMeta | None = None
+
+
+class ImportGalaxyCluster(BaseModel):
+    description: str
+    type: str
+    version: int
+    name: str
+    uuid: UUID
+    values: list[ImportGalaxyClusterValue]
+    authors: list[str]
+    source: str
+    category: str
+
+    distribution: Literal[3] = 3
 
 
 class GetGalaxyClusterResponse(BaseModel):
@@ -22,21 +84,23 @@ class GetGalaxyClusterResponse(BaseModel):
     source: str
     authors: list[str]
     version: int
-    distribution: str
-    sharing_group_id: int
+    distribution: GalaxyDistributionLevels
+    sharing_group_id: int | None
     org_id: int
     orgc_id: int
     default: bool
     locked: bool
-    extends_uuid: UUID
-    extends_version: int
+    extends_uuid: Literal[""] | UUID | None
+    extends_version: int | None
     published: bool
     deleted: bool
+    RelationshipInbound: list[str] = Field(default_factory=list)
+    TargetingClusterRelation: list[str] = Field(default_factory=list)
     GalaxyElement: list[ExportGalaxyGalaxyElement]
-    Galaxy: GetAllEventsGalaxyClusterGalaxy
+    Galaxy: GetAllEventsGalaxyClusterGalaxy | None = None
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
-    Org: Organisation
-    Orgc: Organisation
+    Org: GetOrganisationElement | None = None
+    Orgc: GetOrganisationElement | None = None
 
 
 class GalaxyClusterResponse(BaseModel):
@@ -57,7 +121,7 @@ class AddUpdateGalaxyElement(BaseModel):
 
 
 class AddGalaxyClusterRequest(BaseModel):
-    uuid: str
+    uuid: str | None = None
     value: str
     description: str
     source: str
@@ -70,28 +134,28 @@ class AddGalaxyClusterRequest(BaseModel):
 
 
 class PutGalaxyClusterRequest(BaseModel):
-    id: int
-    uuid: str
-    collection_uuid: str
-    type: str
-    value: str
-    tag_name: str
-    description: str
-    galaxy_id: int
-    source: str
-    authors: list[str]
+    id: int | None = None
+    uuid: str | None = None
+    collection_uuid: UUID | Literal[""] | None = None
+    type: str | None = None
+    value: str | None = None
+    tag_name: str | None = None
+    description: str | None = None
+    galaxy_id: int | None = None
+    source: str | None = None
+    authors: list[str] | None = None
     version: int | None = None
     distribution: DistributionLevels
     sharing_group_id: int | None = None
-    org_id: int
-    orgc_id: int
-    default: bool
-    locked: bool
+    org_id: int | None = None
+    orgc_id: int | None = None
+    default: bool | None = None
+    locked: bool | None = None
     extends_uuid: str | None = None
     extends_version: str | None = None
-    published: bool = False
-    deleted: bool = False
-    GalaxyElement: list[AddUpdateGalaxyElement]
+    published: bool | None = None
+    deleted: bool | None = None
+    GalaxyElement: list[AddUpdateGalaxyElement] | None = None
 
 
 class AddGalaxyClusterResponse(BaseModel):
@@ -126,8 +190,8 @@ class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     galaxy_id: int | None = None
     source: str | None = None
     authors: list[str] | None = None
-    version: str
-    distribution: str | None = None
+    version: str | int
+    distribution: str | int | None = None
     sharing_group_id: int | None = None
     org_id: int | None = None
     orgc_id: int | None = None
@@ -140,8 +204,8 @@ class SearchGalaxyClusterGalaxyClustersDetails(BaseModel):
     GalaxyElement: Optional[list[ExportGalaxyGalaxyElement]] = None
     Galaxy: RestSearchGalaxyBody
     GalaxyClusterRelation: list[_GalaxyClusterRelation] | None = None
-    Org: Optional[GalaxyClusterOrganisationResponse] = None
-    Orgc: Optional[GalaxyClusterOrganisationResponse] = None
+    Org: GetOrganisationElement | None = None
+    Orgc: GetOrganisationElement | None = None
 
 
 class SearchGalaxyClusterGalaxyClusters(BaseModel):
@@ -150,9 +214,6 @@ class SearchGalaxyClusterGalaxyClusters(BaseModel):
 
 class GalaxyClusterSearchResponse(BaseModel):
     response: list[SearchGalaxyClusterGalaxyClusters]
-
-    class Config:
-        orm_mode = True
 
 
 class GalaxyClusterSearchBody(BaseModel):

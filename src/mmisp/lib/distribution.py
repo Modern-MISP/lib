@@ -13,6 +13,7 @@ class GalaxyDistributionLevels(IntEnum):
     COMMUNITY = 1
     CONNECTED_COMMUNITIES = 2
     ALL_COMMUNITIES = 3
+    SHARING_GROUP = 4
 
 
 class EventDistributionLevels(IntEnum):

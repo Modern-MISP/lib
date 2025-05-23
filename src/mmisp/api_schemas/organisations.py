@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Any, Self, Type
+from typing import Any, Literal, Self, Type
+from uuid import UUID
 
 from pydantic import BaseModel, field_serializer, field_validator
 
@@ -10,7 +11,7 @@ class BaseOrganisation(BaseModel):
     nationality: str | None = None
     sector: str | None = None
     type: str | None = None
-    uuid: str | None = None
+    uuid: UUID | None = None
 
 
 class Organisation(BaseOrganisation):
@@ -35,7 +36,7 @@ class GetOrganisationElement(BaseModel):
     nationality: str | None = None
     sector: str | None = None
     type: str | None = None
-    uuid: str | None = None
+    uuid: UUID | Literal["0"] | None = None
     # the fallback GENERIC_MISP_ORGANISATION doesn't have this property
     # str is needed because its returned as string
     date_created: datetime | None = None
@@ -107,7 +108,7 @@ class OrganisationUsersResponse(BaseModel):
 
 class AddOrganisation(BaseModel):
     id: int | None = None
-    uuid: str | None = None
+    uuid: UUID | None = None
     name: str
     description: str | None = None
     type: str
@@ -147,20 +148,3 @@ class ServerOrganisation(BaseModel):
     nationality: str
     sector: str
     type: str
-
-
-class GalaxyClusterOrganisationResponse(BaseModel):
-    id: int
-    name: str
-    date_created: datetime | str | None = None
-    date_modified: datetime | str | None = None
-    description: str | None = None
-    type: str | None = None
-    nationality: str | None = None
-    sector: str | None = None
-    created_by: int | None = None
-    uuid: str | None = None
-    contacts: str | None = None
-    local: bool | None = None
-    restricted_to_domain: str | list | None = None
-    landingpage: str | None = None

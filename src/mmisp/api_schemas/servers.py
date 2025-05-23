@@ -1,6 +1,6 @@
-import json
+from typing import Any, Self, Type
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, Json, field_serializer, field_validator
 
 from mmisp.api_schemas.organisations import BaseOrganisation
 
@@ -40,7 +40,34 @@ default_push_rules = PushRulesFilter(
 )
 
 
-class AddServer(BaseModel):
+class RulesWithValidator(BaseModel):
+    pull_rules: Json[PullRulesFilter] | PullRulesFilter = default_pull_rules
+    push_rules: Json[PushRulesFilter] | PushRulesFilter = default_push_rules
+
+    @field_validator("pull_rules", mode="before")
+    @classmethod
+    def set_default_pull(cls: Type[Self], value: Any) -> Any:
+        if value is None:
+            return default_pull_rules
+        if value == "":
+            return default_pull_rules
+        return value
+
+    @field_validator("push_rules", mode="before")
+    @classmethod
+    def set_default_push(cls: Type[Self], value: Any) -> Any:
+        if value is None:
+            return default_push_rules
+        if value == "":
+            return default_push_rules
+        return value
+
+    @field_serializer("push_rules", "pull_rules")
+    def serialize_rules(self: Self, val: PullRulesFilter | PushRulesFilter, _info: Any) -> str:
+        return val.model_dump_json()
+
+
+class AddServer(RulesWithValidator):
     url: str
     name: str
     remote_org_id: int
@@ -50,8 +77,6 @@ class AddServer(BaseModel):
     internal: bool = False
     push: bool = False
     pull: bool = False
-    pull_rules: PullRulesFilter = default_pull_rules
-    push_rules: PushRulesFilter = default_push_rules
     push_galaxy_clusters: bool = False
     caching_enabled: bool = False
     unpublish_event: bool = False
@@ -59,28 +84,8 @@ class AddServer(BaseModel):
     self_signed: bool = False
     skip_proxy: bool = False
 
-    @validator("pull_rules", pre=True)
-    def parse_pull_rules(cls, v):
-        if isinstance(v, str):
-            if v.strip():  # nur wenn nicht leer
-                return PullRulesFilter(**json.loads(v))
-            return default_pull_rules  # fallback wenn leer
-        elif isinstance(v, dict):
-            return PullRulesFilter(**v)
-        return v  # falls schon PullRulesFilter
 
-    @validator("push_rules", pre=True)
-    def parse_push_rules(cls, v):
-        if isinstance(v, str):
-            if v.strip():
-                return PushRulesFilter(**json.loads(v))
-            return default_push_rules
-        elif isinstance(v, dict):
-            return PushRulesFilter(**v)
-        return v
-
-
-class EditServer(BaseModel):
+class EditServer(RulesWithValidator):
     name: str
     url: str
     priority: int
@@ -89,8 +94,6 @@ class EditServer(BaseModel):
     internal: bool
     push: bool
     pull: bool
-    pull_rules: PullRulesFilter = default_pull_rules
-    push_rules: PushRulesFilter = default_push_rules
     push_galaxy_clusters: bool
     caching_enabled: bool
     unpublish_event: bool
@@ -98,26 +101,6 @@ class EditServer(BaseModel):
     self_signed: bool
     skip_proxy: bool
     last_pushed_id: int | None = None
-
-    @validator("pull_rules", pre=True)
-    def parse_pull_rules(cls, v):
-        if isinstance(v, str):
-            if v.strip():  # nur wenn nicht leer
-                return PullRulesFilter(**json.loads(v))
-            return default_pull_rules  # fallback wenn leer
-        elif isinstance(v, dict):
-            return PullRulesFilter(**v)
-        return v  # falls schon PullRulesFilter
-
-    @validator("push_rules", pre=True)
-    def parse_push_rules(cls, v):
-        if isinstance(v, str):
-            if v.strip():
-                return PushRulesFilter(**json.loads(v))
-            return default_push_rules
-        elif isinstance(v, dict):
-            return PushRulesFilter(**v)
-        return v
 
 
 class ServerResponseBase(BaseModel):
@@ -130,8 +113,8 @@ class ServerResponseBase(BaseModel):
     pull: bool
     cert_file: str | None = None
     client_cert_file: str | None = None
-    lastpulledid: int | None = None
-    lastpushedid: int | None = None
+    lastpulledid: int | None = Field(None, validation_alias="last_pulled_id")
+    lastpushedid: int | None = Field(None, validation_alias="last_pushed_id")
     organization: str | None = None
     pull_analyst_data: bool
     pull_rules: str
@@ -149,18 +132,6 @@ class ServerResponseBase(BaseModel):
     skip_proxy: bool | None = None
     caching_enabled: bool | None = None
     priority: int | None = None
-
-    @root_validator(pre=True)
-    def map_last_pulled_id_to_lastpulledid(cls, values):
-        if "last_pulled_id" in values and "lastpulledid" not in values:
-            values["lastpulledid"] = values["last_pulled_id"]
-        return values
-
-    @root_validator(pre=True)
-    def map_last_pushed_id_to_lastpushedid(cls, values):
-        if "last_pushed_id" in values and "lastpushedid" not in values:
-            values["lastpushedid"] = values["last_pushed_id"]
-        return values
 
 
 class ServerResponse(ServerResponseBase):

@@ -108,12 +108,12 @@ class ObjectSearchResponse(BaseModel):
 
 
 class ObjectCreateBody(BaseModel):
-    name: str = Field(min_length=1)
+    name: str | None = None
     meta_category: str | None = None
     description: str | None = None
     distribution: AttributeDistributionLevels | None = None
-    sharing_group_id: int
-    comment: str = Field(min_length=1)
+    sharing_group_id: int = 0
+    comment: str = ""
     deleted: bool | None = None
     first_seen: int | None = None
     last_seen: int | None = None

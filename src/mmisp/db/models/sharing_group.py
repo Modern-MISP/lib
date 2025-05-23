@@ -1,10 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
-from mmisp.db.mypy import Mapped, mapped_column
 from mmisp.db.types import DBUUID
 from mmisp.lib.uuid import uuid
 

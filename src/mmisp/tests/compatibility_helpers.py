@@ -18,6 +18,10 @@ def compare_func(x, y, level=None):
             return x["Role"]["id"]
         if "SharingGroup" in x:
             return x["SharingGroup"]["uuid"]
+        if "GalaxyCluster" in x:
+            return x["GalaxyCluster"]["uuid"]
+        if "Galaxy" in x:
+            return x["Galaxy"]["uuid"]
     except Exception:
         raise CannotCompare() from None
 
