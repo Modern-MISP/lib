@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Self, Any
+from typing import Any, Self, Type
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 
 
 class BaseOrganisation(BaseModel):
@@ -53,11 +53,10 @@ class GetOrganisationElement(BaseModel):
             return ""
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
-    @validator('restricted_to_domain', pre=True)
-    def ensure_list(cls, v: Any) -> Any:
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str):
+    @field_validator("restricted_to_domain", mode="before")
+    @classmethod
+    def ensure_list(cls: Type[Self], v: Any) -> Any:
+        if not isinstance(v, list):
             return [v]
         return v
 

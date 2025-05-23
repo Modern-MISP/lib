@@ -5,7 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -23,15 +23,21 @@ from mmisp.lib.distribution import AttributeDistributionLevels, DistributionLeve
 from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
+
+from ..db.models.blocklist import GalaxyClusterBlocklist
+from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
+from ..db.models.event import Event, EventTag
+from ..db.models.object import Object
+from ..db.models.post import Post
+from ..db.models.sighting import Sighting
+from ..db.models.threat_level import ThreatLevel
 from .generators.model_generators.attribute_generator import generate_attribute
-from .generators.model_generators.auth_key_generator import generate_auth_key
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
 from .generators.model_generators.event_blocklist_generator import generate_event_blocklist
-from .generators.model_generators.event_generator import generate_event
 from .generators.model_generators.galaxy_cluster_blocklist_generator import generate_galaxy_cluster_blocklist
 from .generators.model_generators.object_generator import generate_object
 from .generators.model_generators.org_blocklist_generator import generate_org_blocklist
@@ -52,13 +58,6 @@ from .generators.model_generators.tag_generator import generate_tag
 from .generators.model_generators.threat_level_generator import generate_threat_level
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
-from ..db.models.blocklist import GalaxyClusterBlocklist
-from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
-from ..db.models.event import Event, EventTag
-from ..db.models.object import Object
-from ..db.models.post import Post
-from ..db.models.sighting import Sighting
-from ..db.models.threat_level import ThreatLevel
 
 
 class DBManager:
@@ -667,6 +666,7 @@ def galaxy_cluster_two_uuid():
 @pytest_asyncio.fixture
 async def test_galaxy(db, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, organisation):
     async with AsyncExitStack() as stack:
+
         async def add_to_db(elem):
             return await stack.enter_async_context(DBManager(db, elem))
 
@@ -739,15 +739,19 @@ async def test_galaxy(db, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, orga
             )
         )
 
-        galaxy_element = GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs",
-                                       value="http://test-one-one.example.com")
-        galaxy_element2 = GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs",
-                                        value="http://test-one-two.example.com")
+        galaxy_element = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
+        )
+        galaxy_element2 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
+        )
 
-        galaxy_element21 = GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs",
-                                         value="http://test-two-one.example.com")
-        galaxy_element22 = GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs",
-                                         value="http://test-two-two.example.com")
+        galaxy_element21 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
+        )
+        galaxy_element22 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
+        )
 
         galaxy_elements = (galaxy_element, galaxy_element2, galaxy_element21, galaxy_element22)
         for g_e in galaxy_elements:

@@ -1,17 +1,12 @@
-from typing import Literal
-from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from mmisp.api_schemas.common import NoneTag, TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
-from mmisp.api_schemas.galaxy_common import CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
-from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
-from mmisp.api_schemas.galaxies import RestSearchGalaxyBody
-from mmisp.api_schemas.galaxies import RestSearchGalaxyBody, ExportGalaxyGalaxyElement
-from mmisp.api_schemas.galaxy_common import GetAllSearchGalaxiesAttributes
-from mmisp.api_schemas.organisations import GalaxyClusterOrganisationResponse, GetOrganisationElement, Organisation
+from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement, RestSearchGalaxyBody
+from mmisp.api_schemas.organisations import GalaxyClusterOrganisationResponse, Organisation
 from mmisp.lib.distribution import DistributionLevels
 
 
@@ -42,6 +37,11 @@ class GetGalaxyClusterResponse(BaseModel):
     GalaxyClusterRelation: list[AddEditGetEventGalaxyClusterRelation] = []
     Org: Organisation
     Orgc: Organisation
+
+
+class GalaxyClusterResponse(BaseModel):
+    GalaxyCluster: GetGalaxyClusterResponse
+    Tag: NoneTag | TagAttributesResponse = Field(default_factory=NoneTag)
 
 
 class AddGalaxyElement(BaseModel):

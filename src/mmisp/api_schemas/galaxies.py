@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
@@ -199,9 +200,6 @@ class AttachClusterGalaxyBody(BaseModel):
     Galaxy: AttachClusterGalaxyAttributes
     model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
-
 
 class RestSearchGalaxyBody(BaseModel):
     id: int
@@ -217,13 +215,6 @@ class RestSearchGalaxyBody(BaseModel):
     default: bool | None = None
     org_id: int | None = None
     orgc_id: int | None = None
-    created: str | None = None
-    modified: str | None = None
+    created: datetime | None = None
+    modified: datetime | None = None
     distribution: str | None = None
-
-    @validator("created", "modified", pre=True)
-    @classmethod
-    def convert_date_to_str(cls, v):
-        if isinstance(v, datetime):
-            return v.strftime("%Y-%m-%d %H:%M:%S")
-        return v

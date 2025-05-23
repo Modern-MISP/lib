@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import Mapped, mapped_column
+from mmisp.db.types import DBUUID
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
@@ -17,8 +18,8 @@ class SharingGroup(Base, UpdateMixin, DictMixin["SharingGroupDict"]):
     name = mapped_column(String(255), nullable=False, unique=True)
     releasability = mapped_column(Text, nullable=False)
     description = mapped_column(Text, nullable=False, default="")
-    uuid = mapped_column(String(40), unique=True, default=uuid, nullable=False)
-    organisation_uuid = mapped_column(String(40), nullable=False)
+    uuid = mapped_column(DBUUID, unique=True, default=uuid, nullable=False)
+    organisation_uuid = mapped_column(DBUUID, nullable=False)
     org_id = mapped_column(Integer, nullable=False, index=True)  # the organisation that created the sharing group
     sync_user_id = mapped_column(Integer, nullable=False, default=0, index=True)
     active = mapped_column(Boolean, nullable=False, default=False)

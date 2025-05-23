@@ -13,7 +13,6 @@ from mmisp.lib.permissions import Permission
 from mmisp.lib.uuid import uuid
 
 from ..database import Base
-from ..mixins import DictMixin
 from .organisation import Organisation
 from .tag import Tag
 from .user import User
