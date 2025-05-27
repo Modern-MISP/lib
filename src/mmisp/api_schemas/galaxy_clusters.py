@@ -6,16 +6,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from mmisp.api_schemas.common import NoneTag, TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
 from mmisp.api_schemas.galaxies import ExportGalaxyGalaxyElement, RestSearchGalaxyBody
-from mmisp.api_schemas.organisations import GetOrganisationElement
-from mmisp.lib.distribution import DistributionLevels, GalaxyDistributionLevels
 from mmisp.api_schemas.galaxy_common import (
-    CommonGalaxyCluster,
-    GetAllSearchGalaxiesAttributes,
     ShortCommonGalaxy,
     ShortCommonGalaxyCluster,
 )
-from mmisp.api_schemas.organisations import GetOrganisationResponse, Organisation
-from mmisp.lib.distribution import DistributionLevels
+from mmisp.api_schemas.organisations import GetOrganisationElement
+from mmisp.lib.distribution import DistributionLevels, GalaxyDistributionLevels
 
 
 class IndexGalaxyCluster(BaseModel):
