@@ -243,7 +243,7 @@ class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
             return False  # Something went wrong with the Distribution ID
 
     @can_access.expression
-    def can_access(cls: Self, user: User) -> bool:
+    def can_access(cls: Self, user: User | None) -> bool:
         """
         Checks if a user is allowed to see and access an attribute based on
         whether the attribute is part of the same group or organisation and or creating organisation and
@@ -257,10 +257,10 @@ class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
         returns:
             true if the user has access permission
         """
-        user_org_id = user.org_id
-
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
+
+        user_org_id = user.org_id
 
         condition = []
         condition.append(cls.event.has(Event.orgc_id == user_org_id))
