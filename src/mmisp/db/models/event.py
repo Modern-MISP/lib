@@ -152,7 +152,7 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
         """
 
     @hybrid_method
-    def can_access(self: Self, user: User) -> bool:
+    def can_access(self: Self, user: User | None) -> bool:
         """
         Checks if a user is allowed to see and access an event based on
         whether the event is part of the same group or organisation and the publishing status of the event.
@@ -164,9 +164,10 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
         returns:
             true if the user has access permission
         """
-        user_org_id = user.org_id
         if user is None or user.role.check_permission(Permission.SITE_ADMIN):
             return True  # User is a Worker or Site Admin
+
+        user_org_id = user.org_id
         if user.id == self.user_id:
             return True  # User is the creator of the event
 
