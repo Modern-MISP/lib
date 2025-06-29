@@ -49,6 +49,7 @@ class SearchAttributesEvent(BaseModel):
 class SearchAttributesAttributesDetails(BaseModel):
     id: int
     event_id: int | None = None
+    user_id: int
     object_id: int | None = None
     object_relation: str | None = None
     category: AttributeCategories
