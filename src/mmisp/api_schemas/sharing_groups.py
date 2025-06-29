@@ -89,7 +89,7 @@ class GetAllSharingGroupsResponseResponseItemSharingGroup(BaseModel):
     local: bool
     active: bool
     roaming: bool
-    org_count: str
+    org_count: int
 
 
 class DeleteSharingGroupLegacyResponse(StandardStatusResponse):
@@ -181,7 +181,7 @@ class UpdateSharingGroupLegacyBody(BaseModel):
     releasability: str | None = Field(default=None, max_length=65535)
     local: bool | None = None
     active: bool | None = None
-    org_count: str | None = None
+    org_count: int | None = None
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
     """attribute will be ignored"""
@@ -311,7 +311,7 @@ class CreateSharingGroupLegacyBody(BaseModel):
     releasability: str | None = Field(default=None, max_length=65535)
     local: bool | None = None
     active: bool | None = None
-    org_count: str | None = None
+    org_count: int | None = None
     """attribute will be ignored"""
     organisation_uuid: str | None = Field(default=None, max_length=36)
     org_id: int | None = Field(default=None)

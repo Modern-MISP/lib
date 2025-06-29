@@ -5,7 +5,7 @@ from typing import Self
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -24,18 +24,23 @@ from mmisp.lib.galaxies import galaxy_tag_name
 from mmisp.util.crypto import hash_secret
 from mmisp.util.uuid import uuid
 
+from ..db.models.blocklist import GalaxyClusterBlocklist
 from ..db.models.correlation import CorrelationExclusions, CorrelationValue, DefaultCorrelation, OverCorrelatingValue
 from ..db.models.event import Event, EventTag
 from ..db.models.object import Object
 from ..db.models.post import Post
 from ..db.models.sighting import Sighting
+from ..db.models.threat_level import ThreatLevel
 from .generators.model_generators.attribute_generator import generate_attribute
 from .generators.model_generators.correlation_exclusions_generator import generate_correlation_exclusions
 from .generators.model_generators.correlation_value_generator import (
     generate_correlation_value,
 )
 from .generators.model_generators.default_correlation_generator import generate_default_correlation
+from .generators.model_generators.event_blocklist_generator import generate_event_blocklist
+from .generators.model_generators.galaxy_cluster_blocklist_generator import generate_galaxy_cluster_blocklist
 from .generators.model_generators.object_generator import generate_object
+from .generators.model_generators.org_blocklist_generator import generate_org_blocklist
 from .generators.model_generators.organisation_generator import generate_organisation
 from .generators.model_generators.over_correlating_value_generator import (
     generate_over_correlating_value,
@@ -50,6 +55,7 @@ from .generators.model_generators.shadow_attribute_generator import generate_sha
 from .generators.model_generators.sharing_group_generator import generate_sharing_group
 from .generators.model_generators.sighting_generator import generate_sighting
 from .generators.model_generators.tag_generator import generate_tag
+from .generators.model_generators.threat_level_generator import generate_threat_level
 from .generators.model_generators.user_generator import generate_user
 from .generators.model_generators.user_setting_generator import generate_user_name
 
@@ -145,6 +151,7 @@ async def instance_org_two(db):
     org = generate_organisation()
     db.add(org)
     await db.commit()
+    await db.refresh(org)
     yield org
     await db.delete(org)
     await db.commit()
@@ -156,6 +163,7 @@ async def instance_two_owner_org(db):
     org.local = False
     db.add(org)
     await db.commit()
+    await db.refresh(org)
     yield org
     await db.delete(org)
     await db.commit()
@@ -383,7 +391,11 @@ async def sighting(db, organisation, event_with_attributes):
     await db.commit()
     await db.refresh(sighting)
 
-    yield sighting
+    yield {
+        "sighting": sighting,
+        "organisation": organisation,
+        "event": event_with_attributes,
+    }
 
     await db.delete(sighting)
     await db.commit()
@@ -511,6 +523,24 @@ async def shadow_attribute(db, organisation, event):
 
 
 @pytest_asyncio.fixture
+async def shadow_attribute_with_organisation_event(db, organisation, event):
+    shadow_attribute = generate_shadow_attribute(organisation.id, event.id, event.uuid, event.org_id)
+
+    db.add(shadow_attribute)
+    await db.commit()
+    await db.refresh(shadow_attribute)
+
+    yield {
+        "shadow_attribute": shadow_attribute,
+        "organisation": organisation,
+        "event": event,
+    }
+
+    await db.delete(shadow_attribute)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
 async def sharing_group(db, instance_owner_org):
     sharing_group = generate_sharing_group()
     sharing_group.organisation_uuid = instance_owner_org.uuid
@@ -586,7 +616,12 @@ async def galaxy(db):
     await db.commit()
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(name="auth_key")
+async def fixture_auth_key(db, site_admin_user):
+    async for e in auth_key(db, site_admin_user):
+        yield e
+
+
 async def auth_key(db, site_admin_user):
     clear_key = "siteadminuser".ljust(40, "0")
 
@@ -629,7 +664,7 @@ def galaxy_cluster_two_uuid():
 
 
 @pytest_asyncio.fixture
-async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid):
+async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_default_cluster_two_uuid, organisation):
     async with AsyncExitStack() as stack:
 
         async def add_to_db(elem):
@@ -660,20 +695,20 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
                 collection_uuid="",
                 type="test galaxy type",
                 value="test",
-                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_one_uuid),
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_one_uuid),
                 description="test",
                 galaxy_id=galaxy.id,
                 source="me",
                 authors=["Konstantin Zangerle", "Test Writer"],
                 version=1,
                 distribution=3,
-                sharing_group_id=None,
+                sharing_group_id=0,
                 org_id=0,
                 orgc_id=0,
-                default=0,
+                default=1,
                 locked=0,
-                extends_uuid=None,
-                extends_version=None,
+                extends_uuid="",
+                extends_version=0,
                 published=True,
                 deleted=False,
             )
@@ -685,39 +720,48 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
                 collection_uuid="",
                 type="test galaxy type",
                 value="test",
-                tag_name=galaxy_tag_name("test galaxy type", galaxy_default_cluster_two_uuid),
+                tag_name=galaxy_tag_name("test galaxy type", galaxy_cluster_two_uuid),
                 description="test",
                 galaxy_id=galaxy.id,
                 source="me",
                 authors=["Konstantin Zangerle", "Test Writer"],
                 version=1,
                 distribution=3,
-                sharing_group_id=None,
+                sharing_group_id=0,
                 org_id=0,
                 orgc_id=0,
-                default=0,
+                default=1,
                 locked=0,
-                extends_uuid=None,
-                extends_version=None,
+                extends_uuid="",
+                extends_version=0,
                 published=True,
                 deleted=False,
             )
         )
 
-        galaxy_element = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
+        galaxy_element = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
         )
-        galaxy_element2 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
+        galaxy_element2 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
         )
 
-        galaxy_element21 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
+        galaxy_element21 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
         )
-        galaxy_element22 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
+        galaxy_element22 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
         )
+
+        galaxy_elements = (galaxy_element, galaxy_element2, galaxy_element21, galaxy_element22)
+        for g_e in galaxy_elements:
+            db.add(g_e)
+
         await db.commit()
+
+        for g_e in galaxy_elements:
+            await db.refresh(g_e)
+
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -727,11 +771,15 @@ async def test_default_galaxy(db, galaxy_default_cluster_one_uuid, galaxy_defaul
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
-    await db.commit()
+        await db.commit()
+
+        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+        qry = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([galaxy_cluster.id, galaxy_cluster2.id]))
+        await db.execute(qry)
 
 
 @pytest_asyncio.fixture
-async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid):
+async def test_galaxy(db, galaxy_cluster_one_uuid, galaxy_cluster_two_uuid, organisation):
     async with AsyncExitStack() as stack:
 
         async def add_to_db(elem):
@@ -748,8 +796,8 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 uuid=uuid(),
                 enabled=True,
                 local_only=False,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                org_id=0,
+                orgc_id=0,
                 distribution=DistributionLevels.ALL_COMMUNITIES,
                 created=datetime.now(),
                 modified=datetime.now(),
@@ -769,17 +817,18 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 authors=["Konstantin Zangerle", "Test Writer"],
                 version=1,
                 distribution=3,
-                sharing_group_id=None,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                sharing_group_id=0,
+                org_id=organisation.id,
+                orgc_id=organisation.id,
                 default=0,
                 locked=0,
-                extends_uuid=None,
-                extends_version=None,
+                extends_uuid="",
+                extends_version=0,
                 published=True,
                 deleted=False,
             )
         )
+
         galaxy_cluster2 = await add_to_db(
             GalaxyCluster(
                 uuid=galaxy_cluster_two_uuid,
@@ -793,32 +842,41 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
                 authors=["Konstantin Zangerle", "Test Writer"],
                 version=1,
                 distribution=3,
-                sharing_group_id=None,
-                org_id=instance_owner_org.id,
-                orgc_id=instance_owner_org.id,
+                sharing_group_id=0,
+                org_id=organisation.id,
+                orgc_id=organisation.id,
                 default=0,
                 locked=0,
-                extends_uuid=None,
-                extends_version=None,
+                extends_uuid="",
+                extends_version=0,
                 published=True,
                 deleted=False,
             )
         )
 
-        galaxy_element = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com")
+        galaxy_element = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-one.example.com"
         )
-        galaxy_element2 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com")
+        galaxy_element2 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster.id, key="refs", value="http://test-one-two.example.com"
         )
 
-        galaxy_element21 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com")
+        galaxy_element21 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-one.example.com"
         )
-        galaxy_element22 = await add_to_db(
-            GalaxyElement(galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com")
+        galaxy_element22 = GalaxyElement(
+            galaxy_cluster_id=galaxy_cluster2.id, key="refs", value="http://test-two-two.example.com"
         )
+
+        galaxy_elements = (galaxy_element, galaxy_element2, galaxy_element21, galaxy_element22)
+        for g_e in galaxy_elements:
+            db.add(g_e)
+
         await db.commit()
+
+        for g_e in galaxy_elements:
+            await db.refresh(g_e)
+
         yield {
             "galaxy": galaxy,
             "galaxy_cluster": galaxy_cluster,
@@ -828,7 +886,11 @@ async def test_galaxy(db, instance_owner_org, galaxy_cluster_one_uuid, galaxy_cl
             "galaxy_element21": galaxy_element21,
             "galaxy_element22": galaxy_element22,
         }
-    await db.commit()
+        await db.commit()
+
+        # if a galaxy cluster is edited, new elements are created with new IDs, therefore we need this
+        qry = delete(GalaxyElement).where(GalaxyElement.galaxy_cluster_id.in_([galaxy_cluster.id, galaxy_cluster2.id]))
+        await db.execute(qry)
 
 
 @pytest_asyncio.fixture()
@@ -965,10 +1027,6 @@ async def attribute_with_normal_tag(db, attribute, normal_tag):
     await db.commit()
     await db.refresh(attribute)
 
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
-    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
-
     yield attribute, at
 
     await db.delete(at)
@@ -989,10 +1047,6 @@ async def attribute_with_normal_tag_local(db, attribute, normal_tag):
 
     await db.commit()
     await db.refresh(attribute)
-
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTE: ", vars(attribute))
-    print("bananenbieger_attribute_with_normal_tag_ATTRIBUTETAG: ", vars(at))
-    print("bananenbieger_attribute_with_normal_tag_TAG: ", vars(normal_tag))
 
     yield attribute, at
 
@@ -1081,7 +1135,7 @@ async def event_with_normal_tag(db, event, normal_tag):
     )
     await db.execute(qry)
 
-    yield event
+    yield event, event_tag
 
     await db.delete(event_tag)
     await db.commit()
@@ -1220,6 +1274,7 @@ async def correlating_value(db):
     await db.refresh(cv)
 
     yield cv
+    await db.commit()
 
     await db.delete(cv)
     await db.commit()
@@ -1230,10 +1285,12 @@ async def correlating_values(db):
     list_c_v: list[CorrelationValue] = []
 
     for i in range(3):
-        list_c_v.append(generate_correlation_value())
-        db.add(list_c_v[i])
+        c_v: CorrelationValue = generate_correlation_value()
+        db.add(c_v)
         await db.commit()
-        await db.refresh(list_c_v[i])
+        await db.refresh(c_v)
+
+        list_c_v.append(c_v)
 
     yield list_c_v
 
@@ -1357,4 +1414,61 @@ async def user(db, instance_owner_org, site_admin_role):
     yield user
 
     await db.delete(user)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def event_blocklist(db, event):
+    event_blocklist = generate_event_blocklist(event.uuid, event.info, event.orgc_id)
+
+    db.add(event_blocklist)
+    await db.commit()
+    await db.refresh(event_blocklist)
+
+    yield event_blocklist
+
+    await db.delete(event_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def org_blocklist(db, organisation):
+    org_blocklist = generate_org_blocklist(organisation.id, organisation.name)
+
+    db.add(org_blocklist)
+    await db.commit()
+    await db.refresh(org_blocklist)
+
+    yield org_blocklist
+
+    await db.delete(org_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture()
+async def cluster_blocklist(db, test_galaxy):
+    cluster = test_galaxy["galaxy_cluster"]
+    cluster_blocklist: GalaxyClusterBlocklist = generate_galaxy_cluster_blocklist(cluster.uuid, cluster.orgc_id)
+
+    db.add(cluster_blocklist)
+    await db.commit()
+    await db.refresh(cluster_blocklist)
+
+    yield cluster_blocklist
+
+    await db.delete(cluster_blocklist)
+    await db.commit()
+
+
+@pytest_asyncio.fixture
+async def threat_level(db):
+    threat_level: ThreatLevel = generate_threat_level()
+
+    db.add(threat_level)
+    await db.commit()
+    await db.refresh(threat_level)
+
+    yield threat_level
+
+    await db.delete(threat_level)
     await db.commit()

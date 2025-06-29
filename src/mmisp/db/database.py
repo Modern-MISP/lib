@@ -64,7 +64,9 @@ class DatabaseSessionManager:
                         self._url, echo=False, hide_parameters=not (config.DEBUG), poolclass=NullPool
                     )
                 else:
-                    self._engine = create_async_engine(self._url, echo=False, hide_parameters=not (config.DEBUG))
+                    self._engine = create_async_engine(
+                        self._url, echo=False, hide_parameters=not (config.DEBUG), pool_recycle=3600
+                    )
                 break
             except OperationalError as e:
                 retries += 1

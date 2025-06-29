@@ -1,21 +1,26 @@
 import random
-from datetime import datetime
 
 from mmisp.api_schemas.attributes import AddAttributeBody, GetAttributeAttributes
 from mmisp.lib.attributes import AttributeCategories, mapper_val_safe_clsname
 from mmisp.lib.distribution import AttributeDistributionLevels
 from mmisp.lib.uuid import uuid
 from mmisp.plugins.models.attribute import AttributeTagWithRelationshipType, AttributeWithTagRelationship
-from mmisp.tests.generators.object_generator import generate_ids_as_str, generate_random_date_str, generate_random_str
+from mmisp.tests.generators.object_generator import (
+    generate_ids_as_str,
+    generate_random_date_str,
+    generate_random_str,
+    generate_random_value,
+)
 from mmisp.tests.generators.tag_generator import generate_get_attribute_tag_response
 
 
 def generate_valid_random_create_attribute_data() -> AddAttributeBody:
+    # hardcoded attribute type ip-src
     return AddAttributeBody(
-        type="other",
-        value=generate_random_str(),
-        value1=generate_random_str(),
-        value2=generate_random_str(),
+        type="ip-src",
+        value=generate_random_value(),
+        value1=generate_random_value(),
+        value2=generate_random_value(),
         event_id=generate_ids_as_str(),
         category=AttributeCategories.OTHER,
         to_ids=bool(random.getrandbits(1)),
@@ -26,8 +31,8 @@ def generate_valid_random_create_attribute_data() -> AddAttributeBody:
         comment=generate_random_str(),
         deleted=False,
         disable_correlation=bool(random.getrandbits(1)),
-        first_seen=datetime.now().isoformat(),
-        last_seen=datetime.now().isoformat(),
+        first_seen=None,
+        last_seen=None,
     )
 
 

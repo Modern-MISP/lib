@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from mmisp.api_schemas.organisations import ServerOrganisation
 from mmisp.api_schemas.users import ServerUser
@@ -6,12 +6,12 @@ from mmisp.api_schemas.users import ServerUser
 
 class ServerVersion(BaseModel):
     version: str
-    pymisp_recommended_version: str
+    pymisp_recommended_version: str | None = None
     perm_sync: bool
     perm_sighting: bool
     perm_galaxy_editor: bool
-    perm_analyst_data: bool
-    uuid: str
+    perm_analyst_data: bool = False
+    uuid: str | None = None
     request_encoding: list[str]
     filter_sightings: bool
 
@@ -28,8 +28,8 @@ class Server(BaseModel):
     push_analyst_data: bool
     pull_analyst_data: bool
     pull_galaxy_clusters: bool
-    lastpulledid: int | None = None
-    lastpushedid: int | None = None
+    lastpulledid: int | None = Field(None, validation_alias="last_pulled_id")
+    lastpushedid: int | None = Field(None, validation_alias="last_pushed_id")
     organization: str | None = None
     remote_org_id: int
     publish_without_email: bool

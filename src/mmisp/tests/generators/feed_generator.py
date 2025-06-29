@@ -26,6 +26,10 @@ def generate_valid_required_feed_data() -> FeedCreateBody:
     )
 
 
+def generate_random_ipv4() -> str:
+    return ".".join(str(random.randint(0, 255)) for _ in range(4))
+
+
 def generate_valid_feed_data() -> FeedCreateBody:
     return FeedCreateBody(
         name="gvfd_" + random_string(),

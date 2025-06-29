@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Self
+from typing import Any, Literal, Self, Type
+from uuid import UUID
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 
 
 class BaseOrganisation(BaseModel):
@@ -10,7 +11,7 @@ class BaseOrganisation(BaseModel):
     nationality: str | None = None
     sector: str | None = None
     type: str | None = None
-    uuid: str | None = None
+    uuid: UUID | None = None
 
 
 class Organisation(BaseOrganisation):
@@ -29,13 +30,13 @@ class Organisation(BaseOrganisation):
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-class GetOrganisationResponse(BaseModel):
+class GetOrganisationElement(BaseModel):
     id: int
     name: str
     nationality: str | None = None
     sector: str | None = None
     type: str | None = None
-    uuid: str | None = None
+    uuid: UUID | Literal["0"] | None = None
     # the fallback GENERIC_MISP_ORGANISATION doesn't have this property
     # str is needed because its returned as string
     date_created: datetime | None = None
@@ -44,7 +45,7 @@ class GetOrganisationResponse(BaseModel):
     created_by: int
     contacts: str | None = None
     local: bool
-    restricted_to_domain: list | str | None = None
+    restricted_to_domain: list[str] | None = None
     landingpage: str | None = None
 
     @field_serializer("date_created", "date_modified")
@@ -53,8 +54,19 @@ class GetOrganisationResponse(BaseModel):
             return ""
         return value.strftime("%Y-%m-%d %H:%M:%S")
 
+    @field_validator("restricted_to_domain", mode="before")
+    @classmethod
+    def ensure_list(cls: Type[Self], v: Any) -> Any:
+        if not isinstance(v, list):
+            return [v]
+        return v
 
-class GetAllOrganisationsOrganisation(GetOrganisationResponse):
+
+class GetOrganisationResponse(BaseModel):
+    Organisation: GetOrganisationElement
+
+
+class GetAllOrganisationsOrganisation(GetOrganisationElement):
     user_count: int
     created_by_email: str
 
@@ -95,7 +107,8 @@ class OrganisationUsersResponse(BaseModel):
 
 
 class AddOrganisation(BaseModel):
-    id: int
+    id: int | None = None
+    uuid: UUID | None = None
     name: str
     description: str | None = None
     type: str
@@ -105,7 +118,7 @@ class AddOrganisation(BaseModel):
     contacts: str | None = None
     local: bool
     """organisation gains access to the local instance, otherwise treated as external"""
-    restricted_to_domain: list[str] | None = None
+    restricted_to_domain: list[str] | str | None = None
     landingpage: str | None = None
 
 

@@ -51,7 +51,7 @@ class SightingAttributesResponse(BaseModel):
     id: int
     uuid: str
     attribute_id: int
-    attribute_uuid: str
+    attribute_uuid: str | None = None
     event_id: int | None = None
     org_id: int | None = None
     date_sighting: datetime | None = None

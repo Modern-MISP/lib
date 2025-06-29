@@ -47,8 +47,8 @@ class ObjectTemplate(Base, DictMixin["ObjectTemplateDict"]):
     __tablename__ = "object_templates"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
-    org_id: Mapped[int] = mapped_column(Integer, ForeignKey("organisations.id"), index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    org_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
     name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     meta_category: Mapped[Optional[str]] = mapped_column(

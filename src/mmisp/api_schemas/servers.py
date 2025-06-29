@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Json
+from typing import Any, Self, Type
+
+from pydantic import BaseModel, Field, Json, field_serializer, field_validator
 
 from mmisp.api_schemas.organisations import BaseOrganisation
 
@@ -38,7 +40,34 @@ default_push_rules = PushRulesFilter(
 )
 
 
-class AddServer(BaseModel):
+class RulesWithValidator(BaseModel):
+    pull_rules: Json[PullRulesFilter] | PullRulesFilter = default_pull_rules
+    push_rules: Json[PushRulesFilter] | PushRulesFilter = default_push_rules
+
+    @field_validator("pull_rules", mode="before")
+    @classmethod
+    def set_default_pull(cls: Type[Self], value: Any) -> Any:
+        if value is None:
+            return default_pull_rules
+        if value == "":
+            return default_pull_rules
+        return value
+
+    @field_validator("push_rules", mode="before")
+    @classmethod
+    def set_default_push(cls: Type[Self], value: Any) -> Any:
+        if value is None:
+            return default_push_rules
+        if value == "":
+            return default_push_rules
+        return value
+
+    @field_serializer("push_rules", "pull_rules")
+    def serialize_rules(self: Self, val: PullRulesFilter | PushRulesFilter, _info: Any) -> str:
+        return val.model_dump_json()
+
+
+class AddServer(RulesWithValidator):
     url: str
     name: str
     remote_org_id: int
@@ -48,8 +77,6 @@ class AddServer(BaseModel):
     internal: bool = False
     push: bool = False
     pull: bool = False
-    pull_rules: Json[PullRulesFilter] | PullRulesFilter = default_pull_rules
-    push_rules: Json[PushRulesFilter] | PushRulesFilter = default_push_rules
     push_galaxy_clusters: bool = False
     caching_enabled: bool = False
     unpublish_event: bool = False
@@ -58,7 +85,7 @@ class AddServer(BaseModel):
     skip_proxy: bool = False
 
 
-class EditServer(BaseModel):
+class EditServer(RulesWithValidator):
     name: str
     url: str
     priority: int
@@ -67,14 +94,13 @@ class EditServer(BaseModel):
     internal: bool
     push: bool
     pull: bool
-    pull_rules: Json[PullRulesFilter] | PullRulesFilter = default_pull_rules
-    push_rules: Json[PushRulesFilter] | PushRulesFilter = default_push_rules
     push_galaxy_clusters: bool
     caching_enabled: bool
     unpublish_event: bool
     publish_without_email: bool
     self_signed: bool
     skip_proxy: bool
+    last_pushed_id: int | None = None
 
 
 class ServerResponseBase(BaseModel):
@@ -87,9 +113,9 @@ class ServerResponseBase(BaseModel):
     pull: bool
     cert_file: str | None = None
     client_cert_file: str | None = None
-    lastpulledid: int | None = None
-    lastpushedid: int | None = None
-    organization: None
+    lastpulledid: int | None = Field(None, validation_alias="last_pulled_id")
+    lastpushedid: int | None = Field(None, validation_alias="last_pushed_id")
+    organization: str | None = None
     pull_analyst_data: bool
     pull_rules: str
     push_analyst_data: bool

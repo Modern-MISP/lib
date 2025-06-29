@@ -2,10 +2,11 @@ from datetime import datetime
 from typing import Any, Self, Type
 from uuid import UUID
 
-from pydantic import BaseModel, field_serializer, field_validator
+from pydantic import BaseModel, field_serializer, field_validator, model_validator
 
 from mmisp.lib.attributes import (
     AttributeCategories,
+    AttributeType,
     literal_valid_attribute_types,
 )
 from mmisp.lib.distribution import AttributeDistributionLevels
@@ -46,3 +47,13 @@ class CommonAttribute(BaseModel):
         if value == "":
             return None
         return value
+
+    @model_validator(mode="after")
+    def check_type_value(self: Self) -> Self:
+        # get validator from attribute type
+        at = AttributeType.map_dbkey_attributetype[self.type]
+        validator = at.validator
+        if not validator(self.value):
+            raise ValueError(f"{self.value} is not compatible with attribute type {self.type}")
+
+        return self

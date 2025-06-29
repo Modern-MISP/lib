@@ -15,7 +15,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin["GalaxyClusterDict"]):
     __tablename__ = "galaxy_clusters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, default=uuid, nullable=False, index=True)
     collection_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True, default="")
     type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
@@ -117,7 +117,7 @@ class GalaxyClusterRelation(Base, DictMixin["GalaxyClusterRelationDict"], Update
     referenced_galaxy_cluster_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     referenced_galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True)
     referenced_galaxy_cluster_type: Mapped[str] = mapped_column(Text, nullable=False)
-    galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, ForeignKey(GalaxyCluster.uuid), nullable=False, index=True)
+    galaxy_cluster_uuid: Mapped[str] = mapped_column(DBUUID, nullable=False, index=True)
     distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sharing_group_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("sharing_groups.id"), index=True, nullable=True, default=None

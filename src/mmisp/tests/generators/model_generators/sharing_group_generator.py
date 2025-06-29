@@ -16,4 +16,5 @@ def generate_sharing_group() -> SharingGroup:
         local=True,
         created=datetime.now(UTC),
         modified=datetime.now(UTC),
+        uuid=uuid4(),
     )

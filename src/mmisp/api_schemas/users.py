@@ -113,7 +113,7 @@ class GetUsersUser(BaseModel):
     date_created: datetime | None = None
     date_modified: datetime | None = None
     last_pw_change: int | None = None
-    totp: bool | None = None
+    totp: bool | str | None = None
     """detailed information bellow"""
     hotp_counter: int | None = None
     notification_daily: bool | None = None

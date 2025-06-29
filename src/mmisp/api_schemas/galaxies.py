@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -5,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from mmisp.api_schemas.common import TagAttributesResponse
 from mmisp.api_schemas.events import AddEditGetEventGalaxyClusterRelation, GetAllEventsGalaxyClusterGalaxy
-from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster, GetAllSearchGalaxiesAttributes
+from mmisp.api_schemas.galaxy_common import CommonGalaxy, CommonGalaxyCluster
 from mmisp.api_schemas.organisations import Organisation
 from mmisp.lib.distribution import GalaxyDistributionLevels
 
@@ -23,6 +24,26 @@ class ImportGalaxy(BaseModel):
     distribution: Literal[3] = 3
     org_id: Literal[0] = 0
     orgc_id: Literal[0] = 0
+
+
+class RestSearchGalaxyBody(BaseModel):
+    id: int
+    uuid: UUID | None = None
+    name: str | None = None
+    type: str | None = None
+    description: str | None = None
+    version: str | None = None
+    icon: str | None = None
+    namespace: str | None = None
+    enabled: bool = False
+    enable: bool | None = None
+    local_only: bool | None = None
+    default: bool | None = None
+    org_id: int | None = None
+    orgc_id: int | None = None
+    created: datetime | None = None
+    modified: datetime | None = None
+    distribution: GalaxyDistributionLevels | None = None
 
 
 class SearchGalaxiesBody(BaseModel):
@@ -71,12 +92,12 @@ class ImportGalaxyBody(BaseModel):
 
 
 class GetAllSearchGalaxiesResponse(BaseModel):
-    Galaxy: GetAllSearchGalaxiesAttributes
+    Galaxy: RestSearchGalaxyBody
     model_config = ConfigDict(from_attributes=True)
 
 
 class GetGalaxyResponse(BaseModel):
-    Galaxy: GetAllSearchGalaxiesAttributes
+    Galaxy: RestSearchGalaxyBody
     GalaxyCluster: list[GetGalaxyClusterResponse]
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,7 +128,7 @@ class ExportGalaxyClusterResponse(BaseModel):
     default: bool
     locked: bool
     extends_uuid: str
-    extends_version: int
+    extends_version: int | None
     published: bool
     deleted: bool
     GalaxyElement: list[ExportGalaxyGalaxyElement]
@@ -150,7 +171,7 @@ class GalaxyClustersViewResponse(BaseModel):
     default: bool
     locked: bool
     extends_uuid: str
-    extends_version: int
+    extends_version: int | None
     published: bool
     deleted: bool
     GalaxyElement: list[ExportGalaxyGalaxyElement]
