@@ -35,6 +35,7 @@ class SearchAttributesEvent(BaseModel):
     id: int
     org_id: int
     distribution: EventDistributionLevels
+    user_id: int
     info: str
     orgc_id: int
     uuid: str
