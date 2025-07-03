@@ -57,6 +57,8 @@ class GetOrganisationElement(BaseModel):
     @field_validator("restricted_to_domain", mode="before")
     @classmethod
     def ensure_list(cls: Type[Self], v: Any) -> Any:
+        if v is None:
+            return []
         if not isinstance(v, list):
             return [v]
         return v
