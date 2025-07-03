@@ -41,8 +41,8 @@ class RestSearchGalaxyBody(BaseModel):
     default: bool | None = None
     org_id: int | None = None
     orgc_id: int | None = None
-    created: datetime | None = None
-    modified: datetime | None = None
+    created: Literal["0000-00-00 00:00:00"] | datetime | None = None
+    modified: Literal["0000-00-00 00:00:00"] | datetime | None = None
     distribution: GalaxyDistributionLevels | None = None
 
 

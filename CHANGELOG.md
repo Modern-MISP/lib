@@ -16,6 +16,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 
+## 0.11.3
+
+### Changed
+
+* Small fix in galaxy schema
+
+
+## 0.11.2
+
+### Changed
+
+* Small fix in organisation schema
+
+
+## 0.11.1
+
+### Changed
+
+* switch from passlib to libpass
+
+
 ## 0.11.0
 
 ### Added
