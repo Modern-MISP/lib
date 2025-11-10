@@ -1,6 +1,5 @@
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Index, Text, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column
-
 from ..database import Base
 
 
@@ -11,6 +10,10 @@ class AdminSetting(Base):
 
     __tablename__ = "admin_settings"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    setting: Mapped[str] = mapped_column(String(255), nullable=False)
-    value: Mapped[str] = mapped_column(Text, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    setting: Mapped[str] = mapped_column(String(255))
+
+    value: Mapped[str] = mapped_column(Text)
+
+    __table_args__ = (Index("setting", "setting", unique=True),)

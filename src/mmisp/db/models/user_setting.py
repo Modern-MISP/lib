@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from time import time
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text, Index
 
 from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
@@ -27,8 +27,9 @@ class SettingName(Enum):
 class UserSetting(Base):
     __tablename__ = "user_settings"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    setting: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    value: Mapped[str] = mapped_column(Text, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False, index=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=time, onupdate=time, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    setting: Mapped[str] = mapped_column(String(255))
+    value: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=time, onupdate=time, index=True)
+    __table_args__ = (Index("unique_setting", "user_id", "setting", unique=True),)

@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Self
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text, and_, or_
+from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,6 +14,7 @@ from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .organisation import Organisation
+
 from .tag import Tag
 from .user import User
 
@@ -21,27 +22,33 @@ from .user import User
 class Event(Base, UpdateMixin, DictMixin["EventDict"]):
     __tablename__ = "events"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, nullable=False, index=True)
-    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
-    date: Mapped[date] = mapped_column(Date, default=datetime.utcnow, nullable=False)
-    info: Mapped[str] = mapped_column(Text, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False)
-    published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    analysis: Mapped[int] = mapped_column(Integer, nullable=False)
-    attribute_count: Mapped[int] = mapped_column(Integer, default=0)
-    orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), nullable=False, index=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
-    distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    sharing_group_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True, default=0)
-    proposal_email_lock: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    threat_level_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    publish_timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
-    sighting_timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    extends_uuid: Mapped[str] = mapped_column(String(40), default="", index=True)
-    protected: Mapped[bool] = mapped_column(Boolean, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
+    org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
+    date: Mapped[date] = mapped_column(Date, default=datetime.utcnow)
+    info: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id))
+    published: Mapped[bool] = mapped_column(Boolean, default=False)
+    analysis: Mapped[int] = mapped_column(Integer)
+    attribute_count: Mapped[int | None] = mapped_column(Integer, default=0)
+    orgc_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=0)
+    distribution: Mapped[int] = mapped_column(Integer, default=0)
+    sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
+    proposal_email_lock: Mapped[bool] = mapped_column(Boolean, default=False)
+    # This column was adedd as part of remove_column task
+    first_publication: Mapped[int] = mapped_column(Integer, default=0)
+    locked: Mapped[bool] = mapped_column(Boolean, default=False)
+    threat_level_id: Mapped[int] = mapped_column(Integer)
+    publish_timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=0)
+    sighting_timestamp: Mapped[int] = mapped_column(Integer, default=0)
+    disable_correlation: Mapped[bool] = mapped_column(Boolean, default=False)
+    extends_uuid: Mapped[str | None] = mapped_column(String(40), default="", index=True)
+    protected: Mapped[bool | None] = mapped_column(Boolean, default=False)
+    __table_args__ = (
+        Index("uuid", "uuid", unique=True),
+        {"extend_existing": True},
+    )
 
     attributes = relationship("Attribute", back_populates="event")  # type:ignore[assignment,var-annotated]
     mispobjects = relationship("Object", back_populates="event")  # type:ignore[assignment,var-annotated]
@@ -243,27 +250,33 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
 class EventReport(Base):
     __tablename__ = "event_reports"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(String(40), unique=True, nullable=False, default=uuid)
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id), nullable=False, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    content: Mapped[str] = mapped_column(Text)
-    distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    sharing_group_id: Mapped[int] = mapped_column(Integer)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False)
-    deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id), index=True)
+    name: Mapped[str] = mapped_column(String(255), index=True)
+
+    content: Mapped[str | None] = mapped_column(Text)
+
+    distribution: Mapped[int] = mapped_column(Integer, default=0)
+
+    sharing_group_id: Mapped[int | None] = mapped_column(Integer)
+
+    timestamp: Mapped[int] = mapped_column(Integer)
+    deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = ({"extend_existing": True},)
 
 
 class EventTag(Base, DictMixin["EventTagDict"]):
     __tablename__ = "event_tags"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), index=True)
     # event_uuid: Mapped[str] = mapped_column(String(40), ForeignKey(Event.uuid, ondelete="CASCADE"),
-    #                                         unique=True, nullable=False, default=uuid)
-    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
-    local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    relationship_type: Mapped[str] = mapped_column(String(191), nullable=True)
+    #                                         unique=True, default=uuid)
+    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), index=True)
+    local: Mapped[bool] = mapped_column(Boolean, default=False)
+    relationship_type: Mapped[str | None] = mapped_column(String(191))
 
     event = relationship("Event", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
     tag = relationship("Tag", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
+    __table_args__ = (Index("event_tag_uuid", event_id, tag_id, unique=False),)

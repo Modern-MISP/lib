@@ -31,16 +31,17 @@ class Workflow(Base, UpdateMixin):
 
     __tablename__ = "workflows"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    uuid: Mapped[str] = mapped_column(String(40), default=uuid, nullable=False, index=True)
-    name: Mapped[str] = mapped_column(String(191), nullable=False, index=True)
-    description: Mapped[str] = mapped_column(String(191), nullable=False)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    counter: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    trigger_id: Mapped[str] = mapped_column(String(191), nullable=False, index=True)
-    debug_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=0)
-    data: Mapped[WorkflowGraph] = mapped_column(JSONGraphType, nullable=False, default=0)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    uuid: Mapped[str] = mapped_column(String(40), default=uuid, index=True)
+    name: Mapped[str] = mapped_column(String(191), index=True)
+    description: Mapped[str] = mapped_column(String(191))
+    timestamp: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    counter: Mapped[int] = mapped_column(Integer, default=0)
+    trigger_id: Mapped[str] = mapped_column(String(191), index=True)
+    debug_enabled: Mapped[bool] = mapped_column(Boolean, default=0)
+    data: Mapped[WorkflowGraph | None] = mapped_column(JSONGraphType, default=0)
+    __table_args__ = ({"extend_existing": True},)
 
     def __init__(self: Self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

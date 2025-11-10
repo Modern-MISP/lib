@@ -39,7 +39,12 @@ async def print_changes() -> None:
                     changes[inner_elem[0]].append(inner_elem)
             else:
                 changes[elem[0]].append(elem)
-    pprint.pprint(changes, indent=2, width=20)
+    #    pprint.pprint(changes, indent=2, width=20)
+    for k, v in changes.items():
+        print("=" * 30)
+        print(k)
+        print("=" * 30)
+        pprint.pprint(v)
     for k, v in changes.items():
         print(k, len(v))
 

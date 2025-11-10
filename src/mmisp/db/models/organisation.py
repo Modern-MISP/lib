@@ -14,22 +14,21 @@ from ..database import Base
 class Organisation(Base, DictMixin["OrganisationDict"]):
     __tablename__ = "organisations"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    date_created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    date_modified: Mapped[DateTime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
-    description: Mapped[str] = mapped_column(Text, default="")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    date_created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
+    date_modified: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    description: Mapped[str | None] = mapped_column(Text, default="")
     type: Mapped[str] = mapped_column(String(255))
     nationality: Mapped[str] = mapped_column(String(255))
     sector: Mapped[str] = mapped_column(String(255))
-    created_by: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid.uuid4)
-    contacts: Mapped[str] = mapped_column(Text)
-    local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    restricted_to_domain: Mapped[list[str]] = mapped_column(DBListJson, default=list)
-    landingpage: Mapped[str] = mapped_column(Text)
+    created_by: Mapped[int] = mapped_column(Integer, default=0)
+    uuid: Mapped[str | None] = mapped_column(DBUUID, unique=True, default=uuid.uuid4)
+    contacts: Mapped[str | None] = mapped_column(Text)
+    local: Mapped[bool] = mapped_column(Boolean, default=False)
+    restricted_to_domain: Mapped[list[str] | None] = mapped_column(DBListJson, default=list)
+    landingpage: Mapped[str | None] = mapped_column(Text)
+    __table_args__ = ({"extend_existing": True},)
 
     # Relationship to users
     users = relationship("User", back_populates="org", lazy="raise_on_sql")

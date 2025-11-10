@@ -9,17 +9,18 @@ from mmisp.db.mypy import Mapped, mapped_column
 class Tag(Base, UpdateMixin, DictMixin["TagDict"]):
     __tablename__ = "tags"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    colour: Mapped[int] = mapped_column(String(7), nullable=False)
-    exportable: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    org_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
-    hide_tag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    colour: Mapped[int] = mapped_column(String(7))
+    exportable: Mapped[bool] = mapped_column(Boolean)
+    org_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    hide_tag: Mapped[bool] = mapped_column(Boolean, default=False)
     numerical_value: Mapped[int | None] = mapped_column(Integer, index=True)
     is_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     is_custom_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = ({"extend_existing": True},)
 
     attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
     eventtags = relationship("EventTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)

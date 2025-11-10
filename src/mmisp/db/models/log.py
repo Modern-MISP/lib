@@ -20,18 +20,19 @@ class Log(Base):
 
     __tablename__ = "logs"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    title: Mapped[str] = mapped_column(Text, nullable=True)
-    created: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    model: Mapped[str] = mapped_column(String(80), nullable=False)
-    model_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    action: Mapped[str] = mapped_column(String(20), nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    change: Mapped[str] = mapped_column(Text, nullable=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
-    org: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=True)
-    ip: Mapped[str] = mapped_column(String(45), nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str | None] = mapped_column(Text)
+    created: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    model: Mapped[str] = mapped_column(String(80))
+    model_id: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(String(20))
+    user_id: Mapped[int] = mapped_column(Integer)
+    change: Mapped[str | None] = mapped_column(Text)
+    email: Mapped[str] = mapped_column(String(255))
+    org: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    ip: Mapped[str] = mapped_column(String(45))
+    __table_args__ = ({"extend_existing": True},)
 
     def __init__(
         self: Self,
