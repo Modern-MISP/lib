@@ -19,10 +19,10 @@ class WorkflowBlueprint(Base):
 
     __tablename__ = "workflow_blueprints"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)  # primary_key ??
-    uuid: Mapped[str] = mapped_column(String(40), nullable=False)
-    name: Mapped[str] = mapped_column(String(191), nullable=False)
-    description: Mapped[str] = mapped_column(String(191), nullable=False)
-    timestamp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # TODO: technically tinyint(1)
-    data: Mapped[str] = mapped_column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)  # primary_key ??
+    uuid: Mapped[str] = mapped_column(String(40))
+    name: Mapped[str] = mapped_column(String(191))
+    description: Mapped[str] = mapped_column(String(191))
+    timestamp: Mapped[int] = mapped_column(Integer, default=0)
+    default: Mapped[bool] = mapped_column(Boolean, default=False)  # TODO: technically tinyint(1)
+    data: Mapped[str | None] = mapped_column(Text)

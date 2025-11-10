@@ -9,14 +9,14 @@ from ..database import Base
 class Taxonomy(Base):
     __tablename__ = "taxonomies"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    namespace: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
-    version: Mapped[int] = mapped_column(Integer, nullable=False)
-    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    exclusive: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
-    required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    highlighted: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    namespace: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    exclusive: Mapped[Optional[bool] | None] = mapped_column(Boolean, default=False)
+    required: Mapped[bool] = mapped_column(Boolean, default=False)
+    highlighted: Mapped[Optional[bool] | None] = mapped_column(Boolean, default=False)
 
     predicates: Mapped[list["TaxonomyPredicate"]] = relationship(
         "TaxonomyPredicate", back_populates="taxonomy", lazy="raise_on_sql"
@@ -26,16 +26,14 @@ class Taxonomy(Base):
 class TaxonomyPredicate(Base):
     __tablename__ = "taxonomy_predicates"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    taxonomy_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(Taxonomy.id, ondelete="CASCADE"), nullable=False, index=True
-    )
-    value: Mapped[str] = mapped_column(Text, nullable=False)
-    expanded: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    colour: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    exclusive: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
-    numerical_value: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    taxonomy_id: Mapped[int] = mapped_column(Integer, ForeignKey(Taxonomy.id, ondelete="CASCADE"), index=True)
+    value: Mapped[str] = mapped_column(Text)
+    expanded: Mapped[Optional[str] | None] = mapped_column(Text)
+    colour: Mapped[Optional[str] | None] = mapped_column(String(7))
+    description: Mapped[Optional[str] | None] = mapped_column(Text)
+    exclusive: Mapped[Optional[bool] | None] = mapped_column(Boolean, default=False)
+    numerical_value: Mapped[Optional[int] | None] = mapped_column(Integer, index=True)
 
     taxonomy: Mapped[Taxonomy] = relationship(Taxonomy, back_populates="predicates", lazy="raise_on_sql")
     entries: Mapped[list["TaxonomyEntry"]] = relationship(
@@ -46,15 +44,15 @@ class TaxonomyPredicate(Base):
 class TaxonomyEntry(Base):
     __tablename__ = "taxonomy_entries"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     taxonomy_predicate_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(TaxonomyPredicate.id, ondelete="CASCADE"), nullable=False, index=True
+        Integer, ForeignKey(TaxonomyPredicate.id, ondelete="CASCADE"), index=True
     )
-    value: Mapped[str] = mapped_column(Text, nullable=False)
-    expanded: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    colour: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    numerical_value: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
+    value: Mapped[str] = mapped_column(Text)
+    expanded: Mapped[Optional[str] | None] = mapped_column(Text)
+    colour: Mapped[Optional[str] | None] = mapped_column(String(7))
+    description: Mapped[Optional[str] | None] = mapped_column(Text)
+    numerical_value: Mapped[Optional[int] | None] = mapped_column(Integer, index=True)
 
     predicate: Mapped[TaxonomyPredicate] = relationship(
         TaxonomyPredicate, back_populates="entries", lazy="raise_on_sql"

@@ -42,24 +42,22 @@ class AttributeComparator(Comparator):
 class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
     __tablename__ = "attributes"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
-    event_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    object_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("events.id", ondelete="CASCADE"), index=True)
+    object_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
     object_relation: Mapped[str | None] = mapped_column(String(255), index=True)
-    category: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    value1: Mapped[str] = mapped_column(Text, nullable=False)
-    value2: Mapped[str] = mapped_column(Text, nullable=False, default="")
-    to_ids: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, nullable=False, default=0)
-    distribution: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    category: Mapped[str] = mapped_column(String(255), index=True)
+    type: Mapped[str] = mapped_column(String(100), index=True)
+    value1: Mapped[str] = mapped_column(Text)
+    value2: Mapped[str] = mapped_column(Text, default="")
+    to_ids: Mapped[bool] = mapped_column(Boolean, default=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=0)
+    distribution: Mapped[int] = mapped_column(Integer, default=0)
     sharing_group_id: Mapped[int] = mapped_column(Integer, index=True, default=0)
     comment: Mapped[str | None] = mapped_column(Text)
-    deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    disable_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    disable_correlation: Mapped[bool] = mapped_column(Boolean, default=False)
     first_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
     last_seen: Mapped[int | None] = mapped_column(BigInteger, index=True)
 
@@ -317,17 +315,17 @@ class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
 class AttributeTag(Base):
     __tablename__ = "attribute_tags"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    attribute_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(Attribute.id, ondelete="CASCADE"), nullable=False, index=True
-    )
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), nullable=False, index=True)
-    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), nullable=False, index=True)
-    local: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    relationship_type: Mapped[str] = mapped_column(String(191), nullable=False, default="")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    attribute_id: Mapped[int] = mapped_column(Integer, ForeignKey(Attribute.id, ondelete="CASCADE"), index=True)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id, ondelete="CASCADE"), index=True)
+    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey(Tag.id, ondelete="CASCADE"), index=True)
+    local: Mapped[bool] = mapped_column(Boolean, default=False)
+    relationship_type: Mapped[str | None] = mapped_column(String(191), default="")
 
     attribute = relationship("Attribute", back_populates="attributetags", lazy="raise_on_sql")
     tag = relationship("Tag", back_populates="attributetags", lazy="raise_on_sql")
+
+    __table_args__ = {"extend_existing": True}
 
 
 class AttributeMeta(AutoDictMeta):

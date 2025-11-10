@@ -13,19 +13,19 @@ from ..database import Base
 class SharingGroup(Base, UpdateMixin, DictMixin["SharingGroupDict"]):
     __tablename__ = "sharing_groups"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name = mapped_column(String(255), nullable=False, unique=True)
-    releasability = mapped_column(Text, nullable=False)
-    description = mapped_column(Text, nullable=False, default="")
-    uuid = mapped_column(DBUUID, unique=True, default=uuid, nullable=False)
-    organisation_uuid = mapped_column(DBUUID, nullable=False)
-    org_id = mapped_column(Integer, nullable=False, index=True)  # the organisation that created the sharing group
-    sync_user_id = mapped_column(Integer, nullable=False, default=0, index=True)
-    active = mapped_column(Boolean, nullable=False, default=False)
-    created = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    modified = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    local = mapped_column(Boolean, nullable=False, default=True)
-    roaming = mapped_column(Boolean, default=False, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    releasability: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text, default="")
+    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid)
+    organisation_uuid: Mapped[str] = mapped_column(DBUUID)
+    org_id: Mapped[int] = mapped_column(Integer, index=True)  # the organisation that created the sharing group
+    sync_user_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=False)
+    created: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    modified: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    local: Mapped[bool] = mapped_column(Boolean, default=True)
+    roaming: Mapped[bool] = mapped_column(Boolean, default=False)
 
     creator_org = relationship(
         "Organisation",
@@ -59,10 +59,10 @@ class SharingGroup(Base, UpdateMixin, DictMixin["SharingGroupDict"]):
 class SharingGroupOrg(Base, UpdateMixin, DictMixin["SharingGroupOrgDict"]):
     __tablename__ = "sharing_group_orgs"
 
-    id = mapped_column(Integer, primary_key=True, nullable=False)
-    sharing_group_id = mapped_column(Integer, index=True, nullable=False)
-    org_id = mapped_column(Integer, index=True, nullable=False)
-    extend = mapped_column(Boolean, default=False, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sharing_group_id: Mapped[int] = mapped_column(Integer, index=True)
+    org_id: Mapped[int] = mapped_column(Integer, index=True)
+    extend: Mapped[bool] = mapped_column(Boolean, default=False)
 
     organisation = relationship(
         "Organisation",
@@ -75,10 +75,10 @@ class SharingGroupOrg(Base, UpdateMixin, DictMixin["SharingGroupOrgDict"]):
 class SharingGroupServer(Base, UpdateMixin, DictMixin["SharingGroupServerDict"]):
     __tablename__ = "sharing_group_servers"
 
-    id = mapped_column(Integer, primary_key=True, nullable=False)
-    sharing_group_id = mapped_column(Integer, index=True, nullable=False)
-    server_id = mapped_column(Integer, index=True, nullable=False)
-    all_orgs = mapped_column(Boolean, index=True, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sharing_group_id: Mapped[int] = mapped_column(Integer, index=True)
+    server_id: Mapped[int] = mapped_column(Integer, index=True)
+    all_orgs: Mapped[bool] = mapped_column(Boolean, index=True, default=False)
 
     server = relationship(
         "Server",

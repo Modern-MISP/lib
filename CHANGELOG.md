@@ -16,6 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 
+## 0.12.0
+
+### Added
+
+* Added complete MISP Database Schema
+
+### Changed
+
+* Using new sqlalchemy orm style with type annotations
+
 ## 0.11.3
 
 ### Changed

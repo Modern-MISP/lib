@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Self
 
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
 from mmisp.db.mypy import mapped_column
@@ -11,17 +13,45 @@ from ..database import Base
 
 RoleAttrs = {
     "__tablename__": "roles",
-    "id": mapped_column(Integer, primary_key=True, nullable=False),
-    "name": mapped_column(String(255), nullable=False),
+    "id": mapped_column(Integer, primary_key=True),
+    "name": mapped_column(String(255)),
     "created": mapped_column(DateTime, default=None),
     "modified": mapped_column(DateTime, default=None),
-    "default_role": mapped_column(Boolean, nullable=False, default=False),
+    "default_role": mapped_column(Boolean, default=False),
     "memory_limit": mapped_column(String(255), default=""),
     "max_execution_time": mapped_column(String(255), default=""),
-    "restricted_to_site_admin": mapped_column(Boolean, nullable=False, default=False),
-    "enforce_rate_limit": mapped_column(Boolean, nullable=False, default=False),
-    "rate_limit_count": mapped_column(Integer, nullable=False, default=0),
+    "restricted_to_site_admin": mapped_column(Boolean, default=False),
+    # This line was added as part of task MMISP-3033
+    "restsearch_limit_result": mapped_column(Integer, default=0),
+    "enforce_rate_limit": mapped_column(Boolean, default=False),
+    "rate_limit_count": mapped_column(Integer, default=0),
 } | {f"perm_{x.value}": mapped_column(Boolean, default=False) for x in Permission}
+
+RoleAttrs["__annotations__"] = (
+    {
+        "id": Mapped[int],
+        "name": Mapped[str],
+        "created": Mapped[datetime | None],
+        "modified": Mapped[datetime | None],
+        "default_role": Mapped[bool],
+        "memory_limit": Mapped[str | None],
+        "max_execution_time": Mapped[str | None],
+        "restricted_to_site_admin": Mapped[bool],
+        "enforce_rate_limit": Mapped[bool],
+        "rate_limit_count": Mapped[bool],
+    }
+    | {f"perm_{x.value}": Mapped[bool] for x in Permission}
+    | {  # just the way it is ¯\_(ツ)_/¯
+        "perm_add": Mapped[bool | None],
+        "perm_modify": Mapped[bool | None],
+        "perm_modify_org": Mapped[bool | None],
+        "perm_publish": Mapped[bool | None],
+        "perm_sync": Mapped[bool | None],
+        "perm_admin": Mapped[bool | None],
+        "perm_audit": Mapped[bool | None],
+        "perm_full": Mapped[bool | None],
+    }
+)
 
 RoleModel = type("RoleModel", (Base,), RoleAttrs)
 
