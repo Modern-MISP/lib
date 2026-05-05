@@ -81,3 +81,12 @@ include = [
   "/usr/local/lib/python3.11/site-packages/mmisp/*",
   "/home/mmisp/.local/lib/python3.11/site-packages/mmisp/*"
   ]
+
+
+[tool.uv]
+package=true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+

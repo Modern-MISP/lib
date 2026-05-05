@@ -1,28 +1,94 @@
+import asyncio
+
 import fire
+from alembic import command
+from alembic.config import Config as AlembicConfig
+from alembic.runtime.migration import MigrationContext
+from alembic.script import ScriptDirectory
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 
 import mmisp.db.all_models  # noqa
 from mmisp.commandline_tool import organisation, setup, user
-from mmisp.db.database import sessionmanager
+from mmisp.db.config import config
+from mmisp.db.database import Base, _build_alembic_config, sessionmanager
+
+# This allows 'db_migrate' to detect changes automatically by linking the metadata
+target_metadata = Base.metadata
 
 # This is a simple command line tool that uses the fire library to create a command line tool for creating users
 # and organisations and changing their details.
 
 
+def _get_alembic_config() -> AlembicConfig:
+    """Auxiliary function to get the Alembic config."""
+    return _build_alembic_config()
+
+
+def db_migrate(message: str) -> None:
+    """Creates a new migration script by detecting changes in the models."""
+    cfg = _get_alembic_config()
+    command.revision(cfg, message=message, autogenerate=True)
+    print(f"Migration '{message}' created successfully.")
+
+
+def db_upgrade() -> None:
+    """Applies all pending migrations to the database."""
+    cfg = _get_alembic_config()
+    command.upgrade(cfg, "head")
+    print("Database updated to the latest version.")
+
+
+def db_current() -> None:
+    """Displays the current revision/version of the database."""
+    cfg = _get_alembic_config()
+    command.current(cfg)
+
+
+def db_revision() -> None:
+    """Applies pending migrations only if the database is not up to date."""
+    cfg = _get_alembic_config()
+    script = ScriptDirectory.from_config(cfg)
+    expected_heads = set(script.get_heads())
+
+    async def _get_current_heads_async() -> set[str]:
+        engine = create_async_engine(config.DATABASE_URL, poolclass=NullPool)
+        try:
+            async with engine.connect() as conn:
+
+                def _read_heads(connection: object) -> set[str]:
+                    ctx = MigrationContext.configure(connection)  # type: ignore[arg-type]
+                    return set(ctx.get_current_heads())
+
+                return await conn.run_sync(_read_heads)
+        finally:
+            await engine.dispose()
+
+    current_heads = asyncio.run(_get_current_heads_async())
+
+    if current_heads == expected_heads:
+        print("Database is already up to date.")
+        return
+
+    command.upgrade(cfg, "head")
+    print("Database updated to the latest version.")
+
+
 async def setup_db(create_init_values: bool = True) -> str:
-    """setup"""
-    sessionmanager.init()
-    await sessionmanager.create_all()
+    """Initializes the database schema and optionally populates initial values."""
+    # sessionmanager.init()
+    # await sessionmanager.create_all()
 
     if create_init_values:
         async with sessionmanager.session() as session:
             await setup.setup(session)
 
     await sessionmanager.close()
-    return "Database setup"
+    return "Database setup completed"
 
 
 async def create_user(email: str, password: str, organisation: str | int, role: int | str = "user") -> str:
-    """create-user <email> <password> <organisation> [-r <role>]"""
+    """Creates a new user: create-user <email> <password> <organisation> [-r <role>]"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -46,9 +112,7 @@ async def create_organisation(
     restricted_domain: list[str] | None = None,
     landingpage: str | None = None,
 ) -> str:
-    """create-organisation <name> [-admin_email <admin_email>] [- description <description>] [-type <type>]
-    [-nationality <nationality>] [<sector>] [<contacts_email>] [-local <local>]
-    [- restricted_domain <restricted_domain>] [-landigpage <landingpage>]"""
+    """Creates a new organisation: create-organisation <name> [options]"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -73,7 +137,7 @@ async def create_organisation(
 
 
 async def change_password(email: str, password: str) -> str:
-    """change-password <email> <password>"""
+    """Changes the password for a specific user: change-password <email> <password>"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -84,7 +148,7 @@ async def change_password(email: str, password: str) -> str:
 
 
 async def change_email(email: str, new_email: str) -> str:
-    """change-email <email> <new_email>"""
+    """Updates a user's email: change-email <email> <new_email>"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -95,7 +159,7 @@ async def change_email(email: str, new_email: str) -> str:
 
 
 async def change_role(email: str, role: str | int) -> str:
-    """change-role <email> <role>"""
+    """Updates a user's role: change-role <email> <role>"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -118,9 +182,7 @@ async def edit_organisation(
     restricted_domain: list[str] | None = None,
     landingpage: str | None = None,
 ) -> str:
-    """edit-organisation <organisation> [-new_name <new_name>] [-admin_email <admin_email>] [-description <description>]
-    [-type <type>] [-nationality <nationality>] [-sector <sector>] [-contacts_email <contacts_email>] [-local <local>]
-    [-restricted_domain <restricted_domain>] [-landingpage <landingpage>]"""
+    """Edits an existing organisation's details: edit-organisation <organisation> [options]"""
     output = "organisation {} edited"
     sessionmanager.init()
     await sessionmanager.create_all()
@@ -146,7 +208,7 @@ async def edit_organisation(
 
 
 async def delete_organisation(org: str | int) -> str:
-    """delete-organisation <name>"""
+    """Removes an organisation from the database: delete-organisation <name>"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -157,7 +219,7 @@ async def delete_organisation(org: str | int) -> str:
 
 
 async def delete_user(email: str) -> str:
-    """delete-user <email>"""
+    """Removes a user from the database: delete-user <email>"""
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -168,9 +230,17 @@ async def delete_user(email: str) -> str:
 
 
 def main() -> None:
-    """Main entrypoint for mmisp-db"""
-    fire.Fire(
+    """Main entrypoint for mmisp-db CLI tool."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return fire.Fire(
         {
+            # Database Migration Commands
+            "db-migrate": db_migrate,
+            "db-upgrade": db_upgrade,
+            "db-current": db_current,
+            "db-revision": db_revision,
+            # Management Commands
             "setup": setup_db,
             "create-user": create_user,
             "create-organisation": create_organisation,

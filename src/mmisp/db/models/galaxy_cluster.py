@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from time import time
 
-from sqlalchemy import ForeignKey, Integer, String, Text, Index
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
 
 from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
@@ -32,4 +32,4 @@ class UserSetting(Base):
     value: Mapped[str] = mapped_column(Text)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), index=True)
     timestamp: Mapped[datetime] = mapped_column(DateTimeEpoch, default=time, onupdate=time, index=True)
-    __table_args__ = (Index("unique_setting", "user_id", "setting", unique=True),)
+    __table_args__ = (UniqueConstraint("user_id", "setting", name="uq_user_settings_user_id_setting"),)

@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Boolean, DateTime, Index, Integer, String, Text, VARCHAR, text
+from sqlalchemy import VARCHAR, Boolean, DateTime, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
@@ -22,7 +22,7 @@ class Relationship(Base):
     relationship_type: Mapped[str | None] = mapped_column(String(255))
     related_object_uuid: Mapped[str] = mapped_column(String(40))
     related_object_type: Mapped[str] = mapped_column(String(80))
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class SightingBlocklist(Base):
@@ -60,7 +60,7 @@ class Inbox(Base):
     store_as_file: Mapped[bool] = mapped_column(Boolean)
     data: Mapped[str | None] = mapped_column(Text)
 
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class EventReportTag(Base):
@@ -174,7 +174,7 @@ class Opinion(Base):
     locked: Mapped[bool] = mapped_column(Boolean)
     opinion: Mapped[int | None] = mapped_column(Integer)
     comment: Mapped[str | None] = mapped_column(Text)
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class Bruteforce(Base):
@@ -202,7 +202,7 @@ class Note(Base):
     locked: Mapped[bool] = mapped_column(Boolean)
     note: Mapped[str | None] = mapped_column(Text)
     language: Mapped[str | None] = mapped_column(String(16))
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class TagCollection(Base):
@@ -215,7 +215,7 @@ class TagCollection(Base):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
     all_orgs: Mapped[bool] = mapped_column(Boolean)
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class Cerebrate(Base):
@@ -247,8 +247,8 @@ class CollectionElement(Base):
     collection_id: Mapped[int] = mapped_column(Integer)
     description: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
-        Index("unique_element", "element_uuid", "collection_id", unique=True),
-        Index("uuid", "uuid", unique=True),
+        UniqueConstraint("element_uuid", "collection_id", name="uq_collection_elements_element_uuid_collection_id"),
+        UniqueConstraint("uuid"),
     )
 
 
@@ -308,10 +308,11 @@ class NoAclCorrelation(Base):
     event_id: Mapped[int] = mapped_column(Integer)
     event_id_1: Mapped[int] = mapped_column("1_event_id", Integer)
     value_id: Mapped[int] = mapped_column(Integer)
-    __table_args__ = (Index("unique_correlation", "attribute_id", "1_attribute_id", "value_id", unique=True),)
-
-
-__table_args__ = (Index("unique_correlation", "attribute_id", "1_attribute_id", "value_id", unique=True),)
+    __table_args__ = (
+        UniqueConstraint(
+            "attribute_id", "1_attribute_id", "value_id", name="uq_no_acl_correlations_unique_correlation"
+        ),
+    )
 
 
 class RestClientHistory(Base):
@@ -370,7 +371,7 @@ class UserLoginProfile(Base):
     ua_pattern: Mapped[str | None] = mapped_column(String(191))
     hash: Mapped[str] = mapped_column(VARCHAR(32))
 
-    __table_args__ = (Index("hash", "hash", unique=True),)
+    __table_args__ = (UniqueConstraint("hash"),)
 
 
 class Correlation(Base):
@@ -524,10 +525,7 @@ class ObjectReference(Base):
     relationship_type: Mapped[str | None] = mapped_column(String(255))
     comment: Mapped[str] = mapped_column(Text)
     deleted: Mapped[bool] = mapped_column(Boolean)
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
-
-
-__table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class TaxiiServer(Base):
@@ -596,7 +594,7 @@ class Dashboard(Base):
     value: Mapped[str | None] = mapped_column(Text)
     timestamp: Mapped[int] = mapped_column(Integer)
 
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class Template(Base):
@@ -624,7 +622,7 @@ class Collection(Base):
     name: Mapped[str] = mapped_column(String(191))
     type: Mapped[str] = mapped_column(String(80))
     description: Mapped[str | None] = mapped_column(Text)
-    __table_args__ = (Index("uuid", "uuid", unique=True),)
+    __table_args__ = (UniqueConstraint("uuid"),)
 
 
 class SightingDb(Base):
@@ -663,7 +661,7 @@ class AttachmentScan(Base):
     timestamp: Mapped[int] = mapped_column(Integer)
 
 
-Index("index", AttachmentScan.type, AttachmentScan.attribute_id)
+Index("ix_attachment_scans_type_attribute_id", AttachmentScan.type, AttachmentScan.attribute_id)
 
 
 class TemplateElementFile(Base):
