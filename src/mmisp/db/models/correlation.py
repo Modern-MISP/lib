@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Text, Index
+from sqlalchemy import Integer, String, Text, UniqueConstraint
 
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -16,7 +16,7 @@ class OverCorrelatingValue(Base):
     value: Mapped[str] = mapped_column(String(191), index=True, unique=True)
     occurrence: Mapped[int | None] = mapped_column(Integer, index=True)
     __table_args__ = (
-        Index("value", "value", unique=True),
+        UniqueConstraint("value"),
         {"extend_existing": True},
     )
 
@@ -29,7 +29,7 @@ class CorrelationValue(Base):
     __tablename__ = "correlation_values"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     value: Mapped[str] = mapped_column(String(255), index=True, unique=True)
-    __table_args__ = (Index("value", "value", unique=True, mysql_length=191),)
+    __table_args__ = (UniqueConstraint("value"),)
 
 
 class CorrelationExclusions(Base):
@@ -40,7 +40,7 @@ class CorrelationExclusions(Base):
     from_json: Mapped[int | None] = mapped_column(Integer, default=0)
     comment: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
-        Index("value", "value", unique=True, mysql_length=191),
+        UniqueConstraint("value"),
         {"extend_existing": True},
     )
 
@@ -70,4 +70,8 @@ class DefaultCorrelation(Base):
     object_sharing_group_id_1: Mapped[int] = mapped_column("1_object_sharing_group_id", Integer)
     event_sharing_group_id_1: Mapped[int] = mapped_column("1_event_sharing_group_id", Integer)
     value_id: Mapped[int] = mapped_column(Integer, index=True)
-    __table_args__ = (Index("unique_correlation", "attribute_id", "1_attribute_id", "value_id", unique=True),)
+    __table_args__ = (
+        UniqueConstraint(
+            "attribute_id", "1_attribute_id", "value_id", name="uq_default_correlations_unique_correlation"
+        ),
+    )

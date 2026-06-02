@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## 0.13.0
+
+### Added
+
+* DB Migration Tooling, including commands for command line client
 
 ## 0.12.0
 

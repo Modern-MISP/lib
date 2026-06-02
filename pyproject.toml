@@ -1,6 +1,6 @@
 [project]
 name = "mmisp-lib"
-version = "0.12.0"
+version = "0.13.0"
 description = ""
 authors = []
 readme = "README.md"
@@ -81,3 +81,10 @@ include = [
   "/usr/local/lib/python3.11/site-packages/mmisp/*",
   "/home/mmisp/.local/lib/python3.11/site-packages/mmisp/*"
   ]
+
+
+[tool.uv]
+package=true
+
+[tool.setuptools.packages.find]
+where = ["src"]

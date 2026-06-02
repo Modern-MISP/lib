@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Self
 
-from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, and_, or_
+from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, UniqueConstraint, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +14,6 @@ from mmisp.lib.uuid import uuid
 
 from ..database import Base
 from .organisation import Organisation
-
 from .tag import Tag
 from .user import User
 
@@ -46,7 +45,7 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
     extends_uuid: Mapped[str | None] = mapped_column(String(40), default="", index=True)
     protected: Mapped[bool | None] = mapped_column(Boolean, default=False)
     __table_args__ = (
-        Index("uuid", "uuid", unique=True),
+        UniqueConstraint("uuid"),
         {"extend_existing": True},
     )
 
@@ -279,4 +278,4 @@ class EventTag(Base, DictMixin["EventTagDict"]):
 
     event = relationship("Event", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
     tag = relationship("Tag", back_populates="eventtags", lazy="raise_on_sql", viewonly=True)
-    __table_args__ = (Index("event_tag_uuid", event_id, tag_id, unique=False),)
+    __table_args__ = (Index("ix_event_tags_event_id_tag_id", event_id, tag_id, unique=False),)

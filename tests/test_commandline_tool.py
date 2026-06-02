@@ -1,4 +1,5 @@
 import time
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from sqlalchemy import delete, select
@@ -265,3 +266,64 @@ async def test_setup(db) -> None:
     await db.delete(sync_user_role)
     await db.delete(read_only_role)
     await db.commit()
+
+
+def test_db_revision_already_up_to_date(capsys):
+    """When DB heads match expected heads, prints up-to-date message and skips upgrade."""
+    head_rev = "abc123"
+
+    mock_script = MagicMock()
+    mock_script.get_heads.return_value = [head_rev]
+
+    mock_conn = AsyncMock()
+    mock_conn.run_sync = AsyncMock(return_value={head_rev})
+
+    mock_engine = MagicMock()
+    mock_engine.connect.return_value.__aenter__ = AsyncMock(return_value=mock_conn)
+    mock_engine.connect.return_value.__aexit__ = AsyncMock(return_value=False)
+    mock_engine.dispose = AsyncMock()
+
+    with (
+        patch("mmisp.commandline_tool.main._get_alembic_config"),
+        patch("mmisp.commandline_tool.main.ScriptDirectory") as mock_sd_cls,
+        patch("mmisp.commandline_tool.main.create_async_engine", return_value=mock_engine),
+        patch("mmisp.commandline_tool.main.command") as mock_command,
+    ):
+        mock_sd_cls.from_config.return_value = mock_script
+
+        main.db_revision()
+
+        mock_command.upgrade.assert_not_called()
+        captured = capsys.readouterr()
+        assert "already up to date" in captured.out
+
+
+def test_db_revision_runs_upgrade_when_behind(capsys):
+    """When DB heads differ from expected heads, runs upgrade and prints updated message."""
+    expected_rev = "abc123"
+    current_rev = "old999"
+
+    mock_script = MagicMock()
+    mock_script.get_heads.return_value = [expected_rev]
+
+    mock_conn = AsyncMock()
+    mock_conn.run_sync = AsyncMock(return_value={current_rev})
+
+    mock_engine = MagicMock()
+    mock_engine.connect.return_value.__aenter__ = AsyncMock(return_value=mock_conn)
+    mock_engine.connect.return_value.__aexit__ = AsyncMock(return_value=False)
+    mock_engine.dispose = AsyncMock()
+
+    with (
+        patch("mmisp.commandline_tool.main._get_alembic_config"),
+        patch("mmisp.commandline_tool.main.ScriptDirectory") as mock_sd_cls,
+        patch("mmisp.commandline_tool.main.create_async_engine", return_value=mock_engine),
+        patch("mmisp.commandline_tool.main.command") as mock_command,
+    ):
+        mock_sd_cls.from_config.return_value = mock_script
+
+        main.db_revision()
+
+        mock_command.upgrade.assert_called_once()
+        captured = capsys.readouterr()
+        assert "updated to the latest version" in captured.out
