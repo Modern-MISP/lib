@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
@@ -15,8 +15,8 @@ class Galaxy(Base, DictMixin["GalaxyDict"], UpdateMixin):
     __tablename__ = "galaxies"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid)
-    name: Mapped[str] = mapped_column(String(255), default="", index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, default=uuid)
+    name: Mapped[str] = mapped_column(String(255), default="")
     type: Mapped[str] = mapped_column(String(255), index=True)
     description: Mapped[str] = mapped_column(Text)
     version: Mapped[str] = mapped_column(String(255))
@@ -34,7 +34,11 @@ class Galaxy(Base, DictMixin["GalaxyDict"], UpdateMixin):
         DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
     )
     distribution: Mapped[int] = mapped_column(Integer)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_galaxies_uuid", "uuid", unique=False),
+        Index("ix_galaxies_name", "name", unique=False),
+        {"extend_existing": True},
+    )
 
     galaxy_clusters = relationship(
         "GalaxyCluster",

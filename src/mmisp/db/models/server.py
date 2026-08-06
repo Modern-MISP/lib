@@ -38,6 +38,8 @@ class Server(Base, DictMixin["ServerDict"]):
     caching_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     priority: Mapped[int] = mapped_column(Integer, default=0, index=True)
     remove_missing_tags: Mapped[bool] = mapped_column(Boolean, default=False)
+    push_collections: Mapped[bool] = mapped_column(Boolean, default=False)
+    pull_collections: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = ({"extend_existing": True},)
 
     organisation = relationship(

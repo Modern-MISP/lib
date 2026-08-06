@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Integer, String
+from sqlalchemy import Boolean, Index, Integer, String
 from sqlalchemy.orm import relationship
 
 from mmisp.db.database import Base
@@ -10,7 +10,7 @@ class Tag(Base, UpdateMixin, DictMixin["TagDict"]):
     __tablename__ = "tags"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255))
     colour: Mapped[int] = mapped_column(String(7))
     exportable: Mapped[bool] = mapped_column(Boolean)
     org_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
@@ -20,7 +20,10 @@ class Tag(Base, UpdateMixin, DictMixin["TagDict"]):
     is_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     is_custom_galaxy: Mapped[bool] = mapped_column(Boolean, default=False)
     local_only: Mapped[bool] = mapped_column(Boolean, default=False)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_tags_name", "name", unique=True),
+        {"extend_existing": True},
+    )
 
     attributetags = relationship("AttributeTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)
     eventtags = relationship("EventTag", back_populates="tag", lazy="raise_on_sql", viewonly=True)

@@ -32,6 +32,13 @@ def db_migrate(message: str) -> None:
     print(f"Migration '{message}' created successfully.")
 
 
+def db_stamp() -> None:
+    """Stamps the db with the current revision but not actually running the migrations."""
+    cfg = _get_alembic_config()
+    command.stamp(cfg, "heads")
+    print("DB stamped successfully.")
+
+
 def db_upgrade() -> None:
     """Applies all pending migrations to the database."""
     cfg = _get_alembic_config()
@@ -76,6 +83,7 @@ def db_revision() -> None:
 
 async def setup_db(create_init_values: bool = True) -> str:
     """Initializes the database schema and optionally populates initial values."""
+    assert sessionmanager is not None
     # sessionmanager.init()
     # await sessionmanager.create_all()
 
@@ -89,6 +97,7 @@ async def setup_db(create_init_values: bool = True) -> str:
 
 async def create_user(email: str, password: str, organisation: str | int, role: int | str = "user") -> str:
     """Creates a new user: create-user <email> <password> <organisation> [-r <role>]"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -113,6 +122,7 @@ async def create_organisation(
     landingpage: str | None = None,
 ) -> str:
     """Creates a new organisation: create-organisation <name> [options]"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -138,6 +148,7 @@ async def create_organisation(
 
 async def change_password(email: str, password: str) -> str:
     """Changes the password for a specific user: change-password <email> <password>"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -149,6 +160,7 @@ async def change_password(email: str, password: str) -> str:
 
 async def change_email(email: str, new_email: str) -> str:
     """Updates a user's email: change-email <email> <new_email>"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -160,6 +172,7 @@ async def change_email(email: str, new_email: str) -> str:
 
 async def change_role(email: str, role: str | int) -> str:
     """Updates a user's role: change-role <email> <role>"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -183,6 +196,7 @@ async def edit_organisation(
     landingpage: str | None = None,
 ) -> str:
     """Edits an existing organisation's details: edit-organisation <organisation> [options]"""
+    assert sessionmanager is not None
     output = "organisation {} edited"
     sessionmanager.init()
     await sessionmanager.create_all()
@@ -209,6 +223,7 @@ async def edit_organisation(
 
 async def delete_organisation(org: str | int) -> str:
     """Removes an organisation from the database: delete-organisation <name>"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -220,6 +235,7 @@ async def delete_organisation(org: str | int) -> str:
 
 async def delete_user(email: str) -> str:
     """Removes a user from the database: delete-user <email>"""
+    assert sessionmanager is not None
     sessionmanager.init()
     await sessionmanager.create_all()
     async with sessionmanager.session() as session:
@@ -240,6 +256,7 @@ def main() -> None:
             "db-upgrade": db_upgrade,
             "db-current": db_current,
             "db-revision": db_revision,
+            "db-stamp": db_stamp,
             # Management Commands
             "setup": setup_db,
             "create-user": create_user,

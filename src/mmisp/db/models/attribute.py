@@ -43,7 +43,7 @@ class Attribute(Base, UpdateMixin, DictMixin["AttributeDict"]):
     __tablename__ = "attributes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid)
+    uuid: Mapped[str] = mapped_column(DBUUID, default=uuid, index=True)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey("events.id", ondelete="CASCADE"), index=True)
     object_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
     object_relation: Mapped[str | None] = mapped_column(String(255), index=True)

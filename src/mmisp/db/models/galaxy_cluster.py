@@ -20,7 +20,7 @@ class GalaxyCluster(Base, UpdateMixin, DictMixin["GalaxyClusterDict"]):
     type: Mapped[str] = mapped_column(String(255), index=True)
     value: Mapped[str] = mapped_column(Text)
     tag_name: Mapped[str] = mapped_column(String(255), default="", index=True)
-    description: Mapped[str] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
     galaxy_id: Mapped[int] = mapped_column(Integer, ForeignKey("galaxies.id", ondelete="CASCADE"), index=True)
     source: Mapped[str] = mapped_column(String(255), default="")
     authors: Mapped[list[str]] = mapped_column(DBListJson)

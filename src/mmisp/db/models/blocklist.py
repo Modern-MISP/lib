@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mmisp.db.types import DBUUID
@@ -24,20 +24,26 @@ class EventBlocklist(Base):
     __tablename__ = "event_blocklists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    event_uuid: Mapped[str] = mapped_column(DBUUID, unique=True)
+    event_uuid: Mapped[str] = mapped_column(DBUUID)
     created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
     event_info: Mapped[str] = mapped_column(Text)
     comment: Mapped[str | None] = mapped_column(Text)
     event_orgc: Mapped[int] = mapped_column(String(255))
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_event_blocklists_event_uuid", "event_uuid", unique=False),
+        {"extend_existing": True},
+    )
 
 
 class OrgBlocklist(Base):
     __tablename__ = "org_blocklists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    org_uuid: Mapped[str] = mapped_column(DBUUID, unique=True)
+    org_uuid: Mapped[str] = mapped_column(DBUUID)
     created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
     org_name: Mapped[str] = mapped_column(String(255))
     comment: Mapped[str | None] = mapped_column(Text)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_org_blocklists_org_uuid", "org_uuid", unique=False),
+        {"extend_existing": True},
+    )

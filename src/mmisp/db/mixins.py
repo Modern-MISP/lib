@@ -25,6 +25,9 @@ class DictMixin(Generic[TDict]):
         for key in self.__mapper__.c.keys():  # type:ignore[attr-defined]
             if key in omit:
                 continue
+            # Omit empty first_publication (value 0 or None) – legacy API does not include it
+            if key == "first_publication" and getattr(self, key) in (0, None, ""):
+                continue
             if not key.startswith("_") and key not in unloaded:
                 d[key] = getattr(self, key)
 

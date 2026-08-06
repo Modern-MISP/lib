@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 os.environ.setdefault("CONNECTION_INIT", "False")
 
 # Import Base and all models so their metadata is registered
-import mmisp.db.all_models  # noqa: F401 - registers all models with Base
-from mmisp.db.database import Base
+import mmisp.db.all_models  # noqa: F401,E402 - registers all models with Base
+from mmisp.db.database import Base  # noqa: E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -66,7 +66,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: object) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)  # type: ignore[arg-type]
+    context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)  # type: ignore[arg-type]
 
     with context.begin_transaction():
         context.run_migrations()

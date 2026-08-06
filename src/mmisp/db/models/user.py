@@ -1,6 +1,6 @@
 from time import time
 
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin, UpdateMixin
@@ -16,7 +16,7 @@ class User(Base, UpdateMixin, DictMixin["UserDict"]):
     password: Mapped[str] = mapped_column(String(255))
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
     server_id: Mapped[int] = mapped_column(Integer, default=0, index=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True)
+    email: Mapped[str] = mapped_column(String(255))
     autoalert: Mapped[bool] = mapped_column(Boolean, default=False)
     authkey: Mapped[str | None] = mapped_column(String(40), default=None)
     invited_by: Mapped[int] = mapped_column(Integer, default=0)
@@ -35,7 +35,7 @@ class User(Base, UpdateMixin, DictMixin["UserDict"]):
     force_logout: Mapped[bool] = mapped_column(Boolean, default=False)
     date_created: Mapped[int | None] = mapped_column(Integer, default=time)
     date_modified: Mapped[int | None] = mapped_column(Integer, default=time, onupdate=time)
-    sub: Mapped[str | None] = mapped_column(String(255), unique=True)
+    sub: Mapped[str | None] = mapped_column(String(255))
     external_auth_required: Mapped[bool] = mapped_column(Boolean, default=False)
     external_auth_key: Mapped[str | None] = mapped_column(Text)
     last_api_access: Mapped[int | None] = mapped_column(Integer, default=0)
@@ -45,7 +45,11 @@ class User(Base, UpdateMixin, DictMixin["UserDict"]):
     totp: Mapped[str | None] = mapped_column(String(255))
     hotp_counter: Mapped[int | None] = mapped_column(Integer)
     last_pw_change: Mapped[int | None] = mapped_column(BigInteger)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_users_email", "email", unique=True),
+        Index("ix_users_sub", "sub", unique=True),
+        {"extend_existing": True},
+    )
 
     # Relationships
     org = relationship("Organisation", back_populates="users", lazy="raise_on_sql")

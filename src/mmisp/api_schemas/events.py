@@ -239,6 +239,7 @@ class AddEditGetEventDetails(BaseModel):
     CryptographicKey: list[str] = []
     Tag: list[AddEditGetEventTag] = []
     sharing_group: EventSharingGroupResponse | None = Field(alias="SharingGroup", default=None)
+    first_publication: int | None = None
 
     @field_serializer("timestamp", "publish_timestamp")
     def serialize_timestamp(self: Self, timestamp: datetime | None, _: Any) -> int | None:

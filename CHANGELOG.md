@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## 0.14.0
+
+### Changed
+
+* Align DB scheme to newest misp version
+
 ## 0.13.0
 
 ### Added

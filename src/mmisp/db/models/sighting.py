@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey, Integer, String
+from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String
 
 from mmisp.db.database import Base
 from mmisp.db.mypy import Mapped, mapped_column
@@ -14,11 +14,14 @@ class Sighting(Base, DictMixin):
     __tablename__ = "sightings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str | None] = mapped_column(String(40), unique=True, default=uuid)
+    uuid: Mapped[str | None] = mapped_column(String(40), default=uuid)
     attribute_id: Mapped[int] = mapped_column(Integer, ForeignKey(Attribute.id), index=True)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id), index=True)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
     date_sighting: Mapped[int] = mapped_column(BigInteger)
     source: Mapped[str | None] = mapped_column(String(255), index=True, default="")
     type: Mapped[int | None] = mapped_column(Integer, index=True, default=0)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_sightings_uuid", "uuid", unique=False),
+        {"extend_existing": True},
+    )

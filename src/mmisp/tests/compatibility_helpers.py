@@ -38,7 +38,7 @@ def to_legacy_format(data):
     return data
 
 
-def get_legacy_modern_diff(
+async def get_legacy_modern_diff(
     http_method, path, body, auth_key, client, preprocessor=None, ignore_order=True, dry_run=False
 ):
     clear_key, auth_key = auth_key
@@ -56,7 +56,7 @@ def get_legacy_modern_diff(
         kwargs["params"] = {"dry_run": 1}
 
     call = getattr(client, http_method)
-    response = call(path, **kwargs)
+    response = await call(path, **kwargs)
     response_json = response.json()
 
     call = getattr(httpx, http_method)
