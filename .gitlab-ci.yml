@@ -127,6 +127,9 @@ pytest_coverage_combine:
         path: coverage.xml
 
 mariadb:
+  tags:
+    - concurrent
+    - any-image-allowed
   stage: test
   image: ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/lib:${CI_COMMIT_SHA}
   script:
