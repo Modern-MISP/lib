@@ -25,6 +25,7 @@ class DatabaseConfig(BaseSettings):
     MAX_RETRIES: int = Field(100, validation_alias="DB_MAX_RETRIES")
     CONNECTION_INIT: bool = True
     DB_LOGLEVEL: str | None = None
+    CHECK_MIGRATION: bool = True
 
     @model_validator(mode="after")
     def require_db_url_or_no_connection(self: Self) -> Self:

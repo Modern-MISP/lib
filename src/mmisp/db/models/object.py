@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.database import Base
@@ -14,8 +14,8 @@ class Object(Base, DictMixin["ObjectDict"]):
     __tablename__ = "objects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str | None] = mapped_column(DBUUID, unique=True, default=uuid)
-    name: Mapped[str | None] = mapped_column(String(255), index=True)
+    uuid: Mapped[str | None] = mapped_column(DBUUID, default=uuid)
+    name: Mapped[str | None] = mapped_column(String(255))
     meta_category: Mapped[str | None] = mapped_column("meta-category", String(255), index=True)
     description: Mapped[str | None] = mapped_column(String(255))
     # Comment for template_uuid: in MISP it is called object_template_uuid
@@ -29,7 +29,10 @@ class Object(Base, DictMixin["ObjectDict"]):
     deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     first_seen: Mapped[int | None] = mapped_column(Integer, index=True, default=None)
     last_seen: Mapped[int | None] = mapped_column(Integer, index=True, default=None)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_objects_uuid", "uuid", unique=False),
+        {"extend_existing": True},
+    )
 
     attributes = relationship(
         "Attribute",

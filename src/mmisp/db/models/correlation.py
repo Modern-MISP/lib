@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Text, UniqueConstraint
+from sqlalchemy import Index, Integer, String, Text
 
 from mmisp.db.mypy import Mapped, mapped_column
 
@@ -13,10 +13,10 @@ class OverCorrelatingValue(Base):
     __tablename__ = "over_correlating_values"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    value: Mapped[str] = mapped_column(String(191), index=True, unique=True)
+    value: Mapped[str] = mapped_column(String(191))
     occurrence: Mapped[int | None] = mapped_column(Integer, index=True)
     __table_args__ = (
-        UniqueConstraint("value"),
+        Index("ix_over_correlating_values_value", "value", unique=False),
         {"extend_existing": True},
     )
 
@@ -28,19 +28,19 @@ class CorrelationValue(Base):
 
     __tablename__ = "correlation_values"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    value: Mapped[str] = mapped_column(String(255), index=True, unique=True)
-    __table_args__ = (UniqueConstraint("value"),)
+    value: Mapped[str] = mapped_column(String(255))
+    __table_args__ = (Index("ix_correlation_values_value", "value", unique=False),)
 
 
 class CorrelationExclusions(Base):
     __tablename__ = "correlation_exclusions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    value: Mapped[str] = mapped_column(String(255), index=True, unique=True)
+    value: Mapped[str] = mapped_column(String(255))
     from_json: Mapped[int | None] = mapped_column(Integer, default=0)
     comment: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
-        UniqueConstraint("value"),
+        Index("ix_correlation_exclusions_value", "value", unique=False),
         {"extend_existing": True},
     )
 
@@ -71,7 +71,5 @@ class DefaultCorrelation(Base):
     event_sharing_group_id_1: Mapped[int] = mapped_column("1_event_sharing_group_id", Integer)
     value_id: Mapped[int] = mapped_column(Integer, index=True)
     __table_args__ = (
-        UniqueConstraint(
-            "attribute_id", "1_attribute_id", "value_id", name="uq_default_correlations_unique_correlation"
-        ),
+        Index("ix_default_correlations_unique_correlation", "attribute_id", "1_attribute_id", "value_id", unique=False),
     )

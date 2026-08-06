@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Text, UniqueConstraint
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..database import Base
@@ -12,9 +12,5 @@ class AdminSetting(Base):
     __tablename__ = "admin_settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    setting: Mapped[str] = mapped_column(String(255))
-
+    setting: Mapped[str] = mapped_column(String(255), index=True)
     value: Mapped[str] = mapped_column(Text)
-
-    __table_args__ = (UniqueConstraint("setting"),)

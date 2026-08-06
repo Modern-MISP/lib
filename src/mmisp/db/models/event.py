@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Self
 
-from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, UniqueConstraint, and_, or_
+from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -22,7 +22,7 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str] = mapped_column(DBUUID, unique=True, default=uuid, index=True)
+    uuid: Mapped[str] = mapped_column(DBUUID, default=uuid)
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey(Organisation.id), index=True)
     date: Mapped[date] = mapped_column(Date, default=datetime.utcnow)
     info: Mapped[str] = mapped_column(Text)
@@ -45,7 +45,7 @@ class Event(Base, UpdateMixin, DictMixin["EventDict"]):
     extends_uuid: Mapped[str | None] = mapped_column(String(40), default="", index=True)
     protected: Mapped[bool | None] = mapped_column(Boolean, default=False)
     __table_args__ = (
-        UniqueConstraint("uuid"),
+        Index("ix_events_uuid", "uuid", unique=False),
         {"extend_existing": True},
     )
 
@@ -250,7 +250,7 @@ class EventReport(Base):
     __tablename__ = "event_reports"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    uuid: Mapped[str] = mapped_column(String(40), unique=True, default=uuid)
+    uuid: Mapped[str] = mapped_column(String(40), default=uuid)
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey(Event.id), index=True)
     name: Mapped[str] = mapped_column(String(255), index=True)
 
@@ -262,7 +262,10 @@ class EventReport(Base):
 
     timestamp: Mapped[int] = mapped_column(Integer)
     deleted: Mapped[bool] = mapped_column(Boolean, default=False)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_event_reports_uuid", "uuid", unique=False),
+        {"extend_existing": True},
+    )
 
 
 class EventTag(Base, DictMixin["EventTagDict"]):

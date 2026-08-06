@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mmisp.db.mixins import DictMixin
@@ -15,7 +15,7 @@ class Organisation(Base, DictMixin["OrganisationDict"]):
     __tablename__ = "organisations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255))
     date_created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
     date_modified: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     description: Mapped[str | None] = mapped_column(Text, default="")
@@ -23,12 +23,16 @@ class Organisation(Base, DictMixin["OrganisationDict"]):
     nationality: Mapped[str] = mapped_column(String(255))
     sector: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(Integer, default=0)
-    uuid: Mapped[str | None] = mapped_column(DBUUID, unique=True, default=uuid.uuid4)
+    uuid: Mapped[str | None] = mapped_column(DBUUID, default=uuid.uuid4)
     contacts: Mapped[str | None] = mapped_column(Text)
     local: Mapped[bool] = mapped_column(Boolean, default=False)
     restricted_to_domain: Mapped[list[str] | None] = mapped_column(DBListJson, default=list)
     landingpage: Mapped[str | None] = mapped_column(Text)
-    __table_args__ = ({"extend_existing": True},)
+    __table_args__ = (
+        Index("ix_organisations_name", "name", unique=True),
+        Index("ix_organisations_uuid", "uuid", unique=False),
+        {"extend_existing": True},
+    )
 
     # Relationship to users
     users = relationship("User", back_populates="org", lazy="raise_on_sql")

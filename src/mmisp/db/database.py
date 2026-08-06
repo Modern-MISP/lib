@@ -115,7 +115,7 @@ class DatabaseSessionManager:
 
         self._url = make_url(db_url)
 
-    def init(self: Self, nullpool: bool = False) -> None:
+    def init(self: Self, nullpool: bool = False, check_migration: bool = True) -> None:
         retries = 0
         while retries < config.MAX_RETRIES:
             try:
@@ -135,6 +135,8 @@ class DatabaseSessionManager:
         self._sessionmaker = sessionmaker(
             autocommit=False, autoflush=False, expire_on_commit=False, bind=self._engine, class_=AsyncSession
         )
+        if not check_migration:
+            return
 
         # Check migration status (non-blocking warning only)
         try:
@@ -216,4 +218,4 @@ async def create_all_models() -> None:
 sessionmanager = None
 if config.CONNECTION_INIT:
     sessionmanager = DatabaseSessionManager()
-    sessionmanager.init()
+    sessionmanager.init(check_migration=config.CHECK_MIGRATION)

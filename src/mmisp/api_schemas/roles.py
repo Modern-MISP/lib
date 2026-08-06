@@ -50,6 +50,7 @@ class Role(HasPermission):
     rate_limit_count: int
     permission: int | None = None  # number as string
     permission_description: str | None = None
+    restsearch_limit_result: int | None = None
 
     @field_serializer("created", "modified")
     def serialize_timestamp(self: Self, value: datetime | None) -> str | None:
