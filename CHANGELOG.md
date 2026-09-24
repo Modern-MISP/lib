@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## 0.14.1
+
+### Changed
+
+* Align API Scheme to newest misp version
+
 ## 0.14.0
 
 ### Changed

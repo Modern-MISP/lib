@@ -6,9 +6,8 @@ Create Date: 2026-08-06 11:01:39.120514
 
 """
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0600d41b7e3d"
@@ -98,10 +97,24 @@ def upgrade() -> None:
         batch_op.drop_constraint("uq_event_reports_uuid", type_="unique")
         batch_op.create_index("ix_event_reports_uuid", ["uuid"], unique=False)
 
+    # Drop the FK on shadow_attributes that references events.uuid before
+    # dropping the index backing it (MySQL requires the index for the FK).
+    with op.batch_alter_table("shadow_attributes", schema=None) as batch_op:
+        batch_op.drop_constraint("fk_shadow_attributes_event_uuid_events", type_="foreignkey")
+
     with op.batch_alter_table("events", schema=None) as batch_op:
         batch_op.drop_constraint("uq_events_uuid", type_="unique")
         batch_op.drop_index("ix_events_uuid")
         batch_op.create_index("ix_events_uuid", ["uuid"], unique=False)
+
+    # Recreate the FK now that the index exists again.
+    with op.batch_alter_table("shadow_attributes", schema=None) as batch_op:
+        batch_op.create_foreign_key(
+            "fk_shadow_attributes_event_uuid_events",
+            "events",
+            ["event_uuid"],
+            ["uuid"],
+        )
 
     with op.batch_alter_table("galaxies", schema=None) as batch_op:
         batch_op.drop_constraint("uq_galaxies_uuid", type_="unique")
@@ -306,10 +319,24 @@ def downgrade() -> None:
         batch_op.drop_index("ix_galaxies_uuid")
         batch_op.create_unique_constraint("uq_galaxies_uuid", ["uuid"])
 
+    # Drop the FK on shadow_attributes that references events.uuid before
+    # dropping the index backing it (MySQL requires the index for the FK).
+    with op.batch_alter_table("shadow_attributes", schema=None) as batch_op:
+        batch_op.drop_constraint("fk_shadow_attributes_event_uuid_events", type_="foreignkey")
+
     with op.batch_alter_table("events", schema=None) as batch_op:
         batch_op.drop_index("ix_events_uuid")
         batch_op.create_index("ix_events_uuid", ["uuid"], unique=False)
         batch_op.create_unique_constraint("uq_events_uuid", ["uuid"])
+
+    # Recreate the FK now that the index exists again.
+    with op.batch_alter_table("shadow_attributes", schema=None) as batch_op:
+        batch_op.create_foreign_key(
+            "fk_shadow_attributes_event_uuid_events",
+            "events",
+            ["event_uuid"],
+            ["uuid"],
+        )
 
     with op.batch_alter_table("event_reports", schema=None) as batch_op:
         batch_op.drop_index("ix_event_reports_uuid")
