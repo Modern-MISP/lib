@@ -31,6 +31,17 @@ class SearchAttributesObject(BaseModel):
     sharing_group_id: int
 
 
+class SearchAttributesEventOrganisation(BaseModel):
+    id: int
+    name: str
+    uuid: str | None = None
+
+
+class SearchAttributesThreatLevel(BaseModel):
+    id: int
+    name: str
+
+
 class SearchAttributesEvent(BaseModel):
     id: int
     org_id: int
@@ -40,8 +51,15 @@ class SearchAttributesEvent(BaseModel):
     orgc_id: int
     uuid: str
     publish_timestamp: datetime
+    analysis: int | None = None
+    date: str | None = None
+    threat_level_id: int | None = None
+    timestamp: datetime | None = None
+    Org: SearchAttributesEventOrganisation | None = None
+    Orgc: SearchAttributesEventOrganisation | None = None
+    ThreatLevel: SearchAttributesThreatLevel | None = None
 
-    @field_serializer("publish_timestamp")
+    @field_serializer("publish_timestamp", "timestamp")
     def serialize_timestamp(self: Self, timestamp: datetime, _: Any) -> int:
         return int(timestamp.timestamp())
 

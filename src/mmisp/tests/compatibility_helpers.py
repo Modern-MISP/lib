@@ -48,7 +48,7 @@ async def get_legacy_modern_diff(
     ic(f"Calling {path}")
     ic(body)
 
-    kwargs = {"headers": headers}
+    kwargs = {"headers": headers, "timeout": httpx.Timeout(30.0)}
     if http_method not in ["get", "delete"]:
         kwargs["json"] = body
 

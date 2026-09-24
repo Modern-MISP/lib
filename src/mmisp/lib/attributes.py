@@ -2387,6 +2387,40 @@ AttributeType(
     to_ids=True,
 )
 
+AttributeType(
+    dbkey="suricata",
+    safe_clsname="Suricata",
+    default_category=AttributeCategories.NETWORK_ACTIVITY,
+    categories=frozenset(
+        {
+            AttributeCategories.EXTERNAL_ANALYSIS,
+            AttributeCategories.NETWORK_ACTIVITY,
+        }
+    ),
+    to_ids=True,
+)
+
+AttributeType(
+    dbkey="edge-extension-id",
+    safe_clsname="EdgeExtensionId",
+    default_category=AttributeCategories.PAYLOAD_DELIVERY,
+    categories=frozenset(
+        {
+            AttributeCategories.PAYLOAD_DELIVERY,
+            AttributeCategories.PAYLOAD_INSTALLATION,
+        }
+    ),
+    to_ids=True,
+)
+
+AttributeType(
+    dbkey="uuid",
+    safe_clsname="Uuid",
+    default_category=AttributeCategories.OTHER,
+    categories=frozenset({AttributeCategories.OTHER}),
+    to_ids=False,
+)
+
 mapper_val_safe_clsname = AttributeType.map_dbkey_safe_clsname
 mapper_safe_clsname_val = AttributeType.map_safe_clsname_dbkey
 literal_valid_attribute_types = Literal[tuple([k for k in mapper_val_safe_clsname.keys()])]  # type:ignore[valid-type]

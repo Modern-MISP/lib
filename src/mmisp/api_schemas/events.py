@@ -432,6 +432,7 @@ class GetAllEventsResponse(BaseModel):
     sighting_timestamp: int
     disable_correlation: bool
     extends_uuid: str
+    first_publication: int | None = None
     event_creator_email: str | None = None  # omitted
     protected: bool | None = None
     SharingGroup: MinimalSharingGroup | None = None

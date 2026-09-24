@@ -75,6 +75,7 @@ class GetGalaxyClusterResponse(BaseModel):
     type: str
     value: str
     tag_name: str
+    tag_id: int | None = None
     description: str
     galaxy_id: int
     source: str
@@ -101,7 +102,7 @@ class GetGalaxyClusterResponse(BaseModel):
 
 class GalaxyClusterResponse(BaseModel):
     GalaxyCluster: GetGalaxyClusterResponse
-    Tag: NoneTag | TagAttributesResponse = Field(default_factory=NoneTag)
+    Tag: NoneTag | TagAttributesResponse | None = None
 
 
 class AddGalaxyElement(BaseModel):
