@@ -24,6 +24,7 @@ def compare_func(x, y, level=None):
             return x["Galaxy"]["uuid"]
     except Exception:
         raise CannotCompare() from None
+    raise CannotCompare() from None
 
 
 def to_legacy_format(data):
